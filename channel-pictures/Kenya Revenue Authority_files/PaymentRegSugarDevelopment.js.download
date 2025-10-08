@@ -1,0 +1,851 @@
+
+function addValidationSugar(row)
+{
+	resetErrorList();
+	if(validateFormFields(paymentRegOTRPeriodYearJson))
+	{
+		if (validateFormFields(paymentRegOTRPeriodMonthJson,paymentRegOTRSugerDevDetailsJson))
+		{
+			hideTab('TabView',5);
+			resetErrorList();
+			incError=0;
+			var checkDuplicateFlag=checkDuplicateForSugar(row);
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+			if(removeCommaFrmInput(document.getElementById('in_sugarTable_5').value)<=0)
+			{
+				alert(amtPayable);
+				return false;
+			}
+			if(removeCommaFrmInput(document.getElementById('in_sugarTable_6').value)<=0)
+			{
+				alert(amtPaid);
+				return false;
+			}
+			if(addConfirm('a_sugarTable')) 
+			{
+				if(document.getElementById('a_sugarTable').innerHTML!="Modify")
+				{
+					addrow('sugarTable', '4', '13', '4', 'validateDeleteRowSugar', 'validateModifyRowIntoSugarFunction', 'N','N');
+				}
+				else
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			getErrTabToggle('TabView','2');	
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+			return false;
+		}
+	}
+	else
+	{
+		getErrTabToggle('TabView','2');	
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+		return false;
+	}
+}
+function beforeAddSugar(row)
+{
+
+	var checkDuplicateFlag=checkDuplicateForSugar(row);
+	if(document.getElementById('hidIsPartial').value != "Y")
+	{
+		if(checkDuplicateFlag){
+			checkDuplicateFlag = isSugarRegistered();
+		}
+	}
+	if(checkDuplicateFlag==false)
+	{
+		return false;
+	}
+	else
+	{
+		var taxPeriod=document.getElementById('cmbTaxPeriodMonth').selectedIndex;
+		var taxPeriodValue= document.getElementById('cmbTaxPeriodMonth')[taxPeriod].text;
+		var taxPeriod = document.getElementById('cmbTaxPeriodYear').selectedIndex;
+		var taxPeriodYear =document.getElementById('cmbTaxPeriodYear')[taxPeriod].text;
+		document.getElementById('in_sugarTable_3').value=taxPeriodValue+"-"+taxPeriodYear;
+		document.getElementById('hidTotalAmtPaid').value=removeCommaFrmInput(document.getElementById('in_sugarTable_5').value);
+		TotalAmtToPaidSugar=removeCommaFrmInput(document.getElementById('in_sugarTable_6').value);
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_sugarTable_11').value;
+		document.getElementById('in_sugarTable_14').value=document.getElementById('cmbTaxPeriodMonth').value;
+		return true;
+	}
+}
+
+function afterAddSugar()
+{
+	var tmpAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+	var tmpAmtToPaid=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOTR').value);
+	document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(removeCommaFrmInput(parseInt(tmpAmtToPaid,10)+parseInt(TotalAmtToPaidSugar,10)),true); 
+	document.getElementById('txtTotalAmountPayableOTR').value=convertToKenyanShillingFormatVal(removeCommaFrmInput(parseInt(tmpAmt,10)+parseInt(document.getElementById('hidTotalAmtPaid').value,10)),true); 
+	selectedFlagSugar=selectedFlagSugar+1;
+	document.getElementById('in_sugarTable_11').value=document.getElementById('hidRateOfLevy').value;
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+	document.getElementById('hidBalanceAdjustment').value=0;
+	document.getElementById('hidAmtPaybleLevy').value=0;
+	if(removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value)<0)
+	{
+		document.getElementById('txtTotalAmountPaidOTR').value=0;
+	}
+	document.getElementById('in_sugarTable_6').value=0; 
+	document.getElementById('in_sugarTable_5').value=0; 
+	document.getElementById('in_sugarTable_7').value=0; 
+	document.getElementById('in_sugarTable_8').value=0; 
+	document.getElementById('in_sugarTable_9').value=0; 
+	document.getElementById('in_sugarTable_10').value=0; 
+	document.getElementById('in_sugarTable_7').readOnly=false;
+	document.getElementById('in_sugarTable_8').readOnly=false;
+	document.getElementById('in_sugarTable_8').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+	document.getElementById('in_sugarTable_7').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+	document.getElementById('cmbTaxPeriodYear').selectedIndex=0; 
+	document.getElementById('cmbTaxPeriodMonth').disabled=true;
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		document.getElementById('in_sugarTable_7').readOnly=true;
+		document.getElementById('in_sugarTable_8').readOnly=true;
+		document.getElementById('in_sugarTable_8').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('in_sugarTable_7').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('sugarRadio_'+rowNumbmerPartial).checked=false;
+		selectedFlagPartial=selectedFlagPartial+1;
+	}
+}
+
+function beforeDeleteSugar()
+{
+	if(modifyFlagSugar==1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+}
+function validateDeleteRowSugar(tab_str, rowno, cols) 
+{
+
+	if(deleteFlagSugar==1 && modifyFlagSugar==0 )
+	{
+		var table = document.getElementById('sugarTable');  
+		var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+		var tempAmt = table.rows[rowno].cells[5].innerHTML;
+		totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+		document.getElementById('txtTotalAmountPayableOTR').value =  totalAmt;
+		document.getElementById('txtTotalAmountPayableOTR').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPayableOTR").value, true);
+		var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOTR').value);
+		var tempAmt = table.rows[rowno].cells[6].innerHTML;
+		totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+		document.getElementById('txtTotalAmountPaidOTR').value = convertToKenyanShillingFormatVal(totalAmt, true);
+		if(removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value)<0)
+		{
+			document.getElementById('txtTotalAmountPaidOTR').value=0;
+		}
+		selectedFlagSugar=selectedFlagSugar-1;
+		deleteFlagSugar = 0;
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+			selectedFlagPartial=selectedFlagPartial-1;
+		}
+		currentPaymentSugar();
+	}
+	else
+	{
+		deleteFlagSugar = 0;
+	}
+}
+function afterDeleteSugarFunction()
+{
+	deleteFlagSugar = 1;
+
+}
+function beforeModifyIntoSugarFunction(row)
+{
+	if(addValidationSugar())
+	{
+		var checkDuplicateFlag = addValidationSugar(row);
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		else
+		{
+			totalAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+			amtToPaidLandRent=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+			document.getElementById('hidRateOfLevy').value=document.getElementById('in_sugarTable_11').value;
+			var taxPeriod=document.getElementById('cmbTaxPeriodMonth').selectedIndex;
+			var taxPeriodValue= document.getElementById('cmbTaxPeriodMonth')[taxPeriod].text;
+			var taxPeriod = document.getElementById('cmbTaxPeriodYear').selectedIndex;
+			var taxPeriodYear =document.getElementById('cmbTaxPeriodYear')[taxPeriod].text;
+			document.getElementById('in_sugarTable_3').value=taxPeriodValue+"-"+taxPeriodYear;
+			document.getElementById('in_sugarTable_14').value=document.getElementById('cmbTaxPeriodMonth').value;
+			return true;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+function afterModifyIntoSugarFunction()
+{
+	modifyFlagSugar = 0;
+	commonModifyFlag=0;
+	var table = document.getElementById('sugarTable');  
+	totalAmt = parseInt(removeCommaFrmInput(totalAmt),10) + parseInt(removeCommaFrmInput(table.rows[rowno].cells[5].innerHTML),10) - parseInt(removeCommaFrmInput(tempAmtVal),10);
+	amtToPaidLandRent = parseInt(removeCommaFrmInput(amtToPaidLandRent),10) + parseInt(removeCommaFrmInput(table.rows[rowno].cells[6].innerHTML),10) - parseInt(removeCommaFrmInput(TotalAmtToPaidLandRent),10);
+	document.getElementById('txtTotalAmountPayableOTR').value = convertToKenyanShillingFormatVal(totalAmt, true);
+	document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(amtToPaidLandRent, true);
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+	document.getElementById('in_sugarTable_11').value=document.getElementById('hidRateOfLevy').value;
+	document.getElementById('hidBalanceAdjustment').value=0;
+	document.getElementById('hidAmtPaybleLevy').value=0;
+	document.getElementById('in_sugarTable_7').readOnly=false;
+	document.getElementById('in_sugarTable_8').readOnly=false;
+	document.getElementById('in_sugarTable_8').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+	document.getElementById('in_sugarTable_7').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+	document.getElementById('cmbTaxPeriodYear').selectedIndex=0; 
+	document.getElementById('cmbTaxPeriodMonth').disabled=true;
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+		document.getElementById('in_sugarTable_7').readOnly=true;
+		document.getElementById('in_sugarTable_8').readOnly=true;
+		document.getElementById('in_sugarTable_8').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('in_sugarTable_7').className='readonlyInput form101_textfcurr_width textonlyRight';
+		}
+}
+function validateModifyRowIntoSugarFunction(tab_str, cols_1, rowno, cols_2)
+{
+	modifyFlagSugar = 1;
+	commonModifyFlag=1;
+	tempAmtVal = document.getElementById('in_sugarTable_5').value;
+	TotalAmtToPaidLandRent=document.getElementById('in_sugarTable_6').value;
+	document.getElementById('hidAmtPaybleLevy').value=document.getElementById('in_sugarTable_5').value;
+	document.getElementById('hidBalanceAdjustment').value=document.getElementById('in_sugarTable_10').value;
+	var year =parseInt(document.getElementById('in_sugarTable_14').value.substr(6, document.getElementById('in_sugarTable_14').value.length),10);
+	document.getElementById('cmbTaxPeriodYear').value=year;
+	getSelectedMonthOfSelectedYearWeb('cmbTaxPeriodYear','cmbTaxPeriodMonth','false');
+	document.getElementById('cmbTaxPeriodMonth').value=document.getElementById('in_sugarTable_14').value;
+	document.getElementById('cmbTaxPeriodMonth').disabled=false;
+	if(removeCommaFrmInput(document.getElementById('in_sugarTable_7').value)>0)
+	{
+		document.getElementById('in_sugarTable_7').readOnly=false;
+		document.getElementById('in_sugarTable_8').readOnly=true;
+		document.getElementById('in_sugarTable_8').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('in_sugarTable_7').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+	}
+	if(removeCommaFrmInput(document.getElementById('in_sugarTable_8').value)>0)
+	{
+		document.getElementById('in_sugarTable_7').readOnly=true;
+		document.getElementById('in_sugarTable_8').readOnly=false;
+		document.getElementById('in_sugarTable_8').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+		document.getElementById('in_sugarTable_7').className='readonlyInput form101_textfcurr_width textonlyRight';
+	}
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		document.getElementById('cmbTaxPeriodMonth').disabled=true;
+		document.getElementById('in_sugarTable_7').readOnly=true;
+		document.getElementById('in_sugarTable_8').readOnly=true;
+		document.getElementById('in_sugarTable_8').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('in_sugarTable_7').className='readonlyInput form101_textfcurr_width textonlyRight';
+	}
+
+}
+function onChangeCalcAdjutSugar()
+{
+	var underDeclaredPrevMonth=0;
+	var overDeclaredPrevMonth=0;
+	var penalty=0;
+	resetErrorList();
+	if (validateFormFields(paymentRegOTRSugerDevAmountDetailsJson) ) 
+	{
+		hideTab('TabView',5);
+		resetErrorList();
+		incError=0;
+		underDeclaredPrevMonth= trim(removeCommaFrmInput(document.getElementById('in_sugarTable_7').value),"");
+		overDeclaredPrevMonth= trim(removeCommaFrmInput(document.getElementById('in_sugarTable_8').value),"");
+		penalty= trim(removeCommaFrmInput(document.getElementById('in_sugarTable_9').value),"");
+		if(underDeclaredPrevMonth==null || underDeclaredPrevMonth=="")
+		{
+			underDeclaredPrevMonth=0;
+			document.getElementById('in_sugarTable_7').value=0;
+		}
+		if(overDeclaredPrevMonth==null || overDeclaredPrevMonth=="")
+		{
+			overDeclaredPrevMonth=0;
+			document.getElementById('in_sugarTable_8').value=0;
+		}
+		if(penalty==null || penalty=="")
+		{
+			penalty=0;
+			document.getElementById('in_sugarTable_9').value=0;
+		}
+		balnceAdjustmentPervSugar=document.getElementById('in_sugarTable_10').value;
+		if(balnceAdjustmentPervSugar=="")
+		{
+			balnceAdjustmentPervSugar=0;
+		}
+		//alert(balnceAdjustmentPervSugar +"  balnceAdjustmentPervSugar");
+		var txtBalnceAdjustment= parseInt(underDeclaredPrevMonth,10)+parseInt(penalty,10)-parseInt(overDeclaredPrevMonth,10);
+		document.getElementById('in_sugarTable_7').value=convertToKenyanShillingFormatVal(parseInt(underDeclaredPrevMonth,10),true);
+		document.getElementById('in_sugarTable_8').value=convertToKenyanShillingFormatVal(parseInt(overDeclaredPrevMonth,10),true);
+		document.getElementById('in_sugarTable_9').value=convertToKenyanShillingFormatVal(parseInt(penalty,10),true);
+		document.getElementById('in_sugarTable_10').value=convertToKenyanShillingFormatVal(parseInt(txtBalnceAdjustment,10),true);
+		document.getElementById('hidBalanceAdjustment').value=txtBalnceAdjustment;
+		//alert(txtBalnceAdjustment +"  txtBalnceAdjustment");
+		//alert(document.getElementById('hidAmtPaybleLevy').value +"  document.getElementById('hidAmtPaybleLevy').value");//
+		var amount=parseInt(removeCommaFrmInput(document.getElementById('in_sugarTable_5').value),10)+parseInt(document.getElementById('hidBalanceAdjustment').value,10)-parseInt(removeCommaFrmInput(balnceAdjustmentPervSugar),10);
+		document.getElementById('in_sugarTable_5').value=convertToKenyanShillingFormatVal(amount,true);
+		//alert(document.getElementById('in_sugarTable_5').value +"  document.getElementById('in_sugarTable_5').value");
+		return true;
+	}
+	else
+	{
+		getErrTabToggle('TabView','2');	
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+		return false;
+	}
+}
+function checkDuplicateForSugar(r)
+{
+	rows=r;
+	tabObj1=document.getElementById('sugarTable');
+	var taxPeriodValue;
+	var taxPeriod = document.getElementById('cmbTaxPeriodMonth').selectedIndex;
+	var taxPeriodMonth =document.getElementById('cmbTaxPeriodMonth')[taxPeriod].text;
+	var taxPeriod = document.getElementById('cmbTaxPeriodYear').selectedIndex;
+	var taxPeriodYear =document.getElementById('cmbTaxPeriodYear')[taxPeriod].text;
+	taxPeriodValue=trim(taxPeriodMonth)+'-'+trim(taxPeriodYear);
+	if(tabObj1.rows.length==1)
+	{
+	}
+	else
+	{
+
+		for (var i=1, n=tabObj1.rows.length; i <n; i++) 
+		{  
+			if(modifyFlagSugar==1)
+			{
+				var modify;
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+				}
+				if((trim(document.getElementById('id_temp_sugarTable_'+i+'_1').value))=="Delete"  && (trim(tabObj1.rows[i].cells[3].innerHTML)==taxPeriodValue) && (trim(modify)==trim("Modify")))
+				{
+					alert(alreadyAddedDetials);
+					return false;
+				}
+			}
+			else
+			{
+				if((document.getElementById('id_temp_sugarTable_'+i+'_1').value)=="Delete" &&  (trim(tabObj1.rows[i].cells[3].innerHTML)==taxPeriodValue))
+				{
+					alert(alreadyAddedDetials);
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+
+}
+function onChangeSalesLevySugar()
+{
+	var salesValue	= trim(removeCommaFrmInput(document.getElementById('in_sugarTable_4').value),""); 
+	var rateOflevy	= trim(removeCommaFrmInput(document.getElementById('in_sugarTable_11').value),"");
+	{
+		var levyCalculation= Math.ceil(parseFloat(salesValue)*parseFloat(rateOflevy)/parseInt(100,10));
+		document.getElementById('hidAmtPaybleLevy').value=levyCalculation;
+		document.getElementById('in_sugarTable_4').value=convertToKenyanShillingFormatValWithDecimal(salesValue,true);
+		document.getElementById('in_sugarTable_5').value=convertToKenyanShillingFormatVal(parseInt(document.getElementById('hidAmtPaybleLevy').value,10)+parseInt(document.getElementById('hidBalanceAdjustment').value,10),true);
+		return true;
+	}
+}
+function clearSugar()
+{
+	document.getElementById('hidRateOfLevy').value=document.getElementById('in_sugarTable_11').value;
+	if(clear_table('sugarTable','12'))
+	{
+		document.getElementById('in_sugarTable_11').value=document.getElementById('hidRateOfLevy').value;
+		document.getElementById('in_sugarTable_4').value=0;
+		document.getElementById('in_sugarTable_5').value=0;
+		document.getElementById('in_sugarTable_6').value=0;
+		document.getElementById('in_sugarTable_7').value=0;
+		document.getElementById('in_sugarTable_8').value=0;
+		document.getElementById('in_sugarTable_9').value=0;
+		document.getElementById('in_sugarTable_10').value=0;
+		document.getElementById('hidBalanceAdjustment').value=0;
+		document.getElementById('hidAmtPaybleLevy').value=0;
+		modifyFlagSugar=0;
+		commonModifyFlag=0;
+		document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+		document.getElementById('in_sugarTable_7').readOnly=false;
+		document.getElementById('in_sugarTable_8').readOnly=false;
+		document.getElementById('in_sugarTable_8').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+		document.getElementById('in_sugarTable_7').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+		document.getElementById('cmbTaxPeriodYear').selectedIndex=0; 
+		document.getElementById('cmbTaxPeriodMonth').disabled=true;
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+			document.getElementById('sugarRadio_'+rowNumbmerPartial).checked=false;
+			document.getElementById('in_sugarTable_7').readOnly=true;
+			document.getElementById('in_sugarTable_8').readOnly=true;
+			document.getElementById('in_sugarTable_8').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('in_sugarTable_7').className='readonlyInput form101_textfcurr_width textonlyRight';
+		}
+		if(selectedFlagPartial==0)
+		{
+			document.getElementById('hidIsPartial').value = "N";
+		}
+		currentPaymentSugar();
+	}
+}
+/*function fetchSugarDetail(hdrId,obligationId)
+{
+	document.getElementById('sugarDevelopLevyFieldlset').style.display='none';
+	document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+	document.getElementById('txtTotalAmountPayableOTR').value="0";
+	FetchSpecialObligationDtlWeb.fetchSpecialObligationDtlWeb(hdrId,obligationId,function(data){
+		document.getElementById("hidgsonStrForPmtDetailDTO").value=data.gsonStrForPmtDetailDTO;
+		var SugarDetailList=data.pmtSplSugarList;
+		if(SugarDetailList.length>=1){
+			var cntr=0;
+			var tabObj=document.getElementById("sugarDevLevyDetailTable");
+			for(var l=tabObj.rows.length; l >1 ;l--){
+				tabObj.deleteRow(l -1);
+			}	
+			for(var i=0;i<SugarDetailList.length;i++){
+				cntr=parseInt(cntr);
+				var tabRow=tabObj.insertRow(tabObj.rows.length);
+				tabRow.id="sugarDevLevyDetailTable"+cntr;
+				var tabCell=new Array();
+				for (var j=0;j<10;j++){
+					tabCell[j]=tabRow.insertCell(j);
+				}
+				var PmtSplDetailDTO=SugarDetailList[i];
+
+				tabCell[0].innerHTML=cntr+1;
+				tabCell[0].style.textAlign="center";
+				tabCell[0].style.fontSize="11";
+
+				tabCell[1].innerHTML=PmtSplDetailDTO.salesValue;
+				tabCell[1].style.textAlign="center";
+				tabCell[1].style.fontSize="11";
+
+				tabCell[2].innerHTML=convertToKenyanShillingFormatVal(Math.ceil(PmtSplDetailDTO.levyRate),true);
+				tabCell[2].style.textAlign="center";
+				tabCell[2].style.fontSize="11";
+
+				tabCell[3].innerHTML=convertToKenyanShillingFormatVal(Math.ceil(PmtSplDetailDTO.underDecPrevMnthSugar),true);
+				tabCell[3].style.textAlign="right";
+				tabCell[3].style.fontSize="11";
+
+				tabCell[4].innerHTML=convertToKenyanShillingFormatVal(Math.ceil(PmtSplDetailDTO.overDecPrevMnthSugar),true);
+				tabCell[4].style.textAlign="right";
+				tabCell[4].style.fontSize="11";
+
+				tabCell[5].innerHTML=convertToKenyanShillingFormatVal(Math.ceil(PmtSplDetailDTO.penaltySugar),true);
+				tabCell[5].style.textAlign="right";
+				tabCell[5].style.fontSize="11";
+
+				tabCell[6].innerHTML=convertToKenyanShillingFormatVal(Math.ceil(PmtSplDetailDTO.balAdjstSugar),true);
+				tabCell[6].style.textAlign="right";
+				tabCell[6].style.fontSize="11";
+
+				var element=document.createElement('input');
+				element.type='hidden';
+				element.value= PmtSplDetailDTO.hdrId; //dtl id 
+				element.width="0%";
+				tabCell[7].appendChild(element);
+				tabCell[7].style.display="none";
+
+				var element=document.createElement('input');
+				element.type='hidden';
+				element.value=hdrId; 
+				element.width="0%";
+				tabCell[8].appendChild(element);
+				tabCell[8].style.display="none";
+				cntr=cntr+1;
+			}
+			document.getElementById("sugarDevLevyDetailTable").style.display="";
+		}
+
+	});
+	document.getElementById('txtTotalAmountPaidOTR').value=remainingAmountForPartial;
+	document.getElementById('txtTotalAmountPayableOTR').value=remainingAmountForPartial;
+	isPartial="yes";
+}
+ */
+
+function showSuagrPartialTable(partialDetailArray){
+	if(partialDetailArray.length>=1){
+		var cntr = 0;
+		var tabObj = document.getElementById("in_SplObligHdrTbl_4");
+		for(var l = tabObj.rows.length; l >1 ;l--){
+			tabObj.deleteRow(l -1);
+		}	
+		for(var i=0;i<partialDetailArray.length;i++){
+			cntr = parseInt(cntr);
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			tabRow.id="suagrHdrRow_"+cntr;
+			var tabCell = new Array();
+			for (var j=0;j<12;j++){
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			var pmtSplDetailVO = partialDetailArray[i];
+			/*if(document.all)
+			{
+				var element = document.createElement("<input type = 'radio' onclick = 'onSelectSuagrHdrRadio(this);'>");
+				element.setAttribute("name", "sugartRadio");
+				element.setAttribute("id", "sugarRadio_"+cntr);
+				element.setAttribute("value", cntr);					            
+				tabCell[0].appendChild(element);
+
+			}
+			else{
+				var element = document.createElement('input');       
+				element.setAttribute('type', 'radio');     
+				element.setAttribute('name', 'sugartRadio');
+				element.setAttribute('id', 'sugarRadio_'+cntr);
+				element.setAttribute('value', cntr);     
+				element.setAttribute("onclick","javascript:onSelectSuagrHdrRadio(this);");
+				tabCell[0].appendChild(element);
+			}*/
+			var element = document.createElement('input');       
+			element.type ='radio';
+			element.onclick = function () {onSelectSuagrHdrRadio(this);};
+			element.value = cntr;
+			element.id = 'sugarRadio_'+cntr;
+			element.name = "sugarRadio";
+			element.className='bordercl';
+			tabCell[0].appendChild(element); 
+
+			/*	tabCell[0].innerHTML = cntr+1;
+			tabCell[0].style.textAlign="center";
+			tabCell[0].style.fontSize="11";*/
+
+			tabCell[1].innerHTML = pmtSplDetailVO.taxPeriod;
+			tabCell[1].style.textAlign="center";
+			tabCell[1].style.fontSize="11";
+
+			tabCell[2].innerHTML = parseFloat(pmtSplDetailVO.salesValueSugar).toFixed(2) ;
+			tabCell[2].style.textAlign="center";
+			tabCell[2].style.fontSize="11";
+
+			tabCell[3].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.valueOfTaxPayable).toFixed(2),true);
+			tabCell[3].style.textAlign="right";
+			tabCell[3].style.fontSize="11";
+
+			tabCell[4].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.amountPaid).toFixed(2),true);
+			tabCell[4].style.textAlign="right";
+			tabCell[4].style.fontSize="11";
+
+			tabCell[5].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.amountPayable).toFixed(2),true);
+			tabCell[5].style.textAlign="right";
+			tabCell[5].style.fontSize="11";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.bclSplObilgationHdrId;
+			element.width = "0%";
+			tabCell[6].appendChild(element);
+			tabCell[6].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.bclSplObilgationDtlId;
+			element.width = "0%";
+			tabCell[7].appendChild(element);
+			tabCell[7].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.obilgationHdrId;
+			element.width = "0%";
+			tabCell[8].appendChild(element);
+			tabCell[8].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.obilgationDtlId;
+			element.width = "0%";
+			tabCell[9].appendChild(element);
+			tabCell[9].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.fromDate;
+			element.width = "0%";
+			tabCell[10].appendChild(element);
+			tabCell[10].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.toDate;
+			element.width = "0%";
+			tabCell[11].appendChild(element);
+			tabCell[11].style.display = "none";
+			cntr = cntr+1;
+		}
+		document.getElementById("navigationTableSplHdr").style.display = '';
+		document.getElementById("navigationTableSpltbl").style.display = '';
+		document.getElementById("in_SplObligHdrTbl_4").style.display = "";
+	}
+}
+
+function onSelectSuagrHdrRadio(obj)
+{
+	rowNumbmerPartial=obj.value;
+	if(selectedFlagSugar>0 && document.getElementById('hidIsPartial').value != "Y")
+	{
+		alert(cntAddPrevLiab);
+		document.getElementById('landRentRadio_'+rowNumbmerPartial).checked=false;
+	}
+	else
+	{
+		var taxPayerId=document.getElementById('hidTaxPayerId').value;
+		document.getElementById('hidIsPartial').value = "Y";
+		var rowNum = obj.value;
+		objValue=obj.value;
+		var rowRef = document.getElementById("suagrHdrRow_" + rowNum);
+		bclPaymentHdrId = 0;// not of use
+		bclPaymentDtlId = 0 ;// not of use
+
+		bclSplObligHdrId = 0;
+		bclSplObliDtlId = 0;// not of use
+
+		obligationHdrId = 0;// of no use
+		obligationDtlId = 0;// used
+
+		fromDt = null;
+		toDt = null;
+
+		var taxPayableValue;
+		var amountToBePaid;
+
+		if(document.all)
+		{
+			bclSplObligHdrId = (rowRef.getElementsByTagName("INPUT")[1].value);
+			bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[2].value);
+			obligationHdrId = (rowRef.getElementsByTagName("INPUT")[3].value);
+			obligationDtlId = (rowRef.getElementsByTagName("INPUT")[4].value);
+			fromDt = (rowRef.getElementsByTagName("INPUT")[5].value);
+			toDt = (rowRef.getElementsByTagName("INPUT")[6].value);
+			taxperiod=rowRef.getElementsByTagName("TD")[1].innerText;
+			taxPayableValue=rowRef.getElementsByTagName("TD")[3].innerText;
+			amountToBePaid=rowRef.getElementsByTagName("TD")[5].innerText;
+		}
+		else
+		{
+			bclSplObligHdrId = (rowRef.getElementsByTagName("INPUT")[1].value);
+			bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[2].value);
+			obligationHdrId = (rowRef.getElementsByTagName("INPUT")[3].value);
+			obligationDtlId = (rowRef.getElementsByTagName("INPUT")[4].value);
+			fromDt 			= (rowRef.getElementsByTagName("INPUT")[5].value);
+			toDt 			= (rowRef.getElementsByTagName("INPUT")[6].value);
+			taxperiod		= rowRef.getElementsByTagName("TD")[1].textContent;
+			taxPayableValue	= rowRef.getElementsByTagName("TD")[3].textContent;
+			amountToBePaid=rowRef.getElementsByTagName("TD")[5].textContent;
+
+		}
+		startIndexStr="";
+		var year  = fromDt.substring(6);
+		document.getElementById("cmbTaxPeriodYear").value = year;
+		getSelectedMonthOfSelectedYearWeb('cmbTaxPeriodYear','cmbTaxPeriodMonth','false');
+		document.getElementById('hidObligationFromDate').value=fromDt;
+		document.getElementById('hidObligationToDate').value=toDt;
+		document.getElementById("cmbTaxPeriodMonth").value =fromDt+"-"+toDt;
+
+		document.getElementById("in_sugarTable_14").value =fromDt+"-"+toDt;
+		document.getElementById("in_sugarTable_12").value =fromDt;
+		document.getElementById("in_sugarTable_13").value =toDt;
+var parentId=null;
+		FetchSpecialObligationDtlWeb.fetchSpecialObligationDtlWeb(bclSplObliDtlId,sugarObligationId,taxPayerId,parentId,startIndexStr,{async:false,callback:function(data){
+			if(data!=null){
+				var pmtSplDetailVOList=data;
+				if(pmtSplDetailVOList.length>=1 && pmtSplDetailVOList[0].isDataAvailable == "Y"){
+					var pmtSplDetailVO = pmtSplDetailVOList[0];
+					for(var i=4; i<12;i++)
+					{
+						document.getElementById('in_sugarTable_'+i).readOnly=true;
+						if(document.getElementById('in_sugarTable_'+i).className=='form101_textfcurr form101_textfcurr_width textonlyRight')
+						{
+							document.getElementById('in_sugarTable_'+i).className='readonlyInput form101_textfcurr_width textonlyRight';
+						}
+						else
+						{
+							document.getElementById('in_sugarTable_'+i).className='readonlyInput form101_textfcurr_width';
+						}
+					}
+					document.getElementById('cmbTaxPeriodYear').disabled=true;
+					document.getElementById('cmbTaxPeriodMonth').disabled=true;
+					document.getElementById('in_sugarTable_6').readOnly=false;
+					document.getElementById('in_sugarTable_6').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+
+					if(pmtSplDetailVO.salesValueSugar != null ||pmtSplDetailVO.salesValueSugar != ""){
+						document.getElementById('in_sugarTable_4').value = convertToKenyanShillingFormatValWithDecimal((parseFloat(pmtSplDetailVO.salesValueSugar).toFixed(2)),true);
+					}
+					else{
+						document.getElementById('in_sugarTable_4').value = 0;
+					}
+
+					/*if(pmtSplDetailVO.levyRateSugar != null ||pmtSplDetailVO.levyRateSugar != ""){
+						document.getElementById('in_sugarTable_11').value = pmtSplDetailVO.levyRateSugar;
+						document.getElementById('in_sugarTable_11').readOnly=true;
+					}*/
+					if(pmtSplDetailVO.underDecPrevMnthSugar != null ||pmtSplDetailVO.underDecPrevMnthSugar != ""){
+						document.getElementById('in_sugarTable_7').value =convertToKenyanShillingFormatVal(Math.ceil(pmtSplDetailVO.underDecPrevMnthSugar),true);
+					}
+					else{
+						document.getElementById('in_sugarTable_7').value =0;
+					}
+					if(pmtSplDetailVO.overDecPrevMnthSugar != null ||pmtSplDetailVO.overDecPrevMnthSugar != ""){
+						document.getElementById('in_sugarTable_8').value = convertToKenyanShillingFormatVal(Math.ceil(pmtSplDetailVO.overDecPrevMnthSugar),true);
+					}
+					else{
+						document.getElementById('in_sugarTable_8').value = 0;
+					}
+					if(pmtSplDetailVO.penaltySugar != null ||pmtSplDetailVO.penaltySugar != ""){
+						document.getElementById('in_sugarTable_9').value = convertToKenyanShillingFormatVal(Math.ceil(pmtSplDetailVO.penaltySugar),true);
+					}
+					else{
+						document.getElementById('in_sugarTable_9').value = 0;
+					}
+					if(pmtSplDetailVO.balAdjstSugar != null ||pmtSplDetailVO.balAdjstSugar != ""){
+						document.getElementById('in_sugarTable_10').value = convertToKenyanShillingFormatVal(Math.ceil(pmtSplDetailVO.balAdjstSugar),true);
+					}
+					else{
+						document.getElementById('in_sugarTable_10').value = 0;
+					}
+					document.getElementById('in_sugarTable_5').value =convertToKenyanShillingFormatVal(Math.ceil(parseInt(removeCommaFrmInput(taxPayableValue),10)),true);
+
+					document.getElementById('in_sugarTable_6').value =convertToKenyanShillingFormatVal(Math.ceil(parseInt(removeCommaFrmInput(amountToBePaid),10)),true);
+					document.getElementById('in_sugarTable_15').value = bclSplObliDtlId;
+				}
+			}
+		}});
+	}
+}
+function validateSugarDtls(id)
+{
+	var rtnFlag;
+	rtnFlag = validateFormFieldOnEvent(id, paymentRegOTRSugerDevDetailsJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}
+}
+
+function validateSugarBalnceAdjustDtls(id)
+{
+	var rtnFlag;
+	rtnFlag = validateFormFieldOnEvent(id,paymentRegOTRSugerDevAmountDetailsJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}
+}
+function currentPaymentSugar()
+{
+	if((selectedFlagPartial==0))
+	{
+		for(var i=4; i<12;i++)
+		{
+			document.getElementById('in_sugarTable_'+i).readOnly=false;
+			if(document.getElementById('in_sugarTable_'+i).className=='readonlyInput form101_textfcurr_width textonlyRight' || document.getElementById('in_sugarTable_'+i).className=='form101_textfcurr form101_textfcurr_width textonlyRight')
+			{
+				document.getElementById('in_sugarTable_'+i).className='form101_textfcurr form101_textfcurr_width textonlyRight';
+			}
+			else
+			{
+				document.getElementById('in_sugarTable_'+i).className='form101_textfcurr form101_textfcurr_width';
+			}
+		}
+		document.getElementById('cmbTaxPeriodYear').disabled=false;
+		//document.getElementById('cmbTaxPeriodMonth').disabled=false;
+		document.getElementById('in_sugarTable_11').readOnly=true;
+		document.getElementById('in_sugarTable_11').className='readonlyInput form101_textfcurr_width';
+		document.getElementById('in_sugarTable_10').readOnly=true;
+		document.getElementById('in_sugarTable_10').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('in_sugarTable_5').readOnly=true;
+		document.getElementById('in_sugarTable_5').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('hidIsPartial').value = "N";
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_sugarTable_11').value;
+		clear_Page_data('sugarTable','12');
+		document.getElementById('in_sugarTable_11').value=document.getElementById('hidRateOfLevy').value;
+		document.getElementById('cmbTaxPeriodYear').selectedIndex=0;
+		document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+		document.getElementById('in_sugarTable_7').value=0;
+		document.getElementById('in_sugarTable_8').value=0;
+		document.getElementById('in_sugarTable_9').value=0;
+		document.getElementById('in_sugarTable_10').value=0;
+	}
+}
+
+function confirmForPartialSugar()
+{
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		if(selectedFlagPartial==0)
+		{
+			if (confirm(previousLiabilityAddingAlert))
+			{
+				return addValidationSugar();
+			}
+		}
+		else
+		{
+			return addValidationSugar();
+		}
+	}
+	else
+	{
+		return addValidationSugar();
+	}
+}
+
+function isSugarRegistered(){
+	var taxpayerId = document.getElementById('hidTaxPayerId').value;
+	var obligationId = sugarObligationId;
+
+	var taxperiodFromDtSugar = document.getElementById('cmbTaxPeriodMonth').value;
+
+	var PmtSplDetailVO = {
+			taxpayerId  : taxpayerId,
+			obligationId : obligationId,
+
+			taxperiodFromDtSugar : taxperiodFromDtSugar
+	};
+
+	if(isSplObligationRegisteredWeb(PmtSplDetailVO))
+		return true;
+	else
+		return false;
+
+}

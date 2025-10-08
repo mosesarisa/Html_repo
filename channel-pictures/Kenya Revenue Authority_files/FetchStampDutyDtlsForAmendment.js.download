@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchStampDutyDtlsForAmendment'] == 'undefined') this.FetchStampDutyDtlsForAmendment = {};
+
+FetchStampDutyDtlsForAmendment._path = '/KRA-Portal/dwr';
+
+FetchStampDutyDtlsForAmendment.fetchStampDutyDtlsForAmendment = function(p0, p1, callback) {
+  dwr.engine._execute(FetchStampDutyDtlsForAmendment._path, 'FetchStampDutyDtlsForAmendment', 'fetchStampDutyDtlsForAmendment', p0, p1, callback);
+};
+
+

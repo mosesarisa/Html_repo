@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchTaxRateFromTransactionDt'] == 'undefined') this.FetchTaxRateFromTransactionDt = {};
+
+FetchTaxRateFromTransactionDt._path = '/KRA-Portal/dwr';
+
+FetchTaxRateFromTransactionDt.fetchTaxRateFromTransactionDt = function(p0, callback) {
+  dwr.engine._execute(FetchTaxRateFromTransactionDt._path, 'FetchTaxRateFromTransactionDt', 'fetchTaxRateFromTransactionDt', p0, callback);
+};
+
+

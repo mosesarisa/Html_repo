@@ -1,0 +1,240 @@
+function fetchDataforPeanltyPayReg()
+{ 
+	 document.getElementById("peanltyDiv").style.display="block";
+	 document.getElementById("penaltyLiablibilityTbl").style.display = 'none';
+	var cntr = 0;
+	var tabObj = document.getElementById("penaltyLiablibilityTbl");
+	var tabRow = tabObj.insertRow(tabObj.rows.length);
+
+	/* if((tabObj.rows.length-1)>2)
+		{
+		document.getElementById("interestLiabilityRow_0").remove();
+		}*/
+
+	if(document.getElementById('cmbCGTType').value==-1 || document.getElementById('cmbCGTType').value==null || document.getElementById('cmbCGTType').value == "" )
+	{
+		alert("Please select CGT Type.");
+		return false;
+	}
+
+	if(document.getElementById('periodYearPenaltyCGT').value!=null && document.getElementById('periodYearPenaltyCGT').value!='')
+		{
+			var paramArray = new Array();
+			paramArray[0]= document.getElementById('hidTaxPayerId');
+			paramArray[1]=document.getElementById('periodYearPenaltyCGT');
+			paramArray[2]=document.getElementById('periodMonthPenaltyCGT');
+			paramArray[3]=document.getElementById('cmbCGTType');
+		
+		}
+	//document.getElementById("cgtInterest").style.display="none";
+	//document.getElementById("interestLiabilityRow_0").innerHTML="";
+	FetchPenaltyPaymentRegCGTDetails.fetchPenaltyPaymentRegCGTDetails(paramArray[0].value, 
+			paramArray[1].value,paramArray[2].value, paramArray[3].value,{async:false,callback:function(data){
+			if(data!=null){
+				if(data.errorMsg!=null && data.errorMsg!="")
+				{
+					alert(data.errorMsg);
+					
+				}
+				else{
+					//document.getElementById("cgtInterest").style.display="block";
+													var cntr = 0;
+										             cntr = parseInt(cntr);
+										    		tabRow.id="penaltyLiabilityRow_"+cntr;
+													var tabCell = new Array();
+													for (var j=0;j<7;j++){
+														tabCell[j] = tabRow.insertCell(j);
+													}
+													
+					
+												 		var element = document.createElement('input');       
+												 		 
+												 		
+				                                       
+												 		tabCell[0].innerHTML =data.cgtType;
+														tabCell[0].style.textAlign="center";
+														tabCell[0].style.fontSize="11";
+													 	
+													 	tabCell[1].innerHTML = data.taxPeriod;
+													 	tabCell[1].style.textAlign="center";
+													   tabCell[1].style.fontSize="11";
+													   tabCell[1].id="taxPeriod";
+					 
+					                                    tabCell[2].innerHTML =convertToKenyanShillingFormatVal(data.amountPayable,false);
+					                                    tabCell[2].style.textAlign="right";
+													   tabCell[2].style.fontSize="11";
+					                                    
+					                                 
+					                  
+
+				                                       var elementTextBox = document.createElement("input");
+														elementTextBox.type ='text';
+														elementTextBox.name='actualLiabilityAmount_'+cntr;
+														elementTextBox.id='actualLiabilityAmount_'+cntr;
+														elementTextBox.setAttribute('maxlength', 15);
+														elementTextBox.style.textAlign = 'center'; 
+														tabCell[3].appendChild(elementTextBox);
+														tabCell[3].style.textAlign="right";
+														tabCell[3].style.fontSize="11";
+														
+														
+														 tabCell[4].innerHTML =data.taxPeriodFromCgt;
+						                               
+														   
+														 tabCell[5].innerHTML =data.taxPeriodToCgt;
+						                                 
+														document.getElementById('in_cgtPenaltyTable_3').value=tabCell[0].innerHTML;
+													    document.getElementById('in_cgtPenaltyTable_4').value=tabCell[1].innerHTML;
+													    document.getElementById('in_cgtPenaltyTable_5').value=tabCell[2].innerHTML;
+													    document.getElementById('in_cgtPenaltyTable_7').value=tabCell[4].innerHTML;
+														document.getElementById('in_cgtPenaltyTable_8').value=tabCell[5].innerHTML;
+													
+														//$("#interestLiabilityRow_0").hide();
+						}
+			}
+			else{
+				alert("Error fetching data.");
+			}
+	}});
+}
+
+function addvalidationPenaltyCgt(){
+	if(checkduplicateRowCgtPenaltyReg())
+	{
+
+		
+		var amountPayable=parseFloat(removeCommaFrmInput(document.getElementById('in_cgtPenaltyTable_5').value));
+		var amount=parseFloat(removeCommaFrmInput(document.getElementById("in_cgtPenaltyTable_6").value));
+		
+		if(isNaN(amount))
+		{
+			alert("Please enter valid amount to be paid.");
+			return false;
+		}
+		if(amount<0 || amount == "")
+			{
+				alert("Amount must be greater than 0");
+				return false;
+			}
+		else if(amount>amountPayable)
+			{
+				alert("Amount Should be less than amount Payable");
+				return false;
+			}
+		else
+			{
+			if(addConfirm('a_cgtPenaltyTable'))
+			{
+						var tabObj = document.getElementById("penaltyLiablibilityTbl");
+						var cntr = 0;
+											
+							//document.getElementById('in_cgtInterestTable_6').value=document.getElementById('actualLiabilityAmount_' + cntr).value;		
+			
+							if(document.getElementById('a_cgtPenaltyTable').innerHTML!="Modify")
+							{
+							   
+								var hideCols='7,8';
+								addrow('cgtPenaltyTable', '4', '6','6','','','hideCols','N');
+								document.getElementById("txtTotalAmountPaidOblig").value=removeCommaFrmInput(document.getElementById('total_cgtPenaltyTable_6').value);
+								//document.getElementById("cgtInterest").style.display="none";
+								clearFielsCGTPenaltyFieldSet();
+								document.getElementById("cmbCGTType").disabled = true;
+								return true;
+								
+							}
+							else
+							{
+								return false;
+							}
+			}
+			else
+				{
+					alert(validObligation);
+					return false;
+				}
+					
+		}
+			
+		
+	}
+
+}
+
+function checkAmountPenaltyPayReg()
+{
+	var amountToBePaid=document.getElementById("in_cgtPenaltyTable_6").value;
+	var result=convertToKenyanShillingFormatVal(amountToBePaid,true);
+	document.getElementById("in_cgtPenaltyTable_6").value=result;
+	
+	
+}
+
+function checkduplicateRowCgtPenaltyReg()
+{
+	/*var tabObj=document.getElementById("cgtPenaltyTable");
+	var rows=tabObj.rows.length;
+	if(rows==1)
+	{
+		return true;
+	}
+	else
+	{
+
+		for(var i = 1, n = tabObj.rows.length; i <n; i++)
+			{
+				if((document.getElementById('id_td_cgtPenaltyTable_'+i+'_3').innerText)==(document.getElementById('in_cgtPenaltyTable_3').value))
+				{
+					alert("You have already Added Details for this Tax Period");
+					clear_table('cgtPenaltyTable','3');
+					return false;
+				}
+			}
+	}
+	return true;*/
+	
+	var table = document.getElementById('cgtPenaltyTable');  
+	//var assmntNo = document.getElementById('in_RentIncomeWHTAdditionalAssmntTable_3').value;
+	var taxPeriod= document.getElementById('in_cgtPenaltyTable_3').value;
+		if(!(table.rows.length==1))
+		{ 	
+			for (var i = 1, n = table.rows.length; i <n; i++) 
+			{ 
+				modify=trim(table.rows[i].cells[2].getElementsByTagName('A')[0].innerHTML);
+				if((trim(document.getElementById('id_temp_'+'cgtPenaltyTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&
+					 (table.rows[i].cells[4].innerHTML==taxPeriod))
+				{
+					alert("You already added this details.");
+					return false;
+				}
+			}
+		}
+		return true;
+}
+
+function beforeModifyClickedFunctionPenalty(){
+	var amountPayable=parseFloat(removeCommaFrmInput(document.getElementById('in_cgtPenaltyTable_4').value));
+	var amount=parseFloat(removeCommaFrmInput(document.getElementById("in_cgtPenaltyTable_5").value));
+	
+	if(isNaN(amount))
+	{
+		alert("Please enter valid amount to be paid.");
+		return false;
+	}
+	else if(amount<0 || amount == "")
+		{
+			alert("Amount must be greater than 0");
+			return false;
+		}
+	else if(amount>amountPayable)
+		{
+			alert("Amount Should be less than amount Payable");
+			return false;
+		}
+	return true;
+
+}
+
+function clearFielsCGTPenaltyFieldSet(){
+	document.getElementById("periodYearPenaltyCGT").selectedIndex=0;
+	document.getElementById("periodMonthPenaltyCGT").selectedIndex=0;
+}

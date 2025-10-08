@@ -1,0 +1,2401 @@
+
+var partialDetailArray = new Array();
+
+var bclPaymentHdrId;
+var bclPaymentDtlId;
+
+var bclSplObligHdrId;
+var bclSplObliDtlId;
+
+var obligationHdrId;
+var obligationDtlId;
+
+var fromDt;
+var toDt;
+
+var accountNoAwwda;
+var billPeriodAwwda;
+var invoiceNoAwwda;
+var trInvoiceNoAwwda;
+var payableAmountAwwda;
+var amountAwwdaPaid;
+var amountAwwdaToBePaid;
+var adjustmentValue;
+var adjustmentType;
+
+var remainingAmountForPartial;
+var isPartial="No";
+var specialTaxObligation=0;
+var specObligIdPrev;
+var demo; // remove later
+var flagPassFromIf= "n";
+var paymentRegOTRDetailsJson={"field":[{"name":"cmbTaxSubHead","rule":[{"required":"y","dispName":"Special Tax Obligation"}]}]};
+var paymentRegOTRPeriodJson={"field":[{"name":"cmbTaxPeriod","rule":[{"required":"y","dispName":"Tax Period"}]}]};
+var paymentRegOTRPeriodMonthJson={"field":[{"name":"cmbTaxPeriodMonth","rule":[{"required":"y","dispName":"Tax Period"}]}]};
+var paymentRegOTRPeriodYearJson={"field":[{"name":"cmbTaxPeriodYear","rule":[{"required":"y","dispName":"Tax Period"}]}]};
+var paymentRegOTRPaymentDetailsJson={"field":[{"name":"txtTotalAmountPayableOTR","rule":[{"required":"y","dispName":"Total Amount Payable ","type":"amount","maxLength":"20"}]},
+                                              {"name":"txtTotalAmountPaidOTR","rule":[{"required":"y","dispName":"Total Amount to be Paid","type":"amount","maxLength":"20"}]}]};
+
+function onChangeSpecObligDetails(obj)
+{
+	selectedFlagPartial=0;
+	var value=obj.value;
+	clearAllPartialTable();
+	document.getElementById('navigationTableSplHdr').style.display='none'; 
+	document.getElementById('hidObligationId').value = value;
+	document.getElementById('hidObligationFromDate').value="";
+	document.getElementById('hidObligationToDate').value="";
+	document.getElementById('hidNavigationFlag').value="5";
+	if(clearDetailsOfLandRent())
+	{
+
+	}
+	else if (clearDetailsOfAdvance())
+	{
+
+	}
+	else if (clearDetailsOfWidows())
+	{
+
+	}
+	else if (clearDetailsOfSugar())
+	{
+
+	}
+	else if (clearDetailsOfStandard())
+	{
+
+	}
+	else if (clearDetailsOfStampDuty())
+	{
+
+	}
+	else if (clearDetailsOfNSSF())
+	{
+
+	}
+	else
+	{
+		specialTaxObligation=document.getElementById('cmbTaxSubHead').selectedIndex;
+		currentPaymentLandRent();
+		currentPaymentAdvance();
+		currentPaymentSugar();
+		currentPaymentStampDuty();
+		currentPaymentStandard();
+		currentPaymentWidow();
+		//currentPaymentAwwda();
+		if(value==selectOblCode)
+		{
+			incError=0;
+			clearAllFields();		
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='none';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('gpbtFieldSet').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('tdLblTaxPeriod').style.display='none'; 
+
+			document.getElementById('CmbTaxPeriodYearLabelOTRTd').style.display='none'; 
+			document.getElementById('tdCmbTaxPeriodYearOTR').style.display='none'; 
+			document.getElementById('CmbTaxPeriodMonthLabelOTRTd').style.display='none'; 
+
+			document.getElementById('tdCmbOtrPeriod').style.display='none'; 
+			document.getElementById('tdLblTaxPeriod1').style.display=''; 
+			document.getElementById('tdCmbOtrPeriod1').style.display=''; 
+			document.getElementById('widowsFieldSet').style.display='none';
+			isPartial="No";
+			hideTab('TabView', 5);
+			document.getElementById('btnTbl').style.display="";
+		}
+		else if(value==landRentObligationId)
+		{//lend rent
+			incError=0;
+			document.getElementById('landRentDiv').style.display='';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='none';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			document.getElementById('gpbtFieldSet').style.display='none';
+			//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').style.display=''; 
+			document.getElementById('lblTotalAmountPayable').style.display=''; 
+			document.getElementById('lblasterisk').style.display='';  
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('widowsFieldSet').style.display='none';
+			document.getElementById('btnTbl').style.display="";
+			clearNevigationData();
+			getYearsOfDemandForLandRentWeb();
+			selectedFlagPartial=0;
+			hideTab('TabView', 5);
+			if(document.getElementById('isWithoutLogin').value == "N")
+				fetchSplOblHdrWebByObligation("N");
+		}
+		else if(value==advanceObligationId)
+		{//advance Tax
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='none';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			document.getElementById('gpbtFieldSet').style.display='none';
+			//document.getElementById('AdvanceTaxpaymentstDiv').style.display='';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').style.display='none'; 
+			document.getElementById('txtTotalAmountPaidOTR').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('lblTotalAmountPayable').style.display='none';
+			document.getElementById('lblTotalAmountPaid').style.display='none';
+			document.getElementById('lblasterisk').style.display='none';
+			document.getElementById('asrk').style.display='none';
+			document.getElementById('hide1').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('widowsFieldSet').style.display='none';
+			document.getElementById("totalAmountPaidTbl").style.display='none';
+			document.getElementById('btnTbl').style.display="";
+			clearNevigationData();
+			selectedFlagPartial=0;
+			incError=0;
+			hideTab('TabView', 5);
+			if(document.getElementById('cmbPaymentType').value != VTDP){  //modified by Mingu,Kirui and Kiprono to allow Advance Tax for VTDP::START
+				getFistAndNextYearWeb();
+			} //modified by Mingu,Kirui and Kiprono to allow Advance Tax for VTDP::END
+			if(document.getElementById('isWithoutLogin').value == "N")
+				fetchSplOblHdrWebByObligation("N");
+		}
+		else	if(value==stampDutyObligationId)
+		{//stamp duty
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			document.getElementById('gpbtFieldSet').style.display='none';
+			//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('widowsFieldSet').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=false;
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').style.display='none';
+			document.getElementById('lblasterisk').style.display='none';
+			document.getElementById('lblTotalAmountPayable').style.display='none'; 
+			document.getElementById('txtTotalAmountPaidOTR').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('btnTbl').style.display="";
+			clearNevigationData();
+			selectedFlagPartial=0;
+			isPartial="No";
+			incError=0;
+			hideTab('TabView', 5);
+			//if(document.getElementById('isWithoutLogin').value == "N")
+				//fetchSplOblHdrWebByObligation("N");
+		}
+		else if(value ==widowAndChildrenObligationId)
+		{//widow
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='none';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('gpbtFieldSet').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').style.display=''; 
+			document.getElementById('lblTotalAmountPayable').style.display=''; 
+			document.getElementById('lblasterisk').style.display='';
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('widowsFieldSet').style.display='';
+			document.getElementById('btnTbl').style.display="";
+			clearNevigationData();
+			selectedFlagPartial=0;
+			isPartial="No";
+			incError=0;
+			hideTab('TabView', 5);
+			dwr.util.removeAllOptions('cmbTaxPeriodYear');
+			GetYearFromEffetciveYear('cmbTaxPeriodYear');
+			if(document.getElementById('isWithoutLogin').value == "N")
+				fetchSplOblHdrWebByObligation("N");
+		}
+		else if(value ==sugarObligationId)
+		{//suagr development levy
+
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='none';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			document.getElementById('gpbtFieldSet').style.display='none';
+			//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display=''; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').style.display=''; 
+			document.getElementById('lblTotalAmountPayable').style.display=''; 
+			document.getElementById('lblasterisk').style.display='';
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('widowsFieldSet').style.display='none'; 
+			dwr.util.removeAllOptions('cmbTaxPeriodYear');
+			GetYearFromEffetciveYear('cmbTaxPeriodYear');
+			document.getElementById('btnTbl').style.display="";
+			clearNevigationData();
+			selectedFlagPartial=0;
+			isPartial="No";
+			incError=0;
+			hideTab('TabView', 5);
+			if(document.getElementById('isWithoutLogin').value == "N")
+				fetchSplOblHdrWebByObligation("N");
+		}
+		else if(value ==standardObligationId)
+		{//standard development levy
+			//added by Mingu for iTax - KEBS Integration :: START
+			var kebsEntryNo = document.getElementById('kebsEntryNo').value;
+			//added by Mingu for iTax - KEBS Integration :: END
+			if(kebsEntryNo != ""){ //added by Mingu for iTax - KEBS Integration :: START
+				document.getElementById('landRentDiv').style.display='none';
+				document.getElementById('stampDutyDiv').style.display='none';
+				document.getElementById('stampDutyRadioDiv').style.display='none';
+				document.getElementById('stampDutyAckNoDiv').style.display='none';
+				//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+				document.getElementById('SugarDevelopDiv').style.display='none'; 
+				document.getElementById('gpbtFieldSet').style.display='none';
+				document.getElementById('StandLevyDiv').style.display='';
+				document.getElementById('awwdaDiv').style.display='none';
+
+				document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+				document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+				document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+				document.getElementById('lblTotalAmountPayable').style.display=''; 
+				document.getElementById('txtTotalAmountPayableOTR').style.display=''; 
+				document.getElementById('lblasterisk').style.display='';
+				document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+				document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+				document.getElementById('txtTotalAmountPayableOTR').value="0";
+				isPartial="No";
+				incError=0;
+				hideTab('TabView', 5);
+				document.getElementById('standardLevyTbl').style.display='';
+				document.getElementById('standardLevyAdd').style.display='';
+				document.getElementById('standardLevyTbl1').style.display='';	
+				document.getElementById('widowsFieldSet').style.display='none'; 
+				dwr.util.removeAllOptions('cmbTaxPeriodYear');
+				document.getElementById('btnTbl').style.display="";
+				GetYearFromEffetciveYear('cmbTaxPeriodYear');
+				selectedFlagPartial=0;
+				clearNevigationData();
+				if(document.getElementById('isWithoutLogin').value == "N")
+					fetchSplOblHdrWebByObligation("N");
+				//added by Mingu for iTax - KEBS Integration :: START
+				document.getElementById('in_standardLevyDtl1_4').value = kebsEntryNo;
+				//added by Mingu for iTax - KEBS Integration :: END
+			}
+			//added by Mingu for iTax - KEBS Integration :: START
+			else{
+				alert("The Taxpayer PIN is not registered in KEBS Information Management System. " +
+						"Kindly visit the site and register your PIN.");
+				document.paymentRegForm.action="main.htm?actionCode=showOnlineServicesHomeLnclick";
+				document.paymentRegForm.submit();
+			}
+			//added by Mingu for iTax - KEBS Integration :: END
+					
+		} else if(value ==GPBTobligationId)    // Added by Sanidhya (1037034) for GPBT on 06/02/2017
+		{
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='none';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('widowsFieldSet').style.display='none'; 
+			document.getElementById('txtTotalAmountPaidOTR').style.display='none';
+			document.getElementById('txtTotalAmountPayableOTR').style.display='none'; 
+			document.getElementById('lblTotalAmountPayable').style.display='none'; 
+			document.getElementById('lblTotalAmountPaid').style.display='none'; 
+			document.getElementById('lblasterisk').style.display='none';
+			document.getElementById('asrk').style.display='none';
+			document.getElementById('lblTotalAmountPaid').style.display='none';
+			/*document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";*/
+			document.getElementById('btnTbl').style.display="";
+			clearNevigationData();
+			selectedFlagPartial=0;
+			isPartial="No";
+			incError=0;
+			hideTab('TabView', 5);
+			dwr.util.removeAllOptions('cmbTaxPeriodYearGPBT');
+			GetYearFromEffetciveYear('cmbTaxPeriodYearGPBT');
+			/*if(document.getElementById('isWithoutLogin').value == "N")
+				fetchSplOblHdrWebByObligation("N");*/
+		}
+		else if(value ==housingLevy)    // Added by Sanidhya (1037034) for GPBT on 06/02/2017
+		{
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('widowsFieldSet').style.display='none'; 
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('lblTotalAmountPayable').style.display=''; 
+			document.getElementById('txtTotalAmountPayableOTR').style.display=''; 
+			document.getElementById('lblasterisk').style.display='';
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			/*document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";*/
+			/*document.getElementById('btnTbl').style.display="";
+			clearNevigationData();
+			selectedFlagPartial=0;
+			isPartial="No";
+			incError=0;
+			hideTab('TabView', 5);*/
+			dwr.util.removeAllOptions('cmbTaxPeriodYear');
+			GetYearFromEffetciveYear('cmbTaxPeriodYear');
+			/*if(document.getElementById('isWithoutLogin').value == "N")
+				fetchSplOblHdrWebByObligation("N");*/
+		}else if(value ==awwdaId)
+			{
+			var pinNo=document.getElementById("txtPin").value;
+			fetchAccountNoByPinAWWDA.fetchAccountNoByPinAWWDA(pinNo,{async:false,callback: function(data){
+
+				if(data != '' &&  data != null ){
+					document.getElementById('landRentDiv').style.display='none';
+					document.getElementById('stampDutyDiv').style.display='none';
+					document.getElementById('stampDutyRadioDiv').style.display='none';
+					document.getElementById('stampDutyAckNoDiv').style.display='none';
+					//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+					document.getElementById('SugarDevelopDiv').style.display='none'; 
+					document.getElementById('gpbtFieldSet').style.display='none';
+					document.getElementById('StandLevyDiv').style.display='none';
+					document.getElementById('awwdaDiv').style.display='';
+					document.getElementById('AwwdaFieldset').style.display = 'none';
+
+					document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+					document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+					document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+					document.getElementById('lblTotalAmountPayable').style.display=''; 
+					document.getElementById('txtTotalAmountPayableOTR').style.display=''; 
+					document.getElementById('lblasterisk').style.display='';
+					document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+					document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+					document.getElementById('txtTotalAmountPayableOTR').value="0";
+					isPartial="No";
+					incError=0;
+					hideTab('TabView', 5);
+					document.getElementById('standardLevyTbl').style.display='none';
+					document.getElementById('standardLevyAdd').style.display='none';
+					document.getElementById('standardLevyTbl1').style.display='none';	
+					document.getElementById('widowsFieldSet').style.display='none'; 
+					dwr.util.removeAllOptions('cmbTaxPeriodYear');
+					document.getElementById('btnTbl').style.display="";
+					GetYearFromEffetciveYear('cmbTaxPeriodYear');
+					selectedFlagPartial=0;
+					clearNevigationData();
+					if(document.getElementById('isWithoutLogin').value == "N")
+						fetchSplOblHdrWebByObligation("N");
+				
+						
+				}else{
+					alert("The Taxpayer PIN is not registered in Athi Water Works Development Agency System. " +
+							"Kindly visit the Athi Water and register your PIN.");
+					document.paymentRegForm.action="main.htm?actionCode=showOnlineServicesHomeLnclick";
+					document.paymentRegForm.submit();
+				}
+				}});
+			
+				
+						
+		}
+	
+	
+	// Added by hzora for NITALevy on 01/09/2020
+		else if(value ==42)      
+		{
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('widowsFieldSet').style.display='none'; 
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('lblTotalAmountPayable').style.display=''; 
+			document.getElementById('txtTotalAmountPayableOTR').style.display=''; 
+			document.getElementById('lblasterisk').style.display='';
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			dwr.util.removeAllOptions('cmbTaxPeriodYear');
+			GetYearFromEffetciveYear('cmbTaxPeriodYear');
+		}
+		
+		//START:::::Added for PPRA - 07/2024
+		else if(value ==46)
+		{
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='none';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none';
+			document.getElementById('awwdaDiv').style.display='none';
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('gpbtFieldSet').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').style.display=''; 
+			document.getElementById('lblTotalAmountPayable').style.display=''; 
+			document.getElementById('widowsFieldSet').style.display='none';
+			document.getElementById('capacityBuildingLevyFieldSet').style.display='';
+			document.getElementById('lblasterisk').style.display='';
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('btnTbl').style.display="";
+			clearNevigationData();
+			selectedFlagPartial=0;
+			isPartial="No";
+			incError=0;
+			hideTab('TabView', 5);
+			dwr.util.removeAllOptions('cmbTaxPeriodYear');
+			GetYearFromEffetciveYear('cmbTaxPeriodYear');
+			if(document.getElementById('isWithoutLogin').value == "N")
+				fetchSplOblHdrWebByObligation("N");
+		}
+		
+		//END:::::Added for PPRA - 07/2024
+
+	}
+}
+
+
+function getFistAndNextYearWeb()
+{
+	var noOfPrevYear=0;
+	var noOfNextYear=1;
+	var currentYear=true;
+	if(document.getElementById("cmbTaxSubHead").selectedIndex!= 0)
+	{
+		GetFistAndNextYearWeb.getFistAndNextYearWeb(noOfPrevYear,noOfNextYear,currentYear,function(data) {
+			if(data!=null){
+				if(data.length>1){
+					dwr.util.removeAllOptions('cmbTaxPeriod');
+					var oOption = document.createElement("OPTION"); 
+					oOption.text="--Select--"; 
+					oOption.value="-1"; 
+					document.getElementById("cmbTaxPeriod").add(oOption); 
+					dwr.util.addOptions('cmbTaxPeriod',data,'fromDate','toDate');
+					//onChangecmbTaxSubHead(SpecObligId);
+				}
+				else{
+
+					alert(noDuePayment);
+				}
+			}
+		});
+	}
+}
+function getAllMonthOfCurrentYearWeb()
+{
+	if(document.getElementById("cmbTaxSubHead").selectedIndex!= 0)
+	{
+		GetAllMonthOfCurrentYearWeb.getAllMonthOfCurrentYearWeb(function(data) {
+			if(data!=null){
+				if(data.length>1){
+					dwr.util.removeAllOptions('cmbOtrPeriod');
+					var oOption = document.createElement("OPTION"); 
+					oOption.text="--Select--"; 
+					oOption.value="-1"; 
+					document.getElementById("cmbOtrPeriod").add(oOption); 
+					dwr.util.addOptions('cmbOtrPeriod',data,'fromDate','toDate');
+					//onChangecmbTaxSubHead(SpecObligId);
+				}
+				else{
+					alert(noDuePayment);
+				}
+			}
+		});
+	}
+}
+
+function getYearsOfDemandForLandRentWeb()
+{
+	//alert(document.getElementById('hidEffectiveDt').value);
+	var effectiveDate=document.getElementById('hidEffectiveDt').value;
+	effectiveYear=parseInt(effectiveDate.substr(6, effectiveDate.length),10);
+	var curdate = new Date();
+	var curyear = parseInt(curdate.getFullYear());
+	var noOfYears=parseInt(curyear,10)-parseInt(effectiveYear,10)+1;
+	GetYearsOfDemandForLandRentWeb.getYearsOfDemandForLandRentWeb (effectiveDate,noOfYears,function(data) {
+		if(data!=null){
+			if(data.length>0){
+				dwr.util.removeAllOptions('in_landRentTable_10');
+				var oOption = document.createElement("OPTION"); 
+				oOption.text="--Select--"; 
+				oOption.value="-1"; 
+				document.getElementById("in_landRentTable_10").add(oOption); 
+				dwr.util.addOptions('in_landRentTable_10',data,'fromDate','toDate');
+				//onChangecmbTaxSubHead(SpecObligId);
+			}
+			else{
+				alert(noDuePayment);
+			}
+		}
+	});
+}
+function savePaymentDetailOTR()
+{
+	value=document.getElementById('cmbTaxSubHead').value;
+	// this is check first because anding it with jsonString validation it goes to error tab but not showing error place....
+	if(validateFormFields(paymentRegOTRDetailsJson))
+	{
+		hideTab('TabView',5);
+		resetErrorList();
+		incError=0;
+		if (isPartial=="yes") 
+		{
+			if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+			{
+				alert(totalAmtPayebleGreaterThenZero);
+				return false;
+			}
+			if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+			{
+				alert(totalAmtGreaterThenZero);
+				return false;
+			}
+			if(saveConfirm())
+			{
+				document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+				document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+				paymentRegFormSubmitForm("saveObligationDetail");
+				return true;
+			}
+		} 
+		else if(value==landRentObligationId)
+		{ 
+
+			if(modifyFlagLandRent == 1)
+			{
+				alert(firstModify);
+				return false;
+			}
+			else
+			{ 
+				if(landRentTableCounter>0)
+				{
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+					{
+						alert(totalAmtPayebleGreaterThenZero);
+						return false;
+					}
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+					{
+						alert(totalAmtGreaterThenZero);
+						return false;
+					}
+					if(saveConfirm())
+					{
+						document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+						document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+						paymentRegFormSubmitForm("saveObligationDetail");
+						return true;
+					}
+				}
+				else
+				{
+					alert(atleastOneLandRent);
+					return false;
+				}
+
+			}
+		}
+		else if(value==advanceObligationId)
+		{
+
+			if(modifyFlagAdvanceTax == 1 || modifyFlagAdvance == 1)
+			{
+				alert(firstModify);
+				return false;
+			}
+			else
+			{
+				if(selectedFlagAdvance>0)
+				{
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+					{
+						alert(totalAmtPayebleGreaterThenZero);
+						return false;
+					}
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+					{
+						alert(totalAmtGreaterThenZero);
+						return false;
+					}
+					if(saveConfirm())
+					{
+						document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+						document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+						paymentRegFormSubmitForm("saveObligationDetail");
+						return true;
+					}
+				}
+				else
+				{
+					alert(atleastOneVehicle);
+					return false;
+				}
+			}
+		}
+
+		else if(value==sugarObligationId)
+		{
+			if(modifyFlagSugar == 1)
+			{
+				alert(firstModify);
+				return false;
+			}
+			else
+			{
+				if(selectedFlagSugar>0)
+				{
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+					{
+						alert(totalAmtPayebleGreaterThenZero);
+						return false;
+					}
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+					{
+						alert(totalAmtGreaterThenZero);
+						return false;
+					}
+					if(saveConfirm())
+					{
+						document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+						document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+						paymentRegFormSubmitForm("saveObligationDetail");
+						return true;
+					}
+				}
+				else
+				{
+					alert(atleastOneSugarDev);
+					return false;
+				}
+			}
+		}
+		else if(value==standardObligationId)
+		{ 
+			if(modifyFlagStandardLevy2 == 1 || modifyFlagStandardLevy3 == 1 || modifyFlagStandardLevy4 == 1 || modifyFlagStandardLevy5 == 1 || modifyFlagStandardLevy6 == 1 || modifyFlagStandardLevy1 == 1)
+			{
+				alert(firstModify);
+				return false;
+			}
+			else
+			{
+				if(document.getElementById('hidIsPartial').value == "Y")
+				{
+					if(saveConfirm())
+					{
+						document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+						document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+						paymentRegFormSubmitForm("saveObligationDetail");
+						return true;
+					}
+				}
+				else
+				{
+					if((selectedFlagStandardLevy2>0 ||selectedFlagStandardLevy3>0 ||selectedFlagStandardLevy4>0 ||selectedFlagStandardLevy5>0 ||selectedFlagStandardLevy6>0 )&&(selectedFlagStandardLevy1>0))
+					{
+						if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+						{
+							alert(totalAmtPayebleGreaterThenZero);
+							return false;
+						}
+						if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+						{
+							alert(totalAmtGreaterThenZero);
+							return false;
+						}
+						if(checkAmtToBePaid())
+						{
+							if(saveConfirm())
+							{
+								document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+								document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+								paymentRegFormSubmitForm("saveObligationDetail");
+								return true;
+							}
+						}
+					}
+					else
+					{
+						alert(atleastOneStdLevy);
+						return false;
+					}
+				}
+			}
+		}
+
+		else if(value==widowAndChildrenObligationId)
+		{
+			if( modifyFlagWidow == 1)
+			{
+				alert(firstModify);
+				return false;
+			}
+			else
+			{
+				if(selectedFlagWidow>0)
+				{
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+					{
+						alert(totalAmtPayebleGreaterThenZero);
+						return false;
+					}
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+					{
+						alert(totalAmtGreaterThenZero);
+						return false;
+					}
+					if(saveConfirm())
+					{
+						document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+						document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+						paymentRegFormSubmitForm("saveObligationDetail");
+						return true;
+					}
+				}
+				else
+				{
+					alert(atleastOneWidowChild);
+					return false;
+				}
+			}
+		}
+
+		else if(value==stampDutyObligationId)
+		{
+			var instrumentValue = document.getElementById("cmbTnstrumnetType").value.charAt(0);
+
+			if(selectedFlagPartial!=0 && document.getElementById('hidIsPartial').value == "Y")
+			{
+				if(saveConfirm())
+				{			
+					document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+					document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+					createSkipFieldForAddRow('transferorDetailTable','paymentRegForm');
+					createSkipFieldForAddRow('transfereeDetailTable','paymentRegForm');
+					paymentRegFormSubmitForm("saveObligationDetail");
+					 return true;
+				}
+			}
+			else
+			{
+
+				{
+					if(selectedFlagTransferor>0)
+					{
+						//if(selectedFlagTransferee>0)
+						{
+							if (validateFormFields(paymentRegOTRStampDutyDetailsJson)) 
+							{
+								hideTab('TabView',5);
+								resetErrorList();
+								incError=0;
+								var checkDuplicateFlag = isStampDutyRegistered();
+
+								if(checkDuplicateFlag==false)
+								{
+									return false;
+								}
+								if(removeCommaFrmInput(document.getElementById("txtDeclaredValue").value)>0)
+								{
+									if(instrumentValue == 'r' ||instrumentValue == 'R')
+									{
+										if(selectedFlagTransferee>0)
+										{
+
+											tabObjTr = document.getElementById('TransfereeDetailTab');
+											var logedInPin = document.getElementById('txtPin').value;
+
+											for ( var i = 1, n = tabObjTr.rows.length; i < n; )
+											{
+												if ((document.getElementById('id_temp_TransfereeDetailTab_' + i
+														+ '_1').value) == "Delete"
+															&& (trim(tabObjTr.rows[i].cells[3].innerHTML) == trim(logedInPin))){
+
+													if (validateFormFields(paymentRegOTRStampDutyRequiredDetailsJson)) 
+													{
+														hideTab('TabView',5);
+														resetErrorList();
+														incError=0;
+														if(document.getElementById("txtTotalAmountPayableOTR").value<=0)
+														{
+															alert(totalAmtPayebleGreaterThenZero);
+															return false;
+														}
+														if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+														{
+															alert(totalAmtGreaterThenZero);
+															return false;
+														}
+														var rate = document.getElementById('txtStampDutyRate').value;
+														if(rate < 0 || rate > 100 || rate == "")
+														{
+															alert('Please enter value between 0 to 100 in tax rate field');
+															document.getElementById('txtStampDutyRate').value = '';
+															return false;
+														}
+
+														//Added to check if user has input proper ackno or not
+														//commented to make acknowledgement number field optional in case of twining as per the issue reported by onsite:start
+														/*for(var j=0;j<stampDutyLookupCode.length;j++)
+														{
+															var codes =  stampDutyLookupCode[j].value;
+
+															var selectedValueofCodeValue =  document.getElementById('cmbTnstrumnetType').value;
+
+															if(codes == selectedValueofCodeValue)
+															{
+																if(document.getElementById("ackNoForTwining").value==null || 
+																		document.getElementById("ackNoForTwining").value=='')
+																{
+																	alert("Please enter proper acknowledgement number to proceed.");
+																	return false;
+																}
+															}
+														}*///commented to make acknowledgement number field optional in case of twining as per the issue reported by onsite:end
+
+														if(saveConfirm())
+														{
+															document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+															document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+															document.getElementById("BRN").value=removeCommaFrmInput(document.getElementById("BRN").value);
+															createSkipFieldForAddRow('TranferorDetailTab','paymentRegForm');
+															paymentRegFormSubmitForm("saveObligationDetail");
+															 return true;
+														}
+														else{
+															return false;
+														}
+													}
+													else
+													{
+														errorPage();
+														return false;
+													}
+
+												}
+												else{
+													i++;
+
+												}
+											}
+											alert('Transferee/Buyer Details should contain details of the Taxpayer for whom Payment slip will be generated.');
+											return false;
+										}
+										else
+										{
+											alert(atleastOneOptionTransferee);
+											return false;
+										}
+
+//										if (validateFormFields(paymentRegOTRStampDutyRequiredDetailsJson)) 
+//										{
+//										hideTab('TabView',5);
+//										resetErrorList();
+//										incError=0;
+//										if(document.getElementById("txtTotalAmountPayableOTR").value<=0)
+//										{
+//										alert(totalAmtPayebleGreaterThenZero);
+//										return false;
+//										}
+//										if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+//										{
+//										alert(totalAmtGreaterThenZero);
+//										return false;
+//										}
+//										if(saveConfirm())
+//										{
+//										document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+//										document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+//										document.getElementById('cmdSaveOblig').disabled=true;
+//										document.getElementById('cmdClearOblig').disabled=true;
+//										document.paymentRegForm.action="paymentRegistration.htm?actionCode=saveObligationDetail";
+//										document.paymentRegForm.submit();
+//										return true;
+//										}
+//										}
+//										else
+//										{
+//										getErrTabToggle('TabView','2');	
+//										tabview_switch('TabView', '2');
+//										hideAndShowTable("errorDiv");
+//										document.getElementById('btnTbl').style.display="none";
+//										return false;
+//										}
+									}
+									else if(instrumentValue == 'n' ||instrumentValue == 'N')
+									{
+										if (validateFormFields(paymentRegOTRStampDutyNotRequiredDetailsJson)) 
+										{
+											hideTab('TabView',5);
+											resetErrorList();
+											incError=0;
+											if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+											{
+												alert(totalAmtPayebleGreaterThenZero);
+												return false;
+											}
+											if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+											{
+												alert(totalAmtGreaterThenZero);
+												return false;
+											}
+											var rate = document.getElementById('txtStampDutyRate').value;
+											if(rate < 0 || rate > 100 || rate == "")
+											{
+												alert('Please enter value between 0 to 100 in tax rate field');
+												document.getElementById('txtStampDutyRate').value = '';
+												return false;
+											}
+											if(saveConfirm())
+											{
+												document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+												document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+												createSkipFieldForAddRow('TranferorDetailTab','paymentRegForm');
+												createSkipFieldForAddRow('TransfereeDetailTab','paymentRegForm');
+												paymentRegFormSubmitForm("saveObligationDetail");
+												return true;
+											}
+										}
+										else
+										{
+											errorPage();
+											return false;
+										}
+									}
+								}
+								else
+								{
+									alert(decValMoreThanZero);
+									return false;
+								}
+							}
+							else
+							{
+								errorPage();
+								return false;
+							}
+						}
+
+					}
+					else
+					{
+						alert(atleastOneOption);
+						return false;
+					}
+				}
+			}
+		}
+		else if(value==GPBTobligationId)
+		{
+			var obligationId=$("#cmbTaxSubHead").val();
+			var gpbtType = $("#cmbGPBTType").val()
+			if (gpbtType==bettingTax || gpbtType==gamingTax)
+			{
+				if(removeCommaFrmInput(document.getElementById("gpbtTurnOverAmount").value)>0)
+				{
+					if(removeCommaFrmInput(document.getElementById("gbptPayOutWinning").value)>0)
+					{
+						if(removeCommaFrmInput(document.getElementById("gbptRevenueAmount").value)>0)
+						{
+
+							if(removeCommaFrmInput(document.getElementById("gbptTaxAmount").value)>0)
+							{
+								if((document.getElementById("cmbTaxPeriodYearGPBT").value)=="-1"||(document.getElementById("cmbTaxPeriodMonthGPBT").value)=="-1")
+								{
+									alert("Please select valid Tax Period");
+									return false;
+								}
+							}
+							else{
+								alert("The amount in fields 'Gross Turnover(A)' and 'Pay Out in Winning to Customer(B)' cannot be same.");
+								return false;
+							}
+						}else {
+							alert("The amount in fields 'Gaming Revenue(C)' cannot be zero.");
+							return false;
+						}
+					}else {
+						alert("The amount in fields 'Pay Out in Winning to Customer(B)' cannot be zero.");
+						return false;
+					}
+				}
+				else
+				{	alert("The amount in fields 'Gross Turnover(A)' cannot be zero.");
+				return false;
+				}
+			}
+			else if (gpbtType==lotteryTax || gpbtType==prizeCompetitionTax){
+				if(removeCommaFrmInput(document.getElementById("gpbtTurnOverAmount").value)>0)
+				{
+					if(removeCommaFrmInput(document.getElementById("gbptTaxAmount").value)>0)
+					{
+						if((document.getElementById("cmbTaxPeriodYearGPBT").value)=="-1"||(document.getElementById("cmbTaxPeriodMonthGPBT").value)=="-1")
+						{
+							alert("Please select valid Tax Period");
+							return false;
+						}
+					}
+					else{
+						alert("The amount in fields 'Gross Turnover(A)' and 'Pay Out in Winning to Customer(B)' cannot be same.");
+						return false;
+
+					}
+				}else
+				{
+					if (gpbtType==lotteryTax){
+						alert("The amount in fields 'Lottery Turnover(A)' cannot be zero.");
+						return false;
+					}
+					else if (gpbtType==prizeCompetitionTax){
+						alert("The amount in fields 'Gross Turnover(A)' cannot be zero.");
+						return false;
+					}
+				}
+			}
+
+
+			if(saveConfirm())
+			{
+				document.getElementById("gbptTaxAmount").value=removeCommaFrmInput(document.getElementById("gbptTaxAmount").value);
+				paymentRegFormSubmitForm("saveObligationDetail");
+				return true;
+			} else
+			{
+				return false;
+			}
+		}else if(value==housingLevy){
+			//document.getElementById('cmbTaxPeriodYear')
+			if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+			{
+				alert(totalAmtGreaterThenZero);
+				return false;
+			}
+			if(saveConfirm())
+			{	document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+			document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+				//document.getElementById("gbptTaxAmount").value=removeCommaFrmInput(document.getElementById("gbptTaxAmount").value);
+				paymentRegFormSubmitForm("saveObligationDetail");
+				return true;
+			} else
+			{
+				return false;
+			}
+			
+		}
+		else if(value==42)
+		{
+			//document.getElementById('cmbTaxPeriodYear')
+			if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+			{
+				alert(totalAmtGreaterThenZero);
+				return false;
+			}
+			if(saveConfirm())
+			{	
+				document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+				document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+				//document.getElementById("gbptTaxAmount").value=removeCommaFrmInput(document.getElementById("gbptTaxAmount").value);
+				paymentRegFormSubmitForm("saveObligationDetail");
+				return true;
+			}
+			else
+			{
+				return false;
+			}	
+		}
+		
+		//START:::::Added for PPRA - 07/2024
+		else if(value==46){
+			
+			alert("submitting payment");
+			if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+			{
+				alert(totalAmtGreaterThenZero);
+				return false;
+			}
+			if(saveConfirm())
+			{	
+				document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+				document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+				//document.getElementById("gbptTaxAmount").value=removeCommaFrmInput(document.getElementById("gbptTaxAmount").value);
+				paymentRegFormSubmitForm("saveObligationDetail");
+				return true;
+			} else
+			{
+				return false;
+			}
+			
+		}
+		
+		//END:::::Added for PPRA - 07/2024
+		//START:::::Added for AWWDA 
+		else if(value == awwdaId){
+
+			if(modifyFlagAwwda == 1)
+			{
+				alert(firstModify);
+				return false;
+			}
+			else
+			{
+				if(selectedFlagAwwda>0)
+				{
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+					{
+						alert(totalAmtPayebleGreaterThenZero);
+						return false;
+					}
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+					{
+						alert(totalAmtGreaterThenZero);
+						return false;
+					}
+					if(saveConfirm())
+					{
+						document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+						document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+						paymentRegFormSubmitForm("saveObligationDetail");
+						return true;
+					}
+				}
+				else
+				{
+					alert(atleastOneAwwda);
+					return false;
+				}
+			}
+		
+		}
+		//END:::::Added for AWWDA 
+		else
+		{
+			errorPage();
+			return false;
+		}
+
+	}
+}
+
+
+
+function onSelectSpcObligHdrRadio(obj)
+{
+	/*incError=0;
+	hideTab('TabView', 5);
+	var rowNum=obj;
+	objValue=obj;
+	document.getElementById('SplObligHdrTblReset').style.display=''; 
+	var rowRef=document.getElementById("SplObligHdrRow_" + rowNum);
+	var hdrId=rowRef.getElementsByTagName("INPUT")[1].value;
+	var table=document.getElementById("SplObligHdrTbl");
+	var length=table.rows.length;
+	document.getElementById("hidHdrId").value=hdrId;
+
+	var specObligId=document.getElementById("hidObligationId").value;
+	if(document.all)
+	{
+		remainingAmountForPartial =rowRef.getElementsByTagName("TD")[3].innerText;
+	}
+	else
+	{
+		remainingAmountForPartial =rowRef.getElementsByTagName("TD")[3].textContent;
+	}
+	document.getElementById("hidIsPartial").value="y";
+	if(specObligId == landRentObligationId)
+	{//LR
+		if(landRentTableCounter>0)
+		{
+			document.getElementById('SplObligHdrTblReset').style.display='none'; 
+			for ( var i=0; i < length - 1; i++) 
+			{
+				document.getElementById("liabilityRadio_" + i).checked=false;
+			}
+			alert("You have to remove added data before partial payment.");
+			return false;
+		}
+		else
+		{
+			fetchLandRentDetail(hdrId,specObligId);
+		}
+	}
+	if(specObligId == advanceObligationId){//AD
+		fetchAdvanceTaxDetail(hdrId,specObligId);
+	}
+	if(specObligId ==widowAndChildrenObligationId){//WC	
+		//	fetchWidowDetail(hdrId,specObligId);
+		document.getElementById('txtTotalAmountPaidOTR').value=remainingAmountForPartial;
+		document.getElementById('txtTotalAmountPayableOTR').value=remainingAmountForPartial;
+		document.getElementById("txtTotalAmountPayableOTR").readOnly=true;
+		isPartial="yes";
+	}
+	if(specObligId == stampDutyObligationId){//SD
+		fetchStampDetail(hdrId,specObligId);
+	}
+	if(specObligId == standardObligationId)
+	{//STD
+		if(selectedFlagStandardLevy>0)
+		{
+			document.getElementById('SplObligHdrTblReset').style.display='none'; 
+			for ( var i=0; i < length - 1; i++) 
+			{
+				document.getElementById("liabilityRadio_" + i).checked=false;
+			}
+			alert("You have to remove added data before partial payment.");
+			return false;
+		}
+		else
+		{
+			fetchStdDetail(hdrId,specObligId);
+		}
+	}
+	if(specObligId ==sugarObligationId){//SUGAR
+		fetchSugarDetail(hdrId,specObligId);
+	}*/
+
+
+}
+
+//function onChangeCmbOtrPeriod(cmbOtrPeriodValue){
+function onChangeCmbOtrPeriod(row)
+{
+	if(document.getElementById("cmbTaxPeriodMonth").selectedIndex!=0){
+		cmbOtrPeriodValue =document.getElementById("cmbTaxPeriodMonth").value;
+		var date=cmbOtrPeriodValue.split("-");
+		var frmDate=date[0];
+		var toDate=date[1];
+		document.getElementById('hidObligationFromDate').value=frmDate;
+		document.getElementById('hidObligationToDate').value=toDate;
+		var taxPayerId=document.getElementById('hidTaxPayerId').value;
+		var specObligId=document.getElementById("hidObligationId").value;
+
+		if(specObligId == widowAndChildrenObligationId)
+		{
+			document.getElementById('in_widowsTable_7').value=frmDate;
+			document.getElementById('in_widowsTable_8').value=toDate;
+			var checkDuplicateFlag = checkDuplicateForWidows(row);
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+			//	fetchSplOblHdrWebByObligation("Y");
+		}
+		else if(specObligId== standardObligationId)
+		{
+			document.getElementById('in_standardLevyDtl1_12').value=frmDate;
+			document.getElementById('in_standardLevyDtl1_13').value=toDate;
+			var checkDuplicateFlag = checkDuplicateForStandard(row,'standardLevyDtl1');
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+
+			//	fetchSplOblHdrWebByObligation("Y");
+
+		}
+		else if(specObligId == sugarObligationId){
+			document.getElementById('in_sugarTable_12').value=frmDate;
+			document.getElementById('in_sugarTable_13').value=toDate;
+			var checkDuplicateFlag=checkDuplicateForSugar(row);
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+		}else if(specObligId == awwdaId){
+			/*
+			document.getElementById('in_awwdaTable_4').value=frmDate;
+			document.getElementById('in_awwdaTable_5').value=toDate;
+			var checkDuplicateFlag=checkDuplicateForSugar(row);
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}*/
+			fetchSplOblHdrWebByObligation("Y");
+			document.getElementById('AwwdaFieldset').style.display='none';
+			
+			
+		}
+		else if(specObligId == advanceObligationId){
+		}
+	}
+}
+
+function hidePartialTable()
+{
+	document.getElementById("landRentDetailTable").style.display='none'; 
+	document.getElementById("stampDutyDetailTableForValuation").style.display='none'; 
+	document.getElementById("stampDutyDetailTableForNotValuation").style.display='none'; 
+	document.getElementById("transferorDetailTable").style.display='none'; 
+	document.getElementById("transfereeDetailTable").style.display='none'; 
+	document.getElementById("advanceTaxDetailTable").style.display='none'; 
+	document.getElementById("standardLevyHdrTable").style.display='none'; 
+	document.getElementById("standardLevyDetailTable").style.display='none'; 
+	document.getElementById("sugarDevLevyDetailTable").style.display='none';
+	document.getElementById("SplObligHdrTblReset").style.display='none';
+}
+
+function clearPartialDetail()
+{
+	if (confirm('Do you want to Reset Table ?')) 
+	{
+		var table=document.getElementById("SplObligHdrTbl");
+		var length=table.rows.length;
+		isPartial="No";
+		document.getElementById('txtTotalAmountPaidOTR').value="0";
+		document.getElementById('txtTotalAmountPayableOTR').value=0;
+		document.getElementById("SplObligHdrTblReset").style.display='none';
+		for ( var i=0; i < length - 1; i++) 
+		{
+			document.getElementById("liabilityRadio_" + i).checked=false;
+		}
+		if(document.getElementById('cmbTaxSubHead').value == sugarObligationId)
+		{
+			document.getElementById('sugarDevelopLevyTbl').style.display='';
+			document.getElementById("sugarDevLevyDetailTable").style.display='none';
+			document.getElementById('sugarDevelopLevyFieldlset').style.display='';
+		}
+		if(document.getElementById('cmbTaxSubHead').value == widowAndChildrenObligationId)
+		{
+			document.getElementById("txtTotalAmountPayableOTR").readOnly=false;
+		}
+		if(document.getElementById('cmbTaxSubHead').value == landRentObligationId)
+		{
+			document.getElementById('landRentTbl').style.display='';
+			document.getElementById('landRentFieldSet').style.display=''; 
+			document.getElementById('addRowLandRentTbl').style.display='';
+			document.getElementById("landRentDetailTable").style.display='none';
+		}
+		if(document.getElementById('cmbTaxSubHead').value == advanceObligationId)
+		{
+			document.getElementById("advanceTaxDetailTable").style.display='none';
+			document.getElementById('AdvanceTaxpaymentstbl').style.display='';
+			document.getElementById('AdvanceTaxpaymentFieldlset').style.display='';
+		}
+		if(document.getElementById('cmbTaxSubHead').value == stampDutyObligationId)
+		{
+			document.getElementById("stampDutyDetailTableForValuation").style.display='none'; 
+			document.getElementById("stampDutyDetailTableForNotValuation").style.display='none'; 
+			document.getElementById("transferorDetailTable").style.display='none'; 
+			document.getElementById("transfereeDetailTable").style.display='none'; 
+			document.getElementById("transferorDetailTbl").style.display=''; 
+			document.getElementById("ObligationDetailForStampDutyTbl").style.display=''; 
+			document.getElementById("transfereeDetailTbl").style.display=''; 
+			document.getElementById("tblStamDutyValuationRequired").style.display=''; 
+			document.getElementById("tblStamDutyValuationNotRequired").style.display='';
+
+			document.getElementById("transfereeDetailLbl").style.display=''; 
+			document.getElementById("transferorDetailLbl").style.display=''; 
+			document.getElementById("ObligationDetailForStampDutyLbl").style.display='';
+
+		}
+		if(document.getElementById('cmbTaxSubHead').value == standardObligationId)
+		{
+			document.getElementById("standardLevyHdrTable").style.display='none'; 
+			document.getElementById("standardLevyDetailTable").style.display='none'; 
+			document.getElementById('standardLevyTbl').style.display='';
+			document.getElementById('standardLevyAdd').style.display='';
+			document.getElementById('standardLevyFieldlset').style.display='';
+			if(document.getElementById('standardLevyDtl').rows.length>1)
+			{
+				document.getElementById('standardLevyDtl').style.display=''; 
+			}
+			document.getElementById('standardLevyTbl1').style.display='';
+		}
+	}
+}
+
+function validatePaginationLastSplHdr() 
+{
+	var pageNo=document.getElementById('pageNo').value;
+	if (pageNo=="1" ||pageNo=="" ||pageNo=="null"||pageNo==null ) 
+	{
+		pageNo="1";
+	}
+	if (pageNo==document.getElementById('totalPagesId').value) 
+	{
+		document.getElementById('nextLinkSplHdr').style.display='none';
+		document.getElementById('lastLinkSplHdr').style.display='none';
+
+		document.getElementById('nextLinkTdSplHdr').style.display='none';
+		document.getElementById('lastLinkTdSplHdr').style.display='none';
+	} 
+	else 
+	{
+		document.getElementById('nextLinkSplHdr').style.display='';
+		document.getElementById('lastLinkSplHdr').style.display='';
+
+		document.getElementById('nextLinkTdSplHdr').style.display='';
+		document.getElementById('lastLinkTdSplHdr').style.display='';
+	}
+}
+function validatePaginationFirstSplHdr() 
+{
+	var pageNo=document.getElementById('pageNo').value;
+	if (pageNo=="1" ||pageNo=="" ||pageNo=="null"||pageNo==null ) 
+	{
+		document.getElementById('firstLinkSplHdr').style.display='none';
+		document.getElementById('previousLinkSplHdr').style.display='none';
+
+		document.getElementById('firstLinkTdSplHdr').style.display='none';
+		document.getElementById('previousLinkTdSplHdr').style.display='none';
+	} 
+	else 
+	{
+		document.getElementById('firstLinkSplHdr').style.display='';
+		document.getElementById('previousLinkSplHdr').style.display='';
+		document.getElementById('firstLinkTdSplHdr').style.display='';
+		document.getElementById('previousLinkTdSplHdr').style.display='';
+	}
+}
+
+
+
+function clearDetailsOfLandRent()
+{ 
+	var taxObligationValue= document.getElementById('cmbTaxSubHead')[specialTaxObligation].value;
+	if(taxObligationValue ==landRentObligationId && landRentTableCounter>0)
+	{
+		if(confirm (clearDataConfirm))
+		{
+			clear_table_data('landRentTable');
+			clear_Page_data('landRentTable', '9');
+			document.getElementById('in_landRentTable_10').selectedIndex=0;
+			landRentTableCounter=0;
+			modifyFlagLandRent=0;
+			commonModifyFlag=0;
+			flagPassFromIf="y";
+			return false;
+		}
+		else
+		{
+			document.getElementById('cmbTaxSubHead').selectedIndex=specialTaxObligation;
+			return true;
+		}
+	}
+	clear_Page_data('landRentTable', '9');
+	document.getElementById('in_landRentTable_10').selectedIndex=0;
+	landRentTableCounter=0;
+	modifyFlagLandRent=0;
+	commonModifyFlag=0;
+}
+function clearDetailsOfAdvance()
+{ 	
+	var taxObligationValue= document.getElementById('cmbTaxSubHead')[specialTaxObligation].value;
+	if(taxObligationValue ==advanceObligationId && selectedFlagAdvance>0)
+	{
+		if(confirm (clearDataConfirm))
+		{
+			selectedFlagAdvance=0;
+			clear_Page_data('advanceTable','8');
+			document.getElementById('in_advanceTable_4').selectedIndex=0;
+			modifyFlagAdvance=0;
+			commonModifyFlag=0;
+			document.getElementById('cmbTaxPeriod').selectedIndex=0;
+			clear_table_data('advanceTable');
+			document.getElementById('in_advanceTable_7').value=0;
+			document.getElementById('in_advanceTable_8').value=0;
+			flagPassFromIf="y";
+			return false;
+		}
+		else
+		{
+			document.getElementById('cmbTaxSubHead').selectedIndex=specialTaxObligation;
+			return true;
+		}
+	}
+	selectedFlagAdvance=0;
+	clear_Page_data('advanceTable','8');
+	document.getElementById('in_advanceTable_4').selectedIndex=0;
+	modifyFlagAdvance=0;
+	commonModifyFlag=0;
+	document.getElementById('cmbTaxPeriod').selectedIndex=0;
+	document.getElementById('in_advanceTable_7').value=0;
+	document.getElementById('in_advanceTable_8').value=0;
+}
+function clearDetailsOfWidows()
+{ 	
+	var taxObligationValue= document.getElementById('cmbTaxSubHead')[specialTaxObligation].value;
+	if((taxObligationValue ==widowAndChildrenObligationId && selectedFlagWidow>0))
+	{
+		if(confirm (clearDataConfirm))
+		{
+			selectedFlagWidow=0;
+			document.getElementById('hidRateOfLevy').value=document.getElementById('in_widowsTable_11').value;
+			clear_Page_data('widowsTable','6');
+			document.getElementById('in_widowsTable_11').value=document.getElementById('hidRateOfLevy').value;
+			modifyFlagWidow=0;
+			commonModifyFlag=0;
+			document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+			clear_table_data('widowsTable');
+			flagPassFromIf="y";
+			return false;
+		}
+		else
+		{
+			document.getElementById('cmbTaxSubHead').selectedIndex=specialTaxObligation;
+			return true;
+		}
+	}
+	selectedFlagWidow=0;
+	clear_Page_data('widowsTable','6');
+	modifyFlagWidow=0;
+	commonModifyFlag=0;
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+}
+function clearDetailsOfSugar()
+{ 	
+	var taxObligationValue= document.getElementById('cmbTaxSubHead')[specialTaxObligation].value;
+	if((taxObligationValue ==sugarObligationId) && selectedFlagSugar>0) 
+	{
+		if(confirm (clearDataConfirm))
+		{
+			selectedFlagSugar=0;
+			document.getElementById('hidRateOfLevy').value=document.getElementById('in_sugarTable_11').value;
+			clear_Page_data('sugarTable','12');
+			document.getElementById('in_sugarTable_11').value=document.getElementById('hidRateOfLevy').value;
+			document.getElementById('in_sugarTable_5').value=0;
+			document.getElementById('in_sugarTable_6').value=0;
+			document.getElementById('in_sugarTable_7').value=0;
+			document.getElementById('in_sugarTable_8').value=0;
+			document.getElementById('in_sugarTable_9').value=0;
+			document.getElementById('in_sugarTable_10').value=0;
+			modifyFlagSugar=0;
+			commonModifyFlag=0;
+			document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+			document.getElementById('hidBalanceAdjustment').value=0;
+			document.getElementById('hidAmtPaybleLevy').value=0;
+			document.getElementById('in_sugarTable_7').readOnly=false;
+			document.getElementById('in_sugarTable_8').readOnly=false;
+			clear_table_data('sugarTable');
+			flagPassFromIf="y";
+			return false;
+		}
+		else
+		{
+			document.getElementById('cmbTaxSubHead').selectedIndex=specialTaxObligation;
+			return true;
+		}
+	}
+	selectedFlagSugar=0;
+	document.getElementById('hidRateOfLevy').value=document.getElementById('in_sugarTable_11').value;
+	clear_Page_data('sugarTable','12');
+	document.getElementById('in_sugarTable_11').value=document.getElementById('hidRateOfLevy').value;
+	document.getElementById('in_sugarTable_5').value=0;
+	document.getElementById('in_sugarTable_6').value=0;
+	document.getElementById('in_sugarTable_7').value=0;
+	document.getElementById('in_sugarTable_8').value=0;
+	document.getElementById('in_sugarTable_9').value=0;
+	document.getElementById('in_sugarTable_10').value=0;
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+	document.getElementById('hidBalanceAdjustment').value=0;
+	document.getElementById('hidAmtPaybleLevy').value=0;
+	document.getElementById('in_sugarTable_7').readOnly=false;
+	document.getElementById('in_sugarTable_8').readOnly=false;
+	modifyFlagSugar=0;
+	commonModifyFlag=0;
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+}
+function clearDetailsOfStandard()
+{ 	
+	var taxObligationValue= document.getElementById('cmbTaxSubHead')[specialTaxObligation].value;
+	if((taxObligationValue ==standardObligationId) &&(selectedFlagStandardLevy2>0 ||selectedFlagStandardLevy3>0 ||selectedFlagStandardLevy4>0 ||selectedFlagStandardLevy5>0 ||selectedFlagStandardLevy6>0 ||selectedFlagStandardLevy1>0  ) ) 
+	{
+		if(confirm (clearDataConfirm))
+		{
+			document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl2_6').value;
+			clear_Page_data('standardLevyDtl2','5');
+			modifyFlagStandardLevy2=0;
+			commonModifyFlag=0;
+			document.getElementById('in_standardLevyDtl2_6').value=document.getElementById('hidRateOfLevy').value;
+			document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl3_6').value;
+			clear_Page_data('standardLevyDtl3','5');
+			modifyFlagStandardLevy3=0;
+			document.getElementById('in_standardLevyDtl3_6').value=document.getElementById('hidRateOfLevy').value;
+			document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl4_6').value;
+			clear_Page_data('standardLevyDtl4','5');
+			modifyFlagStandardLevy4=0;
+			document.getElementById('in_standardLevyDtl4_6').value=document.getElementById('hidRateOfLevy').value;
+			document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl5_6').value;
+			clear_Page_data('standardLevyDtl5','5');
+			modifyFlagStandardLevy5=0;
+			document.getElementById('in_standardLevyDtl5_6').value=document.getElementById('hidRateOfLevy').value;
+			document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl6_6').value;
+			clear_Page_data('standardLevyDtl6','5');
+			modifyFlagStandardLevy6=0;
+			document.getElementById('in_standardLevyDtl6_6').value=document.getElementById('hidRateOfLevy').value;
+			clear_Page_data('standardLevyDtl1','12');
+			modifyFlagStandardLevy1=0;
+			document.getElementById('cmbTaxPeriodYear').selectedIndex=0;
+			document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+			document.getElementById('in_standardLevyDtl1_5').value=0;
+			document.getElementById('in_standardLevyDtl1_6').value=0;
+			document.getElementById('in_standardLevyDtl1_7').value=0;
+			document.getElementById('in_standardLevyDtl1_8').value=0;
+			document.getElementById('in_standardLevyDtl1_9').value=0;
+			document.getElementById('in_standardLevyDtl1_10').value=0;
+			document.getElementById('in_standardLevyDtlPartial1_5').value=0;
+			document.getElementById('in_standardLevyDtlPartial1_6').value=0;
+			document.getElementById('in_standardLevyDtlPartial1_7').value=0;
+			document.getElementById('in_standardLevyDtlPartial1_8').value=0;
+			document.getElementById('in_standardLevyDtlPartial1_9').value=0;
+			document.getElementById('in_standardLevyDtlPartial1_10').value=0;
+			selectedFlagStandardLevy2=0;
+			selectedFlagStandardLevy3=0;
+			selectedFlagStandardLevy4=0;
+			selectedFlagStandardLevy5=0;
+			selectedFlagStandardLevy6=0;
+			selectedFlagStandardLevy1=0;
+			clear_table_data('standardLevyDtl1');
+			clear_table_data('standardLevyDtl2');
+			clear_table_data('standardLevyDtl3');
+			clear_table_data('standardLevyDtl4');
+			clear_table_data('standardLevyDtl5');
+			clear_table_data('standardLevyDtl6');
+			clear_table_data('standardLevyDtlPartial1');
+			document.getElementById('in_standardLevyDtl1_7').readOnly=false;
+			document.getElementById('in_standardLevyDtl1_8').readOnly=false;
+			flagPassFromIf="y";
+			return false;
+		}
+		else
+		{
+			document.getElementById('cmbTaxSubHead').selectedIndex=specialTaxObligation;
+			return true;
+		}
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl2_6').value;
+		clear_Page_data('standardLevyDtl1','5');
+		modifyFlagStandardLevy2=0;
+		commonModifyFlag=0;
+		document.getElementById('in_standardLevyDtl2_6').value=document.getElementById('hidRateOfLevy').value;
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl3_6').value;
+		clear_Page_data('standardLevyDtl1','5');
+		modifyFlagStandardLevy3=0;
+		document.getElementById('in_standardLevyDtl3_6').value=document.getElementById('hidRateOfLevy').value;
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl4_6').value;
+		clear_Page_data('standardLevyDtl1','5');
+		modifyFlagStandardLevy4=0;
+		document.getElementById('in_standardLevyDtl4_6').value=document.getElementById('hidRateOfLevy').value;
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl5_6').value;
+		clear_Page_data('standardLevyDtl1','5');
+		modifyFlagStandardLevy5=0;
+		document.getElementById('in_standardLevyDtl5_6').value=document.getElementById('hidRateOfLevy').value;
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_standardLevyDtl6_6').value;
+		clear_Page_data('standardLevyDtl1','5');
+		modifyFlagStandardLevy6=0;
+		document.getElementById('in_standardLevyDtl6_6').value=document.getElementById('hidRateOfLevy').value;
+		clear_Page_data('standardLevyDtl1','12');
+		modifyFlagStandardLevy1=0;
+		document.getElementById('cmbOtrPeriod').selectedIndex=0;
+		document.getElementById('in_standardLevyDtl1_5').value=0;
+		document.getElementById('in_standardLevyDtl1_6').value=0;
+		document.getElementById('in_standardLevyDtl1_7').value=0;
+		document.getElementById('in_standardLevyDtl1_8').value=0;
+		document.getElementById('in_standardLevyDtl1_9').value=0;
+		document.getElementById('in_standardLevyDtl1_10').value=0;
+		selectedFlagStandardLevy2=0;
+		selectedFlagStandardLevy3=0;
+		selectedFlagStandardLevy4=0;
+		selectedFlagStandardLevy5=0;
+		selectedFlagStandardLevy6=0;
+		selectedFlagStandardLevy1=0;
+		document.getElementById('in_standardLevyDtl1_7').readOnly=false;
+		document.getElementById('in_standardLevyDtl1_8').readOnly=false;
+	}
+}
+function clearDetailsOfStampDuty()
+{ 	
+	var taxObligationValue= document.getElementById('cmbTaxSubHead')[specialTaxObligation].value;
+	if((taxObligationValue ==stampDutyObligationId)&&( removeCommaFrmInput(document.getElementById('txtDeclaredValue').value)>0 ||removeCommaFrmInput(document.getElementById('txtPenaltyStampDuty').value)>0
+			||removeCommaFrmInput(document.getElementById('txtAmntOfDtyAssessedToPay').value)>0||selectedFlagTransferor>0 ||selectedFlagTransferee>0)) 
+	{
+		if(confirm (clearDataConfirm))
+		{
+			clear_table_data('TranferorDetailTab');
+			clear_table_data('TransfereeDetailTab');
+			//added on 2016
+			clear_table_data('cgtStampDutyAddrowTable'); 
+
+			clear_Page_data('TranferorDetailTab','5');
+			clear_Page_data('TransfereeDetailTab','5');
+			document.getElementById('txtTnstrumnetDate').value="";
+			document.getElementById('cmbTnstrumnetType').selectedIndex=0;
+			document.getElementById('txtDeclaredValue').value="0";
+			document.getElementById('txtAmntOfDtyAssessedToPay').value="0";
+			document.getElementById('txtPenaltyStampDuty').value="0";
+			document.getElementById('txtTitleNumber').value="";
+			document.getElementById('txtLRNumber').value="";
+			document.getElementById('txtLoaction').value="";			
+			document.getElementById('txtAreaSize').value="";
+			document.getElementById('txtReferenceNumber').value="";
+			document.getElementById('txtDescOfTranaction').value="";
+			document.getElementById("tblStamDutyValuationRequired").style.display='none';
+			document.getElementById("tblStamDutyValuationNotRequired").style.display='none';
+			//added on 2016
+			document.getElementById("cgtStampDutyAddrowTable").style.display='none';
+
+			selectedFlagTransferor=0;
+			selectedFlagTransferee=0;
+			flagPassFromIf="y";
+			return false;
+		}
+		else
+		{
+			document.getElementById('cmbTaxSubHead').selectedIndex=specialTaxObligation;
+			return true;
+		}
+	}
+	clear_table_data('TranferorDetailTab');
+	clear_table_data('TranferorDetailTab');
+	document.getElementById('txtTnstrumnetDate').value="";
+	document.getElementById('cmbTnstrumnetType').selectedIndex=0;
+	document.getElementById('txtDeclaredValue').value="0";
+	document.getElementById('txtAmntOfDtyAssessedToPay').value="0";
+	document.getElementById('txtPenaltyStampDuty').value="0";
+	document.getElementById('txtTitleNumber').value="";
+	document.getElementById('txtLRNumber').value="";
+	document.getElementById('txtLoaction').value="";			
+	document.getElementById('txtAreaSize').value="";
+	document.getElementById('txtReferenceNumber').value="";
+	document.getElementById('txtDescOfTranaction').value="";
+	document.getElementById("tblStamDutyValuationRequired").style.display='none';
+	document.getElementById("tblStamDutyValuationNotRequired").style.display='none';
+	selectedFlagTransferor=0;
+	selectedFlagTransferee=0;
+}
+
+function clearSpecData()
+{
+
+	if(clearDetailsOfLandRent())
+	{
+
+	}
+	else if (clearDetailsOfAdvance())
+	{
+
+	}
+	else if (clearDetailsOfWidows())
+	{
+
+	}
+	else if (clearDetailsOfSugar())
+	{
+
+	}
+	else if (clearDetailsOfStandard())
+	{
+
+	}
+	else if (clearDetailsOfStampDuty())
+	{
+
+	}
+	else
+	{
+		if(flagPassFromIf=="n")
+		{
+			var x = confirm ("Do You want to Clear the Data?");
+			if(x)
+			{
+				requiredFieldsAfterCleaer();
+				document.getElementById('navigationTableSplHdr').style.display='none';
+				document.getElementById("CmbTaxPeriodLabelTd").style.display="none";
+				document.getElementById("CmbTaxPeriodTd").style.display="none";
+				document.getElementById("tdCmbTaxPeriodYear").style.display="none";
+				document.getElementById("noTaxPeriodTd").style.display="";
+				document.getElementById("noTaxPeriodTd1").style.display="";
+				document.getElementById('paymentTaxObligForm').style.display='none';
+				document.getElementById('paymentRegSpecObligationForm').style.display='none';
+				document.getElementById('paymentRegNTRForm').style.display='none';
+				document.getElementById('totalAmountPaidFieldSet').style.display='none';
+				document.getElementById("cmbTaxHead").selectedIndex=0;
+				document.getElementById('landRentDiv').style.display='none';
+				document.getElementById('stampDutyDiv').style.display='none';
+				document.getElementById('stampDutyRadioDiv').style.display='none';
+				document.getElementById('stampDutyAckNoDiv').style.display='none';
+				//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+				document.getElementById('SugarDevelopDiv').style.display='none'; 
+				document.getElementById('StandLevyDiv').style.display='none';
+				document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+				document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+				document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+				document.getElementById('txtTotalAmountPayableOTR').value="0";
+				document.getElementById('widowsFieldSet').style.display='none';
+				document.getElementById('paymentRTGSFieldSet').style.display = 'none';
+				tabview_switch('TabView',1);
+				resetErrorList();
+				hideTab('TabView',2);
+				hideTab('TabView',3);
+				hideTab('TabView',4);
+				hideTab('TabView',5);
+				document.getElementById('btnTbl').style.display='';
+				incError=0;	
+				return true;
+			}
+			else
+			{
+				return false;
+			}	
+
+		}
+		else
+		{
+			requiredFieldsAfterCleaer();
+			document.getElementById('landRentDiv').style.display='none';
+			document.getElementById('stampDutyDiv').style.display='none';
+			document.getElementById('stampDutyRadioDiv').style.display='none';
+			document.getElementById('stampDutyAckNoDiv').style.display='none';
+			//	document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+			document.getElementById('SugarDevelopDiv').style.display='none'; 
+			document.getElementById('StandLevyDiv').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('tdLblTaxPeriod').style.display='none'; 
+			document.getElementById('tdCmbOtrPeriod').style.display='none'; 
+			document.getElementById('tdLblTaxPeriod1').style.display=''; 
+			document.getElementById('tdCmbOtrPeriod1').style.display=''; 
+			document.getElementById('widowsFieldSet').style.display='none';
+			document.getElementById('btnTbl').style.display='none';
+			tabview_switch('TabView',1);
+			resetErrorList();
+			hideTab('TabView',2);
+			incError=0;	
+		}
+	}
+}
+
+
+function fetchSplOblHdrWebByObligation(flagForTaxPeriod){
+	var obligationId = "";
+	var taxPayerId=document.getElementById('hidTaxPayerId').value;
+	var startIndexStr=document.getElementById('startIndex').value;
+	if(document.getElementById('cmbTaxHead').value==AGENCY_REVENUE || (document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value==advanceObligationId)){
+		obligationId=document.getElementById('cmbTaxSubHead').value;
+	}
+	if((document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value!=advanceObligationId) || document.getElementById('cmbTaxHead').value==VAT || document.getElementById('cmbTaxHead').value==EXCISE ){
+		obligationId=document.getElementById('cmbTaxSubHead').value;
+	}
+	if(document.getElementById('cmbTaxSubHead').value=='VAT-Withholding' || document.getElementById('cmbTaxSubHead').value==VatWithholding)
+	{
+		obligationId=VatWithholding;
+	}
+	if( document.getElementById('cmbTaxSubHead').value==WithHoldee)
+	{
+		obligationId=WithHoldee;
+	}
+	if(null!=document.getElementById("excelForPaymentOrVatWht").value && document.getElementById("excelForPaymentOrVatWht").value!='forVatOnly')
+	{
+		clearPartialTableForTax();
+	}
+	else if(null==document.getElementById("excelForPaymentOrVatWht").value)
+	{
+		clearPartialTableForTax();
+	}
+
+	//changes done for Enhancement 1
+	if(document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value==advanceObligationId)
+	{
+		obligationId=advanceObligationId;
+	}
+	//end
+	if(document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value==44)
+	{
+		obligationId=44;
+	}
+	
+	if(document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value==47)
+	{
+		obligationId=47;
+	}
+	var fromDate = document.getElementById('hidObligationFromDate').value;
+	var toDate = document.getElementById('hidObligationToDate').value;
+
+	FetchSplOblHdrWebByObligation.fetchSplOblHdrWebByObligation(fromDate,toDate,taxPayerId,obligationId,flagForTaxPeriod,startIndexStr,{async:false,callback: function(data) {
+		pmtSplDetailVOListForPartial =  data;
+		//	document.getElementById("navigationTableSplHdr").style.display = '';
+		//	document.getElementById("navigationTableSpltbl").style.display = '';
+		//document.getElementById("goBtn").disabled = false;
+		var count=0;
+		
+		if(document.getElementById("goBtnSplHdr")!=null){
+		document.getElementById("goBtnSplHdr").disabled = false;
+		}
+			if(pmtSplDetailVOListForPartial!= null && pmtSplDetailVOListForPartial[0].isDataAvailable=="Y"){
+				
+				document.getElementById('startIndex').value 		= pmtSplDetailVOListForPartial[0].startIndex;
+				document.getElementById('endIndex').value 			= pmtSplDetailVOListForPartial[0].endIndex;
+				document.getElementById('pageNo').value 			= pmtSplDetailVOListForPartial[0].pageNo;
+				document.getElementById('totalRecords').value 		= pmtSplDetailVOListForPartial[0].totalRecords;
+				document.getElementById('totalPagesId').value 		= pmtSplDetailVOListForPartial[0].totalPages;
+				document.getElementById('recordsPerPage').value 	= pmtSplDetailVOListForPartial[0].recordsPerPage;
+				document.getElementById('startIndexUpdate').value 	= pmtSplDetailVOListForPartial[0].startIndexUpdate;
+				document.getElementById('oldStartIndex').value 		= pmtSplDetailVOListForPartial[0].oldStartIndex;
+				document.getElementById('lastStartIndex').value 	= pmtSplDetailVOListForPartial[0].lastStartIndex;
+				document.getElementById('maxResult').value 			= pmtSplDetailVOListForPartial[0].maxResult;
+
+
+				//	document.getElementById('navigationTableSplHdr').style.display='';
+				if(document.getElementById('totalRecordsTdSplHdr')!=null){
+				document.getElementById('totalRecordsTdSplHdr').innerHTML="Total No. of Records " ;
+				document.getElementById('totalRecordsTdSplHdr').style.textAlign="center";
+				document.getElementById('totalRecordsTdSplHdr').style.fontWeight="bold";
+				document.getElementById('totalRecordsTdSplHdr').innerHTML+=document.getElementById('totalRecords').value;
+				}
+
+				if(document.getElementById('recordsFromToTdSplHdr')!=null){
+				document.getElementById('recordsFromToTdSplHdr').innerHTML="Records From ";
+				document.getElementById('recordsFromToTdSplHdr').style.textAlign="center";
+				document.getElementById('recordsFromToTdSplHdr').style.fontWeight="bold";
+				document.getElementById('recordsFromToTdSplHdr').innerHTML+=document.getElementById('oldStartIndex').value+" ";
+				document.getElementById('recordsFromToTdSplHdr').innerHTML+=" to ";
+				document.getElementById('recordsFromToTdSplHdr').innerHTML+=document.getElementById('endIndex').value;
+				}
+
+				if(document.getElementById('pageNoTdSplHdr')!=null){
+				document.getElementById('pageNoTdSplHdr').innerHTML="Page No. ";
+				document.getElementById('pageNoTdSplHdr').style.textAlign="center";
+				document.getElementById('pageNoTdSplHdr').style.fontWeight="bold";
+				document.getElementById('pageNoTdSplHdr').innerHTML+=document.getElementById('pageNo').value+" ";
+				document.getElementById('pageNoTdSplHdr').innerHTML+=" of ";
+				document.getElementById('pageNoTdSplHdr').innerHTML+=document.getElementById('totalPagesId').value;
+				}
+				//Added on 12/09/2024 to sort withholding Issue.
+				//Allow generation of interest or penalty only or principal only not both
+				  document.getElementById('paymentTaxObligForm').style.display ='';
+				//End 12/09/2024
+			}
+		if(pmtSplDetailVOListForPartial!= null && pmtSplDetailVOListForPartial[0].isDataAvailable=="Y"){
+			partialDetailArray.length=0;
+			for(var i = 0; i< pmtSplDetailVOListForPartial.length ; i++){
+				var pmtSplDetailVO = pmtSplDetailVOListForPartial[i];
+				partialDetailArray[i] = pmtSplDetailVO;
+			}
+			if(!(obligationId==VatWithholding || obligationId == shippingOblCode || obligationId == TransmissionOblCode || obligationId == VisOblCode || obligationId == WithHoldee || obligationId==rentIncomeWith))
+			{
+				clearAllPartialTable();
+				validatePaginationLastSplHdr();
+				validatePaginationFirstSplHdr();
+			}
+			if(obligationId == landRentObligationId){
+				clearAllPartialTable();
+				showLandRentPartialTable(partialDetailArray);
+			}
+			else if(obligationId == advanceObligationId){
+				clearAllPartialTable();
+				showAdvancePartialTable(partialDetailArray);
+			}
+			else if(obligationId == sugarObligationId){
+				clearAllPartialTable();
+				showSuagrPartialTable(partialDetailArray);
+			}
+			else  if(obligationId == standardObligationId){
+				clearAllPartialTable();
+				showStandardPartialTable(partialDetailArray);
+			}
+			//Added for AWWDA :: START
+			else  if(obligationId == awwdaId){
+				clearAllPartialTable();
+				showAwwdaPartialTable(partialDetailArray);
+			}
+			//Added for AWWDA :: END
+			else  if(obligationId == stampDutyObligationId){
+				clearAllPartialTable();
+				showStampDutyPartialTable(partialDetailArray);
+			}
+			else if(obligationId == widowAndChildrenObligationId){
+				clearAllPartialTable();
+				showWidowAndChildrenPartialTable(partialDetailArray);
+			}
+
+			else if(obligationId == shippingOblCode || obligationId == TransmissionOblCode || obligationId == VisOblCode || obligationId == WithHoldee || obligationId==rentIncomeWith || obligationId==VatWithholding)
+			{
+				clearAllPartialTable();
+				clearPartialTableForTax();
+				showTaxObligationSplPartial(data,obligationId);
+			}
+			else if(obligationId==VatWithholding)
+			{
+				count=1;
+				showVatWithPreviousDetailsTable(partialDetailArray);
+			}
+			
+			// START::::Added for DAT 12/2023
+			else if(obligationId == 45){
+				clearAllPartialTable();
+				clearPartialTableForTax();
+				showTaxObligationSplPartial(data,obligationId);
+				//showDATPartialTable(partialDetailArray);
+			}
+			// END::::Added for DAT 12/2023
+			// START::::Added for DST 09/2024
+			else if(obligationId == 44){
+				clearAllPartialTable();
+				clearPartialTableForTax();
+				showTaxObligationSplPartial(data,obligationId);
+				//showDATPartialTable(partialDetailArray);
+			}
+			// END::::Added for DST 09/2024
+			// START::::Added for SEP #81171
+			else if(obligationId == 47){
+				clearAllPartialTable();
+				clearPartialTableForTax();
+				showTaxObligationSplPartial(data,obligationId);
+				//showDATPartialTable(partialDetailArray);
+			}
+			// END::::Added for SEP #81171
+			else{
+				alert(validObligation);
+				return false;
+			}
+		}
+		if(count==0){
+			partialDetailArray.length=0;
+			for(var i = 0; i< pmtSplDetailVOListForPartial.length ; i++){
+				var pmtSplDetailVO = pmtSplDetailVOListForPartial[i];
+				partialDetailArray[i] = pmtSplDetailVO;
+			}
+			/*if(obligationId==VatWithholding)
+			{
+				showVatWithPreviousDetailsTable(partialDetailArray);
+			}*/
+			//Added for AWWDA :: START
+			if(obligationId == awwdaId && pmtSplDetailVOListForPartial[0].isDataAvailable=="N"){
+				alert("There is no liabilities for the selected period of "+fromDate+" - "+toDate);
+				document.getElementById('in_SplObligHdrTbl_8').style.display='none';
+				document.getElementById('navigationTableSplHdr').style.display='none';
+			}else{
+				document.getElementById('in_SplObligHdrTbl_8').style.display='';
+				document.getElementById('navigationTableSplHdr').style.display='';
+					
+			}
+			//Added for AWWDA :: START
+		}
+
+	}});
+
+
+}
+
+function fetchSplOblHdrWebByObligationAmnd(flagForTaxPeriod){
+	var obligationId = "";
+	var taxPayerId=document.getElementById('hidTaxPayerId').value;
+	var startIndexStr=document.getElementById('startIndex').value;
+
+	if( document.getElementById('cmbTaxSubHead').value==WithHoldee)
+	{
+		obligationId=WithHoldee;
+	}
+	if( document.getElementById('cmbTaxSubHead').value==PT)
+	{
+		obligationId=PT;
+	}
+	if(document.getElementById('cmbTaxSubHead').value== VatWithholding || document.getElementById('cmbTaxSubHead').value=="VAT-Withholding")
+	{
+		obligationId=VatWithholding;
+	}
+	
+	/*Added for cancellation of VIS payment Ticket :: 66743*/
+	if(document.getElementById('cmbTaxSubHead').value== "10")
+	{
+		obligationId= "10";
+	}
+	
+	//END
+	
+
+	var fromDate = document.getElementById('hidObligationFromDate').value;
+	var toDate = document.getElementById('hidObligationToDate').value;
+
+	FetchSplOblHdrWebByObligationAmnd.fetchSplOblHdrWebByObligationAmnd(fromDate,toDate,taxPayerId,obligationId,flagForTaxPeriod,startIndexStr,{async:false,callback: function(data) {
+		pmtSplDetailVOListForPartial =  data;
+		//	document.getElementById("navigationTableSplHdr").style.display = '';
+		//	document.getElementById("navigationTableSpltbl").style.display = '';
+		//document.getElementById("goBtn").disabled = false;
+		var count=0;	
+
+		if(pmtSplDetailVOListForPartial!= null && pmtSplDetailVOListForPartial[0].isDataAvailable=="Y"){
+			partialDetailArray.length=0;
+			for(var i = 0; i< pmtSplDetailVOListForPartial.length ; i++){
+				var pmtSplDetailVO = pmtSplDetailVOListForPartial[i];
+				partialDetailArray[i] = pmtSplDetailVO;
+			}				
+			if(obligationId==WithHoldee)
+			{
+				count=1;
+				showPreviousDetailsTableForAmnd(partialDetailArray);
+			}
+			else if(obligationId==PT)
+			{
+				count=1;
+				showPresumptiveTaxPreviousPrns(partialDetailArray);}
+			else if(obligationId==VatWithholding)
+			{
+				count=1;
+				showVatWithPreviousDetailsTable(partialDetailArray);
+			}
+			
+			/*Added for cancellation of VIS payment Ticket :: 66743*/
+			else if(obligationId=="10")
+			{
+				count=1;
+				showPreviousDetailsTableForVis(partialDetailArray);
+			}
+			//END
+			
+			else{
+				alert(validObligation);
+				return false;
+			}
+		}
+		if(count==0){
+			partialDetailArray.length=0;
+			for(var i = 0; i< pmtSplDetailVOListForPartial.length ; i++){
+				var pmtSplDetailVO = pmtSplDetailVOListForPartial[i];
+				partialDetailArray[i] = pmtSplDetailVO;
+			}
+			if(obligationId==WithHoldee)
+			{
+				showPreviousDetailsTableForAmnd(partialDetailArray);
+			}
+			if(obligationId==PT)
+			{
+				alert("There is no PRN available to be amended");
+				document.getElementById('presumptiveTaxRadio2').checked=false;
+			}
+			 if(obligationId==VatWithholding)
+			{
+				
+				showVatWithPreviousDetailsTable(partialDetailArray);
+			}
+		}
+
+	}});
+
+}
+
+
+function validateSplDtls(id)
+{
+	if(document.getElementById('cmbTaxSubHead').value == selectOblCode || document.getElementById('cmbTaxSubHead').value == "")
+	{
+		alert(validObligation);
+		document.getElementById('cmbTaxSubHead').selectedIndex=specialTaxObligation;
+		return false;
+	}
+	var rtnFlag;
+	rtnFlag = validateFormFieldOnEvent(id, paymentRegOTRDetailsJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}
+}
+function validateSplPeriodDtls(id)
+{
+	var rtnFlag;
+	rtnFlag = validateFormFieldOnEvent(id,paymentRegOTRPeriodJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}
+}
+function validateSplPeriodYearDtls(id)
+{
+	var rtnFlag;
+	rtnFlag = validateFormFieldOnEvent(id,paymentRegOTRPeriodYearJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}
+}
+
+function clearAllPartialTable(){
+
+	if(document.getElementById('in_SplObligHdrTbl_1')!=null){
+	clear_table_data("in_SplObligHdrTbl_1");
+	document.getElementById("in_SplObligHdrTbl_1").style.display = 'none';
+	}
+
+	if(document.getElementById('in_SplObligHdrTbl_2')!=null){
+	clear_table_data("in_SplObligHdrTbl_2");
+	document.getElementById("in_SplObligHdrTbl_2").style.display = 'none';
+	}
+	
+	if(document.getElementById('in_SplObligHdrTbl_3')!=null){
+	clear_table_data("in_SplObligHdrTbl_3");
+	document.getElementById("in_SplObligHdrTbl_3").style.display = 'none';
+	}
+
+	if(document.getElementById('in_SplObligHdrTbl_4')!=null){
+	clear_table_data("in_SplObligHdrTbl_4");
+	document.getElementById("in_SplObligHdrTbl_4").style.display = 'none';
+	}
+
+	if(document.getElementById('in_SplObligHdrTbl_5')!=null){
+	clear_table_data("in_SplObligHdrTbl_5");
+	document.getElementById("in_SplObligHdrTbl_5").style.display = 'none';
+	}
+
+	if(document.getElementById('in_SplObligHdrTbl_6')!=null){
+	clear_table_data("in_SplObligHdrTbl_6");
+	document.getElementById("in_SplObligHdrTbl_6").style.display = 'none';
+	}
+
+	if(document.getElementById('in_SplObligHdrTbl_7')!=null){
+	clear_table_data("in_SplObligHdrTbl_7");
+	document.getElementById("in_SplObligHdrTbl_7").style.display = 'none';
+	}
+	
+	if(document.getElementById('in_SplObligHdrTbl_8')!=null){
+		clear_table_data("in_SplObligHdrTbl_8");
+		document.getElementById("in_SplObligHdrTbl_8").style.display = 'none';
+		}
+
+}
+function clearDetailsOfNSSF()
+{ 	
+	var taxObligationValue= document.getElementById('cmbTaxSubHead')[specialTaxObligation].value;
+	if((taxObligationValue ==NSSF) && selectedFlagNSSF>0) 
+	{
+		if(confirm (clearDataConfirm))
+		{
+			selectedFlagNSSF=0;
+			clear_table_data("taxObligationTable");
+			document.getElementById('txtTotalAmountPaidOblig').value=0;
+			commonModifyFlag=0;
+			modifyFlagTaxOblig=0;
+			deleteFlagTaxOblig=0;
+			flagPassFromIf="y";
+			return false;
+		}
+		else
+		{
+			document.getElementById('cmbTaxSubHead').selectedIndex=specialTaxObligation;
+			document.getElementById("CmbTaxPeriodLabelTd").style.display="";
+			document.getElementById("CmbTaxPeriodTd").style.display="none";
+			document.getElementById("tdCmbTaxPeriodYear").style.display="";
+			document.getElementById("noTaxPeriodTd").style.display="none";
+			document.getElementById("noTaxPeriodTd1").style.display="none";
+			document.getElementById("paymentTaxObligForm").style.display="";
+			document.getElementById('totalAmountPaidFieldSet').style.display='';
+			document.getElementById("paymentRegSpecObligationForm").style.display="none";
+			document.getElementById('paymentRegInstallmentTaxFieldSet').style.display='none';
+			document.getElementById('paymentRegAdvanceTaxFieldSet').style.display='none';
+			document.getElementById('paymentRegNTRForm').style.display='none';
+			taxSubHeadValueForPrevRecord=NSSF;
+			//	onChangeCmbTaxType(obj);
+			return true;
+		}
+	}
+	selectedFlagNSSF=0;
+	clear_table_data("taxObligationTable");
+	document.getElementById('txtTotalAmountPaidOblig').value=0;
+	commonModifyFlag=0;
+	modifyFlagTaxOblig=0;
+	deleteFlagTaxOblig=0;
+
+}
+
+function clearAllFields()
+{
+	document.getElementById('landRentDiv').style.display='none';
+	document.getElementById('stampDutyDiv').style.display='none';
+	document.getElementById('stampDutyRadioDiv').style.display='none';
+	document.getElementById('stampDutyAckNoDiv').style.display='none';
+	//document.getElementById('AdvanceTaxpaymentstDiv').style.display='none';
+	document.getElementById('SugarDevelopDiv').style.display='none'; 
+	document.getElementById('StandLevyDiv').style.display='none';
+	document.getElementById('gpbtFieldSet').style.display='none';
+	document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+	document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+	document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+	document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+	document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+	document.getElementById('txtTotalAmountPayableOTR').value="0";
+	document.getElementById('tdLblTaxPeriod').style.display='none'; 
+
+	document.getElementById('CmbTaxPeriodYearLabelOTRTd').style.display='none'; 
+	document.getElementById('tdCmbTaxPeriodYearOTR').style.display='none'; 
+	document.getElementById('CmbTaxPeriodMonthLabelOTRTd').style.display='none'; 
+
+	document.getElementById('tdCmbOtrPeriod').style.display='none'; 
+	document.getElementById('tdLblTaxPeriod1').style.display=''; 
+	document.getElementById('tdCmbOtrPeriod1').style.display=''; 
+	document.getElementById('widowsFieldSet').style.display='none';
+	isPartial="No";
+	hideTab('TabView', 5);
+	document.getElementById('btnTbl').style.display="";	
+}

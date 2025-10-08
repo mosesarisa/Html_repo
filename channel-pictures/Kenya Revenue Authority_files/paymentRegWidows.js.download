@@ -1,0 +1,590 @@
+var selectedFlagWidow=0;
+var deleteFlagWidow = 0;
+var modifyFlagWidow=0;
+var amtToPaidWidow=0;
+var TotalAmtToPaidWidow=0;
+var tempAmtValWidow=0;
+var paymentRegOTRWidowsTaxDetailsJson={"field":[{"name":"in_widowsTable_4","rule":[{"required":"y","dispName":"Gross Amount","type":"amount"}]}
+]};
+
+function addValidationWidws(row)
+{
+	resetErrorList();
+	if(validateFormFields(paymentRegOTRPeriodYearJson))
+	{
+		if(validateFormFields(paymentRegOTRPeriodMonthJson,paymentRegOTRWidowsTaxDetailsJson))
+		{
+			hideTab('TabView',5);
+			resetErrorList();
+			incError=0;
+			var checkDuplicateFlag = checkDuplicateForWidows(row);
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+			if(removeCommaFrmInput(document.getElementById('in_widowsTable_5').value)<=0)
+			{
+				alert(amtPayable);
+				return false;
+			}
+			if(removeCommaFrmInput(document.getElementById('in_widowsTable_6').value)<=0)
+			{
+				alert(amtPaid);
+				return false;
+			}
+			if(addConfirm('a_widowsTable'))
+			{
+				if(document.getElementById('a_widowsTable').innerHTML!="Modify")
+				{
+					addrow('widowsTable', '4', '9', '4', 'validateDeleteRowIntoWidowsTable', 'validateModifyRowIntoWidowsTable', 'N','N')
+				}
+				else
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			getErrTabToggle('TabView','2');	
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+			return false;
+		}
+	}
+	else
+	{
+		getErrTabToggle('TabView','2');	
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+		return false;
+	}
+
+}
+function beforeAddWidow(row)
+{
+	var checkDuplicateFlag = checkDuplicateForWidows(row);
+	if(document.getElementById('hidIsPartial').value != "Y")
+	{
+		if(checkDuplicateFlag){
+			checkDuplicateFlag = isWidowRegistered();
+		}
+	}
+	if(checkDuplicateFlag==false)
+	{
+		return false;
+	}
+	else
+	{
+		var taxPeriod=document.getElementById('cmbTaxPeriodMonth').selectedIndex;
+		var taxPeriodValue= document.getElementById('cmbTaxPeriodMonth')[taxPeriod].text;
+		var taxPeriod = document.getElementById('cmbTaxPeriodYear').selectedIndex;
+
+		var taxPeriodYear =document.getElementById('cmbTaxPeriodYear')[taxPeriod].text;
+		document.getElementById('in_widowsTable_3').value=taxPeriodValue+"-"+taxPeriodYear;
+		amtToPaidWidow=removeCommaFrmInput(document.getElementById('in_widowsTable_5').value);
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_widowsTable_11').value;
+		document.getElementById('in_widowsTable_9').value=document.getElementById('cmbTaxPeriodMonth').value;
+		TotalAmtToPaidWidow=removeCommaFrmInput(document.getElementById('in_widowsTable_6').value);
+	}
+}
+
+function afterAddWidowFunction()
+{
+	var tmpAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+	var tmpAmtToPaid=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOTR').value);
+	document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(removeCommaFrmInput(parseInt(tmpAmtToPaid,10)+parseInt(TotalAmtToPaidWidow,10)),true); 
+	document.getElementById('txtTotalAmountPayableOTR').value=convertToKenyanShillingFormatVal(removeCommaFrmInput(parseInt(tmpAmt,10)+parseInt(amtToPaidWidow,10)),true); 
+	selectedFlagWidow=selectedFlagWidow+1;
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex=0; 
+	document.getElementById('in_widowsTable_4').value=0;
+	document.getElementById('in_widowsTable_5').value=0;
+	document.getElementById('in_widowsTable_6').value=0;
+	document.getElementById('cmbTaxPeriodYear').selectedIndex=0; 
+	document.getElementById('cmbTaxPeriodMonth').disabled=true;
+	document.getElementById('in_widowsTable_11').value=document.getElementById('hidRateOfLevy').value;
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		var tabObj1 = document.getElementById('widowsTable');
+		for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+		{ 
+			document.getElementById('id_widowsTable_'+i+'_2').href = '#'; 
+			document.getElementById('id_widowsTable_'+i+'_2').style.visibility = 'hidden'; 
+		}
+		document.getElementById('widowRadio_'+rowNumbmerPartial).checked=false;
+		selectedFlagPartial=selectedFlagPartial+1;
+	}
+}
+function checkDuplicateForWidows(r)
+{
+	rows=r;
+
+	tabObj1 = document.getElementById('widowsTable');
+	var taxPeriodValue;
+	var taxPeriod = document.getElementById('cmbTaxPeriodMonth').selectedIndex;
+	var taxPeriodMonth =document.getElementById('cmbTaxPeriodMonth')[taxPeriod].text;
+	var taxPeriod = document.getElementById('cmbTaxPeriodYear').selectedIndex;
+	var taxPeriodYear =document.getElementById('cmbTaxPeriodYear')[taxPeriod].text;
+	taxPeriodValue=trim(taxPeriodMonth)+'-'+trim(taxPeriodYear);
+
+	if(tabObj1.rows.length==1)
+	{
+	}
+	else
+	{ 
+		for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+		{ 
+			if(modifyFlagWidow==1)
+			{
+				var modify;
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+				}
+				if((trim(document.getElementById('id_temp_widowsTable_'+i+'_1').value))=="Delete"  && (trim(tabObj1.rows[i].cells[3].innerHTML)==taxPeriodValue) && (trim(modify)==trim("Modify")))
+				{
+					alert(alreadyAddedDetials);
+					return false;
+				}
+			}
+			else
+			{
+				if((trim(document.getElementById('id_temp_widowsTable_'+i+'_1').value))=="Delete"  && (trim(tabObj1.rows[i].cells[3].innerHTML)==taxPeriodValue))
+				{
+					alert(alreadyAddedDetials);
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+
+}
+function clearWidowsTax()
+{
+	if(clear_table('widowsTable','6'))
+	{
+		modifyFlagWidow=0;
+		commonModifyFlag=0;
+		document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+		document.getElementById('cmbTaxPeriodYear').selectedIndex=0; 
+		document.getElementById('cmbTaxPeriodMonth').disabled=true;
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+			document.getElementById('widowRadio_'+rowNumbmerPartial).checked=false;
+		}
+		if(selectedFlagPartial==0)
+		{
+			document.getElementById('hidIsPartial').value = "N";
+		}
+		currentPaymentWidow();
+	}
+}
+
+function afterDeleteIntoWidowsTable()
+{
+	deleteFlagWidow = 1;
+	selectedFlagWidow = selectedFlagWidow -1;
+}
+function beforeModifyIntoWidowsTable(row)
+{
+	var checkDuplicateFlag = addValidationWidws(row);
+	if(checkDuplicateFlag==false)
+	{
+		return false;
+	}
+	else
+	{
+		totalAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+		amtToPaidWidow=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+		var taxPeriod=document.getElementById('cmbTaxPeriodMonth').selectedIndex;
+		var taxPeriodValue= document.getElementById('cmbTaxPeriodMonth')[taxPeriod].text;
+		var taxPeriod = document.getElementById('cmbTaxPeriodYear').selectedIndex;
+		var taxPeriodYear =document.getElementById('cmbTaxPeriodYear')[taxPeriod].text;
+		document.getElementById('in_widowsTable_3').value=taxPeriodValue+"-"+taxPeriodYear;
+		document.getElementById('in_widowsTable_9').value=document.getElementById('cmbTaxPeriodMonth').value;
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_widowsTable_11').value;
+	}
+}
+
+
+function afterModifyIntoWidowsTable()
+{
+	modifyFlagWidow = 0;
+	commonModifyFlag=0;
+	var table = document.getElementById('widowsTable');  
+	totalAmt = parseInt(removeCommaFrmInput(totalAmt),10) + parseInt(removeCommaFrmInput(table.rows[rowno].cells[5].innerHTML),10) - parseInt(removeCommaFrmInput(tempAmtValWidow),10);
+	amtToPaidWidow = parseInt(removeCommaFrmInput(amtToPaidWidow),10) + parseInt(removeCommaFrmInput(table.rows[rowno].cells[5].innerHTML),10) - parseInt(removeCommaFrmInput(TotalAmtToPaidWidow),10);
+	document.getElementById('txtTotalAmountPayableOTR').value = convertToKenyanShillingFormatVal(totalAmt, true);
+	document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(amtToPaidWidow, true);
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+	document.getElementById('cmbTaxPeriodMonth').disabled=true;
+	document.getElementById('in_widowsTable_4').value=0;
+	document.getElementById('in_widowsTable_5').value=0;
+	document.getElementById('in_widowsTable_6').value=0;
+	document.getElementById('cmbTaxPeriodYear').selectedIndex=0; 
+	document.getElementById('in_widowsTable_11').value=document.getElementById('hidRateOfLevy').value;
+}
+
+function beforeDeleteWidows()
+{
+	if(modifyFlagWidow==1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+}
+
+function validateDeleteRowIntoWidowsTable(tab_str, rowno, cols)
+{
+
+	if(deleteFlagWidow==1 && modifyFlagWidow==0)
+	{
+		var table = document.getElementById('widowsTable');
+		totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+		var tempAmt = table.rows[rowno].cells[5].innerHTML;
+		totalAmt =  parseInt(totalAmt,10) - parseInt(removeCommaFrmInput(tempAmt),10);
+		document.getElementById('txtTotalAmountPayableOTR').value = convertToKenyanShillingFormatVal(totalAmt, true);
+		amtToPaidWidow=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+		amtToPaidWidow= parseInt(amtToPaidWidow,10)-parseInt(removeCommaFrmInput(table.rows[rowno].cells[6].innerHTML),10);
+		document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(amtToPaidWidow, true);
+		deleteFlagWidow = 0;
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+			selectedFlagPartial=selectedFlagPartial-1;
+		}
+		currentPaymentWidow();
+	}
+	else
+	{
+		deleteFlagWidow = 0;
+	}
+}
+
+function validateModifyRowIntoWidowsTable(tab_str, cols_1, rowno, cols_2)
+{
+	modifyFlagWidow = 1;
+	commonModifyFlag=1;
+	tempAmtValWidow = document.getElementById('in_widowsTable_5').value;
+	TotalAmtToPaidWidow=document.getElementById('in_widowsTable_6').value;
+	var year =parseInt(document.getElementById('in_widowsTable_9').value.substr(6, document.getElementById('in_widowsTable_9').value.length),10);
+	document.getElementById('cmbTaxPeriodYear').value=year;
+	getSelectedMonthOfSelectedYearWeb('cmbTaxPeriodYear','cmbTaxPeriodMonth','false');
+	document.getElementById('cmbTaxPeriodMonth').value=document.getElementById('in_widowsTable_9').value;
+	document.getElementById('cmbTaxPeriodMonth').disabled=false;
+}
+
+function showWidowAndChildrenPartialTable(partialDetailArray){
+	if(partialDetailArray.length>=1){
+		var cntr = 0;
+		var tabObj = document.getElementById("in_SplObligHdrTbl_6");
+		for(var l = tabObj.rows.length; l >1 ;l--){
+			tabObj.deleteRow(l -1);
+		}
+		for(var i=0;i<partialDetailArray.length;i++){
+			cntr = parseInt(cntr);
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			tabRow.id="widowHdrRow_"+cntr;
+			var tabCell = new Array();
+			for (var j=0;j<13;j++){
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			var pmtSplDetailVO = partialDetailArray[i];
+			/*if(document.all)
+			{
+				var element = document.createElement("<input type = 'radio' onclick = 'onSelectWidowHdrRadio(this);'>");
+				element.setAttribute("name", "widowRadio");
+				element.setAttribute("id", "widowRadio_"+cntr);
+				element.setAttribute("value", cntr);					            
+				tabCell[0].appendChild(element);
+
+			}
+			else{
+				var element = document.createElement('input');       
+				element.setAttribute('type', 'radio');     
+				element.setAttribute('name', 'widowRadio');
+				element.setAttribute('id', 'widowRadio_'+cntr);
+				element.setAttribute('value', cntr);     
+				element.setAttribute("onclick","javascript:onSelectWidowHdrRadio(this);");
+				tabCell[0].appendChild(element);
+			}*/
+			var element = document.createElement('input');       
+			element.type ='radio';
+			element.onclick = function () {onSelectWidowHdrRadio(this);};
+			element.value = cntr;
+			element.id = 'widowRadio_'+cntr;
+			element.name = "widowRadio";
+			element.className='bordercl';
+			tabCell[0].appendChild(element); 
+
+			/*	tabCell[0].innerHTML = cntr+1;
+			tabCell[0].style.textAlign="center";
+			tabCell[0].style.fontSize="11";*/
+
+			tabCell[1].innerHTML = pmtSplDetailVO.taxPeriod;
+			tabCell[1].style.textAlign="center";
+			tabCell[1].style.fontSize="11";
+
+			tabCell[2].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.grossAmountWid).toFixed(2),true);
+			tabCell[2].style.textAlign="right";
+			tabCell[2].style.fontSize="11";
+
+			tabCell[3].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.valueOfTaxPayable).toFixed(2),true);
+			tabCell[3].style.textAlign="right";
+			tabCell[3].style.fontSize="11";
+
+			tabCell[4].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.amountPaid).toFixed(2),true);
+			tabCell[4].style.textAlign="right";
+			tabCell[4].style.fontSize="11";
+
+			tabCell[5].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.amountPayable).toFixed(2),true);
+			tabCell[5].style.textAlign="right";
+			tabCell[5].style.fontSize="11";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.bclSplObilgationHdrId;
+			element.width = "0%";
+			tabCell[6].appendChild(element);
+			tabCell[6].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.bclSplObilgationDtlId;
+			element.width = "0%";
+			tabCell[7].appendChild(element);
+			tabCell[7].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.obilgationHdrId;
+			element.width = "0%";
+			tabCell[8].appendChild(element);
+			tabCell[8].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.obilgationDtlId;
+			element.width = "0%";
+			tabCell[9].appendChild(element);
+			tabCell[9].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.fromDate;
+			element.width = "0%";
+			tabCell[10].appendChild(element);
+			tabCell[10].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.toDate;
+			element.width = "0%";
+			tabCell[11].appendChild(element);
+			tabCell[11].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.taxRateWid;
+			element.width = "0%";
+			tabCell[12].appendChild(element);
+			tabCell[12].style.display = "none";
+
+			cntr = cntr+1;
+		}
+		document.getElementById("navigationTableSplHdr").style.display = '';
+		document.getElementById("navigationTableSpltbl").style.display = '';
+		document.getElementById("in_SplObligHdrTbl_6").style.display = "";
+	}
+	else{
+
+	}
+}
+
+function onSelectWidowHdrRadio(obj)
+{
+	rowNumbmerPartial=obj.value;
+	if(selectedFlagWidow>0 && document.getElementById('hidIsPartial').value != "Y")
+	{
+		alert(cntAddPrevLiab);
+		document.getElementById('widowRadio_'+rowNumbmerPartial).checked=false;
+	}
+	else
+	{
+		//var taxPayerId=document.getElementById('hidTaxPayerId').value;
+		document.getElementById('hidIsPartial').value = "Y";
+		var rowNum = obj.value;
+		objValue=obj.value;
+		var rowRef = document.getElementById("widowHdrRow_" + rowNum);
+		bclPaymentHdrId = 0;// not of use
+		bclPaymentDtlId = 0 ;// not of use
+
+		bclSplObligHdrId = 0;
+		bclSplObliDtlId = 0;// not of use
+
+		obligationHdrId = 0;// of no use
+		obligationDtlId = 0;// used
+
+		var taxperiod = 0;
+		var taxPayableValue = 0;
+		var amounPaid = 0;
+		var amountToBePaid = 0;
+		var gorssAmount =0 ;
+		var taxRate = 2;
+
+		if(document.all)
+		{
+			taxperiod = rowRef.getElementsByTagName("TD")[1].innerText;
+			gorssAmount = rowRef.getElementsByTagName("TD")[2].innerText;
+			taxPayableValue = rowRef.getElementsByTagName("TD")[3].innerText;
+			amounPaid = rowRef.getElementsByTagName("TD")[4].innerText;
+			amountToBePaid = rowRef.getElementsByTagName("TD")[5].innerText;
+
+			bclSplObligHdrId = (rowRef.getElementsByTagName("INPUT")[1].value);
+			bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[2].value);
+			obligationHdrId = (rowRef.getElementsByTagName("INPUT")[3].value);
+			obligationDtlId = (rowRef.getElementsByTagName("INPUT")[4].value);
+
+			fromDt = (rowRef.getElementsByTagName("INPUT")[5].value);
+			toDt = (rowRef.getElementsByTagName("INPUT")[6].value);
+
+			taxRate =  (rowRef.getElementsByTagName("INPUT")[7].value);
+
+		}
+		else
+		{
+			bclSplObligHdrId = (rowRef.getElementsByTagName("INPUT")[1].value);
+			bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[2].value);
+			obligationHdrId = (rowRef.getElementsByTagName("INPUT")[3].value);
+			obligationDtlId = (rowRef.getElementsByTagName("INPUT")[4].value);
+			fromDt = (rowRef.getElementsByTagName("INPUT")[5].value);
+			toDt = (rowRef.getElementsByTagName("INPUT")[6].value);
+			taxperiod=rowRef.getElementsByTagName("TD")[1].textContent;
+			//taxPayableValue=rowRef.getElementsByTagName("TD")[2].textContent;
+			//amountToBePaid=rowRef.getElementsByTagName("TD")[4].textContent; 
+
+			
+			gorssAmount = rowRef.getElementsByTagName("TD")[2].textContent;
+			taxPayableValue = rowRef.getElementsByTagName("TD")[3].textContent;
+			amounPaid = rowRef.getElementsByTagName("TD")[4].textContent;
+			amountToBePaid = rowRef.getElementsByTagName("TD")[5].textContent;
+		}
+		var parentId=null;
+		var year  = fromDt.substring(6);
+		document.getElementById("cmbTaxPeriodYear").value = year;
+		getSelectedMonthOfSelectedYearWeb('cmbTaxPeriodYear','cmbTaxPeriodMonth','false');
+		document.getElementById('hidObligationFromDate').value=fromDt;
+		document.getElementById('hidObligationToDate').value=toDt;
+		document.getElementById("cmbTaxPeriodMonth").value =fromDt+"-"+toDt;
+		document.getElementById('in_widowsTable_4').readOnly=true;
+		document.getElementById('in_widowsTable_4').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('cmbTaxPeriodYear').disabled=true;
+		document.getElementById('cmbTaxPeriodMonth').disabled=true;
+		document.getElementById('in_widowsTable_4').value = convertToKenyanShillingFormatVal(Math.ceil(parseInt(removeCommaFrmInput(gorssAmount),10)),true);
+		document.getElementById('in_widowsTable_5').value =  convertToKenyanShillingFormatVal(Math.ceil(parseInt(removeCommaFrmInput(taxPayableValue),10)),true);
+		document.getElementById('in_widowsTable_6').value =  convertToKenyanShillingFormatVal(Math.ceil(parseInt(removeCommaFrmInput(taxPayableValue),10)),true);
+		document.getElementById('in_widowsTable_7').value = fromDt;
+		document.getElementById('in_widowsTable_8').value = toDt;
+		document.getElementById('in_widowsTable_9').value = fromDt+"-"+toDt;
+		document.getElementById('in_widowsTable_10').value = bclSplObliDtlId;
+		//document.getElementById('in_widowsTable_11').value = taxRate;
+
+	}
+}
+
+function validateWidowsDtls(id)
+{
+	var rtnFlag;
+	rtnFlag =validateFormFieldOnEvent(id,paymentRegOTRWidowsTaxDetailsJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}
+}
+function onChangeGrossAmountPaid(obj){
+	obj.value = convertToKenyanShillingFormatVal(obj.value,true);
+	var grossAmount = removeCommaFrmInput(obj.value);
+	var taxRate = document.getElementById("in_widowsTable_11").value; 
+	document.getElementById("in_widowsTable_5").value= Math.ceil(parseInt(grossAmount,10)*parseFloat(taxRate)/parseInt(100,10));
+	document.getElementById("in_widowsTable_5").value = convertToKenyanShillingFormatVal(document.getElementById("in_widowsTable_5").value,true);
+	document.getElementById('in_widowsTable_5').readOnly=true;
+	document.getElementById("in_widowsTable_6").value = document.getElementById("in_widowsTable_5").value;
+
+}
+
+function currentPaymentWidow()
+{
+	if((selectedFlagPartial==0))
+	{
+		document.getElementById('in_widowsTable_4').readOnly=false;
+		document.getElementById('in_widowsTable_4').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+		document.getElementById('cmbTaxPeriodYear').disabled=false;
+		//document.getElementById('cmbTaxPeriodMonth').disabled=false;
+		document.getElementById('in_widowsTable_11').readOnly=true;
+		document.getElementById('in_widowsTable_11').className='readonlyInput form101_textfcurr_width';
+		document.getElementById('in_widowsTable_5').readOnly=true;
+		document.getElementById('in_widowsTable_5').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('in_widowsTable_6').readOnly=true;
+		document.getElementById('in_widowsTable_6').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('hidIsPartial').value = "N";
+		document.getElementById('hidRateOfLevy').value=document.getElementById('in_widowsTable_11').value;
+		clear_Page_data('widowsTable','6');
+		document.getElementById('in_widowsTable_11').value=document.getElementById('hidRateOfLevy').value;
+		document.getElementById('cmbTaxPeriodYear').selectedIndex=0;
+		document.getElementById('cmbTaxPeriodMonth').selectedIndex=0;
+	}
+}
+
+function confirmForPartialWidow()
+{
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		if(selectedFlagPartial==0)
+		{
+			if (confirm(previousLiabilityAddingAlert))
+			{
+				return addValidationWidws();
+			}
+		}
+		else
+		{
+			return addValidationWidws();
+		}
+	}
+	else
+	{
+		return addValidationWidws();
+	}
+}
+
+function isWidowRegistered(){
+	var taxpayerId = document.getElementById('hidTaxPayerId').value;
+	var obligationId = widowAndChildrenObligationId;
+
+	var taxperiodFromDtWid = document.getElementById('cmbTaxPeriodMonth').value;
+
+	var PmtSplDetailVO = {
+			taxpayerId  : taxpayerId,
+			obligationId : obligationId,
+
+			taxperiodFromDtWid : taxperiodFromDtWid
+	};
+
+	if(isSplObligationRegisteredWeb(PmtSplDetailVO))
+		return true;
+	else
+		return false;
+
+}

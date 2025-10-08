@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['ValidateLrNoForCGT3'] == 'undefined') this.ValidateLrNoForCGT3 = {};
+
+ValidateLrNoForCGT3._path = '/KRA-Portal/dwr';
+
+ValidateLrNoForCGT3.validateLrNoForCGT3 = function(p0, p1, callback) {
+  dwr.engine._execute(ValidateLrNoForCGT3._path, 'ValidateLrNoForCGT3', 'validateLrNoForCGT3', p0, p1, callback);
+};
+
+

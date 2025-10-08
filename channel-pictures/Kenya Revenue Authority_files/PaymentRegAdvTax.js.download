@@ -1,0 +1,1110 @@
+var isFalse=0;
+var capacity=0;
+function addValidationAdvance(row)
+{
+	resetErrorList();
+	if(validateFormFields(paymentRegTaxHeadJson,paymentRegTaxDetailsJson,paymentRegPmtTtypeJson,paymentRegTaxPeriodDetailsJson,paymentRegOTRAdvTaxDetailsJson))
+	{
+		hideTab('TabView',5);
+		resetErrorList();
+		incError=0;
+		var checkDuplicateFlag = checkDuplicateForAdv(row);
+		var taxPeriod=document.getElementById('cmbTaxPeriod').value;
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		//Commented for NTSA suggestion reported on mail
+		/*if((removeCommaFrmInput(document.getElementById('in_advanceTable_7').value))<=0)
+		{
+			alert(amtPayable);
+			return false;
+		}
+		if((removeCommaFrmInput(document.getElementById('in_advanceTable_8').value))<=0)
+		{
+			alert(amtPaid);
+			return false;
+		}*/
+		else
+		{
+			if(document.getElementById('a_advanceTable').innerHTML=="Modify"){
+			if(document.getElementById('in_advanceTable_6').value!=''){
+			if(document.getElementById('cargoPasCapacity').value < cargoPassCapacity){
+				alert("Entered amount cannot be reduced than previously entered amount.");
+				document.getElementById('in_advanceTable_6').value='';
+				document.getElementById('in_advanceTable_7').value='';
+				document.getElementById('in_advanceTable_8').value='';
+				return false;
+			}
+			}
+			}
+			if(addConfirm('a_advanceTable'))
+			{
+				isFalse=0;
+				if(document.getElementById('a_advanceTable').innerHTML!="Modify")
+				{
+					addrow('advanceTable', '6', '11', '4', 'validateDeleteRowIntoAdvanceTable', 'validateModifyRowIntoAdvanceTable', 'N','N');
+				}
+				else
+				{				
+					
+					return true;
+					
+				}
+				document.getElementById('cmbTaxPeriod').value=taxPeriod;
+			}else{
+				isFalse=1;
+			}
+		}
+	}
+	else
+	{
+		getErrTabToggle('TabView','2');	
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+		return false;
+	}
+
+}
+function beforeAddAdvance(row)
+{
+	var checkDuplicateFlag = checkDuplicateForAdv(row);
+	if(document.getElementById('hidIsPartial').value != "Y" )
+	{
+		if(checkDuplicateFlag){
+			checkDuplicateFlag = isAdvanceRegistered();
+		}
+	}
+	if(checkDuplicateFlag==false)
+	{
+		return false;
+	}
+	else
+	{
+		var taxPeriod=document.getElementById('cmbTaxPeriod').selectedIndex;
+		var taxPeriodValue= document.getElementById('cmbTaxPeriod')[taxPeriod].text;
+		document.getElementById('in_advanceTable_3').value=taxPeriodValue;
+		document.getElementById('in_advanceTable_11').value=document.getElementById('cmbTaxPeriod').value;
+		document.getElementById('hidTotalAmtPaid').value=removeCommaFrmInput(document.getElementById('in_advanceTable_7').value);
+		TotalAmtToPaidAdvance=removeCommaFrmInput(document.getElementById('in_advanceTable_8').value);
+		//	alert("Tax period "+document.getElementById('cmbTaxPeriod').value);
+		document.getElementById('in_advanceTable_13').value = document.getElementById('cmbTaxPeriod').value;
+	}
+}
+function afterAddAdvance()
+{
+	var tmpAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+	var tmpAmtToPaid=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOTR').value);
+	document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(removeCommaFrmInput(parseInt(tmpAmtToPaid,10)+parseInt(TotalAmtToPaidAdvance,10)),true); 
+	document.getElementById('txtTotalAmountPayableOTR').value=convertToKenyanShillingFormatVal(removeCommaFrmInput(parseInt(tmpAmt,10)+parseInt(document.getElementById('hidTotalAmtPaid').value,10)),true); 
+	selectedFlagAdvance=selectedFlagAdvance+1;
+	document.getElementById('cmbTaxPeriod').selectedIndex=0;
+	document.getElementById('in_advanceTable_4').selectedIndex=0;
+	document.getElementById('in_advanceTable_7').value=0;
+	document.getElementById('in_advanceTable_8').value=0;
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		document.getElementById('advanceRadio_'+rowNumbmerPartial).checked=false;
+		selectedFlagPartial=selectedFlagPartial+1;
+	}
+	document.getElementById("cmbTaxPeriod").length=3;
+}
+
+function afterDeleteIntoAdvanceTable()
+{
+	deleteFlagAdvance = 1;
+	selectedFlagAdvance = selectedFlagAdvance -1;
+}
+function beforeModifyIntoAdvanceTable(row)
+{	//alert("in adv spl js : beforeModifyIntoAdvanceTable");
+		var checkDuplicateFlag = addValidationAdvance(row);
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		if(isFalse==1){
+			return false;
+		}
+		else
+		{
+			totalAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+			amtToPaidAdvance=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+			var taxPeriod=document.getElementById('cmbTaxPeriod').selectedIndex;
+			var taxPeriodValue= document.getElementById('cmbTaxPeriod')[taxPeriod].text;
+			document.getElementById('in_advanceTable_3').value=taxPeriodValue;
+			document.getElementById('in_advanceTable_11').value=document.getElementById('cmbTaxPeriod').value;
+			//document.getElementById('cmbTaxPeriod').value=document.getElementById('in_advanceTable_11').value;
+		}
+	
+}
+
+
+function afterModifyIntoAdvanceTable()
+{//alert("in adv spl js : afterModifyIntoAdvanceTable");
+	modifyFlagAdvance = 0;
+	commonModifyFlag=0;
+	var table = document.getElementById('advanceTable');  
+	
+	totalAmt = parseInt(removeCommaFrmInput(totalAmt),10) + parseInt(removeCommaFrmInput(table.rows[rowno].cells[7].innerHTML),10) - parseInt(removeCommaFrmInput(tempAmtVal),10);
+	amtToPaidAdvance = parseInt(removeCommaFrmInput(amtToPaidAdvance),10) + parseInt(removeCommaFrmInput(table.rows[rowno].cells[8].innerHTML),10) - parseInt(removeCommaFrmInput(TotalAmtToPaidAdvance),10);
+	document.getElementById('txtTotalAmountPayableOTR').value = convertToKenyanShillingFormatVal(totalAmt, true);
+	document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(amtToPaidAdvance, true);
+	document.getElementById('in_advanceTable_4').selectedIndex=0;
+	document.getElementById('cmbTaxPeriod').selectedIndex=0;
+	document.getElementById('in_advanceTable_7').value=0;
+	document.getElementById('in_advanceTable_8').value=0;
+	document.getElementById("cmbTaxPeriod").length=3;
+}
+
+function beforeDeleteAdv()
+{
+	if(modifyFlagAdvance==1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+}
+
+function validateDeleteRowIntoAdvanceTable(tab_str, rowno, cols)
+{
+
+	if(deleteFlagAdvance==1 && modifyFlagAdvance==0)
+	{
+		var table = document.getElementById('advanceTable');
+		totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPayableOTR').value);
+		var tempAmt = table.rows[rowno].cells[7].innerHTML;
+		totalAmt =  parseInt(totalAmt,10) - parseInt(removeCommaFrmInput(tempAmt),10);
+		document.getElementById('txtTotalAmountPayableOTR').value = convertToKenyanShillingFormatVal(totalAmt, true);
+		amtToPaidAdvance=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+		amtToPaidAdvance= parseInt(amtToPaidAdvance,10)-parseInt(removeCommaFrmInput(table.rows[rowno].cells[8].innerHTML),10);
+		document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(amtToPaidAdvance, true);
+		deleteFlagAdvance = 0;
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+			selectedFlagPartial=selectedFlagPartial-1;
+		}
+		currentPaymentAdvance();
+	}
+	else
+	{
+		deleteFlagAdvance = 0;
+	}
+}
+
+function validateModifyRowIntoAdvanceTable(tab_str, cols_1, rowno, cols_2)
+{
+	modifyFlagAdvance = 1;
+	commonModifyFlag=1;
+	tempAmtVal = document.getElementById('in_advanceTable_7').value;
+	TotalAmtToPaidAdvance=document.getElementById('in_advanceTable_8').value;
+	var cnt=0;
+	
+	//Added for NTSA Suggestion:starts
+	var tableStr = document.getElementById('advanceTable');
+	for(var i=0;i<tableStr.rows.length;i++){
+		cargoPassCapacity=tableStr.rows[i].cells[6].innerHTML;
+	}
+	//Added for NTSA Suggestion:ends
+	for(var a=1;a<document.getElementById("cmbTaxPeriod").length;a++)
+	{
+		if(document.getElementById("cmbTaxPeriod").value == document.getElementById('in_advanceTable_11').value)
+		{
+			cnt=1;
+			document.getElementById("cmbTaxPeriod").value =document.getElementById('in_advanceTable_11').value;
+		}
+	}
+	if(cnt==0)
+	{
+		table = document.getElementById('advanceTable');
+		var taxTypeOpt=document.getElementById("cmbTaxPeriod");
+		var option=document.createElement("option");
+		option.text=table.rows[rowno].cells[3].innerHTML;
+		
+
+		option.value=document.getElementById('in_advanceTable_11').value;
+		taxTypeOpt.add(option);
+		document.getElementById("cmbTaxPeriod").value = document.getElementById('in_advanceTable_11').value;
+	}
+}
+
+
+function fetchAdvanceTaxDetail(hdrId,obligationId)
+{
+	document.getElementById('AdvanceTaxpaymentFieldlset').style.display = 'none';
+	document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+	document.getElementById('txtTotalAmountPayableOTR').value="0";
+	FetchSpecialObligationDtlWeb.fetchSpecialObligationDtlWeb(hdrId,obligationId,function(data){
+		document.getElementById("hidgsonStrForPmtDetailDTO").value = data.gsonStrForPmtDetailDTO;
+		var AdvanceTaxDetailList = data.paymentAdvanceTaxList;
+		if(AdvanceTaxDetailList.length>=1){
+			var cntr = 0;
+			var tabObj = document.getElementById("advanceTaxDetailTable");
+			for(var l = tabObj.rows.length; l >1 ;l--){
+				tabObj.deleteRow(l -1);
+			}	
+			for(var i=0;i<AdvanceTaxDetailList.length;i++){
+				cntr = parseInt(cntr);
+				var tabRow = tabObj.insertRow(tabObj.rows.length);
+				tabRow.id="advanceTaxDetailTable"+cntr;
+				var tabCell = new Array();
+				for (var j=0;j<9;j++){
+					tabCell[j] = tabRow.insertCell(j);
+				}
+				var PaymentAdvanceTaxDetailDTO = AdvanceTaxDetailList[i];
+
+				tabCell[0].innerHTML = cntr+1;
+				tabCell[0].style.textAlign="center";
+				tabCell[0].style.fontSize="11";
+
+				tabCell[1].innerHTML = PaymentAdvanceTaxDetailDTO.typeofVehicle;
+				tabCell[1].style.textAlign="center";
+				tabCell[1].style.fontSize="11";
+
+				tabCell[2].innerHTML = PaymentAdvanceTaxDetailDTO.vehicleCapacity;
+				tabCell[2].style.textAlign="center";
+				tabCell[2].style.fontSize="11";
+
+				tabCell[3].innerHTML = PaymentAdvanceTaxDetailDTO.brand;
+				tabCell[3].style.textAlign="center";
+				tabCell[3].style.fontSize="11";
+
+				tabCell[4].innerHTML = PaymentAdvanceTaxDetailDTO.model;
+				tabCell[4].style.textAlign="center";
+				tabCell[4].style.fontSize="11";
+
+				tabCell[5].innerHTML = PaymentAdvanceTaxDetailDTO.vehiclRegistrationNumber;
+				tabCell[5].style.textAlign="center";
+				tabCell[5].style.fontSize="11";
+
+				var element = document.createElement('input');
+				element.type = 'hidden';
+				element.value =  PaymentAdvanceTaxDetailDTO.hdrId; //dtl id 
+				element.width = "0%";
+				tabCell[6].appendChild(element);
+				tabCell[6].style.display = "none";
+
+				var element = document.createElement('input');
+				element.type = 'hidden';
+				element.value = hdrId; 
+				element.width = "0%";
+				tabCell[7].appendChild(element);
+				tabCell[7].style.display = "none";
+
+				cntr = cntr+1;
+			}
+
+			document.getElementById("advanceTaxDetailTable").style.display="";
+
+		}
+
+	});
+	document.getElementById('txtTotalAmountPaidOTR').value=remainingAmountForPartial;
+	document.getElementById('txtTotalAmountPayableOTR').value=remainingAmountForPartial;
+	isPartial="yes";
+}
+
+function convertToUpperCase(obj)
+{
+	document.getElementById('in_advanceTable_5').value = obj.value.toUpperCase();
+	return true;	
+}
+
+function calcAdvSplPayment(obj)
+{
+	resetErrorList();
+	var lagguageCarryingVehicleCalc=0;
+	var lagguageCarryingVehicleCalc2024=0;
+	var passengerCarryingVehicleCalc=0;
+	var passengerCarryingVehicleCalc2024 = 0;
+	var taxPeriod = document.getElementById('cmbTaxPeriod').value;
+	var taxPeriodYear = parseInt(taxPeriod.substring(6,10));
+	document.getElementById('cargoPasCapacity').value=document.getElementById('in_advanceTable_6').value;
+	if(document.getElementById('in_advanceTable_4').value=="-1")
+	{
+		alert(selectVehicleType);
+		document.getElementById('in_advanceTable_6').value="";
+		document.getElementById('in_advanceTable_7').value=0;
+		document.getElementById('in_advanceTable_8').value=0;
+		return false;
+	}
+	if((document.getElementById('in_advanceTable_6').value>99999.99 ) || (document.getElementById('in_advanceTable_6').value<0)){
+		alert("Please enter numeric value between 0 and 99999.99");
+		document.getElementById('in_advanceTable_6').value="";
+		return false;
+		
+	}
+	capacity = document.getElementById('in_advanceTable_6').value;
+	if(capacity>0){
+		if(!isNaN(parseFloat(document.getElementById('in_advanceTable_6').value))){
+	 	var currentCapacity=parseFloat(document.getElementById('in_advanceTable_6').value);
+		if(capacity>currentCapacity){
+			document.getElementById('in_advanceTable_6').value=capacity;
+			calcAdvSplPayment(document.getElementById('in_advanceTable_6'));
+			alert("Please enter capacity greater than the Passenger Capacity/Tonnage");
+		}
+		else{
+			if(obj.value != ""){
+				if(document.getElementById('in_advanceTable_4').value==lagguageCarryingVehicle){
+					obj.value =parseFloat(obj.value).toFixed(2);
+				}else{
+					obj.value =parseInt(obj.value,10);
+				}
+				if(obj.value=="NaN"){
+					obj.value=0;
+				}
+			}
+			if(validateFormFields(paymentRegOTRAdvTaxCapacityDetailsJson))
+			{
+				hideTab('TabView',5);
+				resetErrorList();
+				incError=0;
+
+				if(document.getElementById('in_advanceTable_4').value==lagguageCarryingVehicle)
+				{
+					//Added on 29/01/2024 for Advance Tax 2024 rate change
+					if (taxPeriodYear >= 2024){
+						var amount= parseFloat(document.getElementById('in_advanceTable_6').value)*parseInt(lagguageCarryingVehicleAmtPerTon2024,10);
+						lagguageCarryingVehicleCalc2024=Math.ceil(amount.toFixed(4));	
+						if(lagguageCarryingVehicleCalc2024>lagguageCarryingVehicleAmt2024)
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleCalc2024,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleCalc2024,true);
+						}
+						else
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleAmt2024,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleAmt2024,true);
+						}
+					//Below changed on 29/01/2024 
+					//}else{
+					}else if (taxPeriodYear < 2024){
+					//End on 29/01/2024 for Advance Tax 2024 rate change
+						var amount= parseFloat(document.getElementById('in_advanceTable_6').value)*parseInt(lagguageCarryingVehicleAmtPerTon,10);
+						lagguageCarryingVehicleCalc=Math.ceil(amount.toFixed(4));	
+						if(lagguageCarryingVehicleCalc>lagguageCarryingVehicleAmt)
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleCalc,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleCalc,true);
+						}
+						else
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleAmt,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleAmt,true);
+						}
+					//Added on 29/01/2024 for Advance Tax 2024 rate change
+					}
+					else{
+						var amount= parseFloat(document.getElementById('in_advanceTable_6').value)*parseInt(lagguageCarryingVehicleAmtPerTon2024,10);
+						lagguageCarryingVehicleCalc2024=Math.ceil(amount.toFixed(4));	
+						if(lagguageCarryingVehicleCalc2024>lagguageCarryingVehicleAmt2024)
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleCalc2024,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleCalc2024,true);
+						}
+						else
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleAmt2024,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(lagguageCarryingVehicleAmt2024,true);
+						}
+					}
+					//End on 29/01/2024 for Advance Tax 2024 rate change
+				}
+				if(document.getElementById('in_advanceTable_4').value==passengerCarryingVehicle)
+				{
+					//Added on 29/01/2024 for Advance Tax 2024 rate change
+					if (taxPeriodYear >= 2024){
+						passengerCarryingVehicleCalc2024=parseInt(document.getElementById('in_advanceTable_6').value,10)*parseInt(passengerCarryingVehicleAmtPerPeson2024,10)*parseInt(12,10);	
+						if(passengerCarryingVehicleCalc2024>passengerCarryingVehicleAmt2024)
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleCalc2024,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleCalc2024,true);
+						}
+						else
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleAmt2024,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleAmt2024,true);
+						}
+					//Below changed on 29/01/2024 
+					//}else{
+					}else if (taxPeriodYear < 2024){
+					//End on 29/01/2024 for Advance Tax 2024 rate change
+						passengerCarryingVehicleCalc=parseInt(document.getElementById('in_advanceTable_6').value,10)*parseInt(passengerCarryingVehicleAmtPerPeson,10)*parseInt(12,10);	
+						if(passengerCarryingVehicleCalc>passengerCarryingVehicleAmt)
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleCalc,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleCalc,true);
+						}
+						else
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleAmt,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleAmt,true);
+						}
+					//Added on 29/01/2024 for Advance Tax 2024 rate change
+					}
+					else{
+						passengerCarryingVehicleCalc2024=parseInt(document.getElementById('in_advanceTable_6').value,10)*parseInt(passengerCarryingVehicleAmtPerPeson2024,10)*parseInt(12,10);	
+						if(passengerCarryingVehicleCalc2024>passengerCarryingVehicleAmt2024)
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleCalc2024,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleCalc2024,true);
+						}
+						else
+						{
+							document.getElementById('in_advanceTable_7').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleAmt2024,true);
+							document.getElementById('in_advanceTable_8').value=convertToKenyanShillingFormatVal(passengerCarryingVehicleAmt2024,true);
+						}
+					}
+					//End on 29/01/2024 for Advance Tax 2024 rate change
+				}
+				if(document.getElementById('in_advanceTable_6').value==0)
+				{
+					document.getElementById('in_advanceTable_7').value=0;
+					document.getElementById('in_advanceTable_8').value=0;
+				}
+				return true;
+			}
+			else
+			{
+				getErrTabToggle('TabView','2');	
+				tabview_switch('TabView', '2');
+				hideAndShowTable("errorDiv");
+				document.getElementById('btnTbl').style.display="none";
+				return false;
+			}
+
+		}
+		}
+		else{
+			document.getElementById('in_advanceTable_6').value=capacity;
+			calcAdvSplPayment(parseFloat(document.getElementById('in_advanceTable_6').value));
+			alert("Please enter numeric value");
+		}
+	 }
+	
+	
+}
+function onChangeVehicleType(value)
+{
+	document.getElementById('in_advanceTable_6').value="";
+	document.getElementById('in_advanceTable_7').value="";
+	document.getElementById('in_advanceTable_8').value="";
+	if(value==lagguageCarryingVehicle)
+	{
+		document.getElementById('lblVehicleCapacity').innerHTML = TonLoadCapacity ;
+		//document.getElementById('in_advanceTable_6').maxLength=5;
+	}
+	else if(value==passengerCarryingVehicle)
+	{
+		document.getElementById('lblVehicleCapacity').innerHTML = PassangerCapacity ;
+		//document.getElementById('in_advanceTable_6').maxLength=3;
+	}
+	else
+	{
+		document.getElementById('lblVehicleCapacity').innerHTML = "Vehicle Capacity" ;
+		//document.getElementById('in_advanceTable_6').maxLength=5;
+	}
+}
+
+function clearAdvTax()
+{
+	if(clear_table('advanceTable','8'))
+	{
+		document.getElementById('in_advanceTable_4').selectedIndex=0;
+		modifyFlagAdvance=0;
+		commonModifyFlag=0;
+		document.getElementById('cmbTaxPeriod').selectedIndex=0;
+		document.getElementById('lblVehicleCapacity').innerHTML = "Vehicle Capacity" ;
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+			document.getElementById('advanceRadio_'+rowNumbmerPartial).checked=false;
+		}
+		if(selectedFlagPartial==0)
+		{
+			document.getElementById('hidIsPartial').value = "N";
+		}
+		document.getElementById("cmbTaxPeriod").length=3;
+		currentPaymentAdvance();
+	}
+}
+
+function checkDuplicateForAdv(r)
+{
+	rows=r;
+
+	tabObj1 = document.getElementById('advanceTable');
+	var taxPeriod = document.getElementById('cmbTaxPeriod').selectedIndex;
+	var taxPeriodValue =document.getElementById('cmbTaxPeriod')[taxPeriod].text.split('-');
+	if(taxPeriodValue[2]==undefined)
+	{
+		taxPeriodValue=trim(taxPeriodValue[0])+'-'+trim(taxPeriodValue[1]);
+	}
+	else 
+	{
+		taxPeriodValue=trim(taxPeriodValue[0])+'-'+trim(taxPeriodValue[1])+'-'+trim(taxPeriodValue[2])+'-'+trim(taxPeriodValue[3]);
+	}
+	var vehicleRegistrationNumber=trim(document.getElementById('in_advanceTable_5').value).split("");
+	var vehicleRegistration="";
+	for(var i=0;i<vehicleRegistrationNumber.length;i++)
+	{
+		vehicleRegistration=vehicleRegistration+trim(vehicleRegistrationNumber[i]);
+	}
+
+	if(tabObj1.rows.length==1)
+	{
+	}
+	else
+	{ 
+		for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+		{ 
+			if(modifyFlagAdvance==1)
+			{
+				/*if((trim(document.getElementById('id_temp_advanceTable_'+i+'_1').value))=="Delete"  && (trim(tabObj1.rows[i].cells[3].innerHTML)!=taxPeriodValue) && (trim(tabObj1.rows[i].cells[2].innerText)==trim("Modify")))
+				{
+					alert("You cannot add details for more than one tax Period");
+					return false;
+				}*/
+				var modify;
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+				}
+				var tableVehicleRegisTrationnumber=trim(tabObj1.rows[i].cells[5].innerHTML).split("");
+				var  tableVehicleRegistration="";
+				for(var j=0;j<tableVehicleRegisTrationnumber.length;j++)
+				{
+					tableVehicleRegistration=tableVehicleRegistration+trim(tableVehicleRegisTrationnumber[j]);
+				}
+				if((trim(document.getElementById('id_temp_advanceTable_'+i+'_1').value))=="Delete"  && (tableVehicleRegistration.toUpperCase()==vehicleRegistration.toUpperCase())&& (trim(tabObj1.rows[i].cells[3].innerHTML)==taxPeriodValue) && (trim(modify)==trim("Modify")))
+				{
+					alert(vehicleExistsForPeriod);
+					return false;
+				}
+			}
+			else
+			{
+				/*if((trim(document.getElementById('id_temp_advanceTable_'+i+'_1').value))=="Delete"  && (trim(tabObj1.rows[i].cells[3].innerHTML)!=taxPeriodValue))
+				{
+					alert("You cannot add details for more than one tax Period");
+					return false;
+				}*/
+				var tableVehicleRegisTrationnumber=trim(tabObj1.rows[i].cells[5].innerHTML).split("");
+				var  tableVehicleRegistration="";
+				for(var j=0;j<tableVehicleRegisTrationnumber.length;j++)
+				{
+					tableVehicleRegistration=tableVehicleRegistration+trim(tableVehicleRegisTrationnumber[j]);
+				}
+				if((trim(document.getElementById('id_temp_advanceTable_'+i+'_1').value))=="Delete"  && (tableVehicleRegistration.toUpperCase()==vehicleRegistration.toUpperCase())&& (trim(tabObj1.rows[i].cells[3].innerHTML)==taxPeriodValue))
+				{
+					alert(vehicleExistsForPeriod);
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+
+}
+function showAdvancePartialTable(partialDetailArray){
+	if(partialDetailArray.length>=1){
+		var cntr = 0;
+		var tabObj = document.getElementById("in_SplObligHdrTbl_3");
+		for(var l = tabObj.rows.length; l >1 ;l--){
+			tabObj.deleteRow(l -1);
+		}	
+		for(var i=0;i<partialDetailArray.length;i++){
+			cntr = parseInt(cntr);
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			tabRow.id="advanceHdrRow_"+cntr;
+			var tabCell = new Array();
+			for (var j=0;j<13;j++){
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			var pmtSplDetailVO = partialDetailArray[i];
+/*//			if(document.all)
+//			{
+//				var element = document.createElement('input');
+//				element.type='radio';
+//				element.name="advanceRadio";
+//				element.id="advanceRadio_"+cntr;
+//				element.value= cntr;					            
+//				tabCell[0].appendChild(element);
+//
+//			}
+//			else{
+//				var element = document.createElement('input');       
+//				element.type= 'radio';     
+//				element.name='advanceRadio';
+//				element.id= 'advanceRadio_'+cntr;
+//				element.value= cntr;     
+//				element.onclick="javascript:onSelectAdvanceHdrRadio(this);";
+//				tabCell[0].appendChild(element);
+//			}
+*/			var element = document.createElement('input');       
+			element.type ='radio';
+			element.onclick = function () {onSelectAdvanceHdrRadio(this);};
+			element.value = cntr;
+			element.id = 'advanceRadio_'+cntr;
+			element.name = "advanceRadio";
+			element.className='bordercl';
+			tabCell[0].appendChild(element); 
+			
+
+			/*	tabCell[0].innerHTML = cntr+1;
+			tabCell[0].style.textAlign="center";
+			tabCell[0].style.fontSize="11";*/
+
+			tabCell[1].innerHTML = pmtSplDetailVO.taxPeriod;
+			tabCell[1].style.textAlign="center";
+			tabCell[1].style.fontSize="11";
+
+			tabCell[2].innerHTML=pmtSplDetailVO.typeofVehicleValue;
+			tabCell[2].style.textAlign="center";
+			tabCell[2].style.fontSize="11";
+
+			tabCell[3].innerHTML = pmtSplDetailVO.vehiclRegistrationNumber;
+			tabCell[3].style.textAlign="center";
+			tabCell[3].style.fontSize="11";
+
+
+			tabCell[4].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.valueOfTaxPayable).toFixed(2),true);
+			tabCell[4].style.textAlign="right";
+			tabCell[4].style.fontSize="11";
+
+			tabCell[5].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.amountPaid).toFixed(2),true);
+			tabCell[5].style.textAlign="right";
+			tabCell[5].style.fontSize="11";
+
+			tabCell[6].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.amountPayable).toFixed(2),true);
+			tabCell[6].style.textAlign="right";
+			tabCell[6].style.fontSize="11";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.bclSplObilgationHdrId;
+			element.width = "0%";
+			tabCell[7].appendChild(element);
+			tabCell[7].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.bclSplObilgationDtlId;
+			element.width = "0%";
+			tabCell[8].appendChild(element);
+			tabCell[8].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.obilgationHdrId;
+			element.width = "0%";
+			tabCell[9].appendChild(element);
+			tabCell[9].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.obilgationDtlId;
+			element.width = "0%";
+			tabCell[10].appendChild(element);
+			tabCell[10].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.fromDate;
+			element.width = "0%";
+			tabCell[11].appendChild(element);
+			tabCell[11].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value =  pmtSplDetailVO.toDate;
+			element.width = "0%";
+			tabCell[12].appendChild(element);
+			tabCell[12].style.display = "none";
+
+
+
+			cntr = cntr+1;
+		}
+		document.getElementById("navigationTableSplHdr").style.display = '';
+		document.getElementById("navigationTableSpltbl").style.display = '';
+		document.getElementById("in_SplObligHdrTbl_3").style.display = "";
+	}
+}
+
+function onSelectAdvanceHdrRadio(obj)
+{
+	rowNumbmerPartial=obj.value;
+	if(selectedFlagAdvance>0 && document.getElementById('hidIsPartial').value != "Y")
+	{
+		alert(cntAddPrevLiab);
+		document.getElementById('advanceRadio_'+rowNumbmerPartial).checked=false;
+	}
+	else
+	{
+		var taxPayerId=document.getElementById('hidTaxPayerId').value;
+		document.getElementById('hidIsPartial').value = "Y";
+		var rowNum = obj.value;
+		objValue=obj.value;
+		var rowRef = document.getElementById("advanceHdrRow_" + rowNum);
+		bclPaymentHdrId = 0;// not of use
+		bclPaymentDtlId = 0 ;// not of use
+
+		bclSplObligHdrId = 0;
+		bclSplObliDtlId = 0;// not of use
+
+		obligationHdrId = 0;// of no use
+		obligationDtlId = 0;// used
+
+		fromDt = null;
+		toDt = null;
+
+		var taxperiod;
+		var taxPayableValue;
+		var amountToBePaid;
+		startIndexStr="";
+		if(document.all)
+		{
+			bclSplObligHdrId= (rowRef.getElementsByTagName("INPUT")[1].value);
+			bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[2].value);
+			obligationHdrId = (rowRef.getElementsByTagName("INPUT")[3].value);
+			obligationDtlId = (rowRef.getElementsByTagName("INPUT")[4].value);
+			fromDt = (rowRef.getElementsByTagName("INPUT")[5].value);
+			toDt = (rowRef.getElementsByTagName("INPUT")[6].value);
+			taxperiod=rowRef.getElementsByTagName("TD")[1].innerText;
+			taxPayableValue=rowRef.getElementsByTagName("TD")[4].innerText;
+			amountToBePaid = rowRef.getElementsByTagName("TD")[6].innerText;
+
+
+			/*bclSplObligHdrId= (rowRef.getElementsByTagName("INPUT")[7].value);
+			bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[8].value);
+			obligationHdrId = (rowRef.getElementsByTagName("INPUT")[9].value);
+			obligationDtlId = (rowRef.getElementsByTagName("INPUT")[10].value);*/
+
+		}
+		else
+		{
+			bclSplObligHdrId= (rowRef.getElementsByTagName("INPUT")[1].value);
+			bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[2].value);
+			obligationHdrId = (rowRef.getElementsByTagName("INPUT")[3].value);
+			obligationDtlId = (rowRef.getElementsByTagName("INPUT")[4].value);
+			fromDt = (rowRef.getElementsByTagName("INPUT")[5].value);
+			toDt = (rowRef.getElementsByTagName("INPUT")[6].value);
+			taxperiod=rowRef.getElementsByTagName("TD")[1].textContent;
+			taxPayableValue	= rowRef.getElementsByTagName("TD")[4].textContent;
+			amountToBePaid = rowRef.getElementsByTagName("TD")[6].textContent;
+
+		}
+		document.getElementById('hidObligationFromDate').value=fromDt;
+		document.getElementById('hidObligationToDate').value=toDt;
+
+		//document.getElementById("cmbTaxPeriod").value =taxperiod;
+		document.getElementById("cmbTaxPeriod").value =fromDt+"-"+toDt;
+		document.getElementById("in_advanceTable_13").value = fromDt+"-"+toDt;
+		
+		var cnt=0;
+		for(var a=1;a<document.getElementById("cmbTaxPeriod").length;a++)
+		{
+			if(document.getElementById("cmbTaxPeriod").value == fromDt+"-"+toDt)
+			{
+				cnt=1;
+				document.getElementById("cmbTaxPeriod").value = fromDt+"-"+toDt;
+			}
+		}
+		if(cnt==0)
+		{
+			var taxTypeOpt=document.getElementById("cmbTaxPeriod");
+			var option=document.createElement("option");
+			option.text=taxperiod;
+			option.value=fromDt+"-"+toDt;
+			taxTypeOpt.add(option);
+			document.getElementById("cmbTaxPeriod").value = fromDt+"-"+toDt;
+		}
+		
+		
+		
+		var parentId=null;
+		FetchSpecialObligationDtlWeb.fetchSpecialObligationDtlWeb(bclSplObliDtlId,advanceObligationId,taxPayerId,parentId,startIndexStr,{async:false,callback:function(data)
+			{
+			if(data!=null)
+			{
+				var pmtSplDetailVOList=data;
+				if(pmtSplDetailVOList.length>=1 && pmtSplDetailVOList[0].isDataAvailable == "Y")
+				{
+					var pmtSplDetailVO = pmtSplDetailVOList[0];
+					for(var i=3; i<14;i++)
+					{
+						document.getElementById('in_advanceTable_'+i).readOnly=true;
+						if(document.getElementById('in_advanceTable_'+i).className=='form101_textfcurr form101_textfcurr_width textonlyRight')
+						{
+							document.getElementById('in_advanceTable_'+i).className='readonlyInput form101_textfcurr_width textonlyRight';
+						}
+						else
+						{
+							document.getElementById('in_advanceTable_'+i).className='readonlyInput form101_textfcurr_width';
+						}
+					}
+					//document.getElementById('in_advanceTable_4').disabled=true;
+					document.getElementById('cmbTaxPeriod').disabled=true;
+					document.getElementById('in_advanceTable_8').readOnly=false;
+					document.getElementById('in_advanceTable_8').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+
+					if(pmtSplDetailVO.typeofVehicle != null && pmtSplDetailVO.typeofVehicle != "")
+					{
+						document.getElementById('in_advanceTable_4').value = pmtSplDetailVO.typeofVehicle;
+						if(pmtSplDetailVO.typeofVehicle==lagguageCarryingVehicle)
+						{
+							document.getElementById('lblVehicleCapacity').innerHTML = TonLoadCapacity ;
+						}
+						else if(pmtSplDetailVO.typeofVehicle==passengerCarryingVehicle)
+						{
+							document.getElementById('lblVehicleCapacity').innerHTML = PassangerCapacity ;
+						}
+						else
+						{
+							document.getElementById('lblVehicleCapacity').innerHTML = "Vehicle Capacity" ;
+						}
+
+					}
+					if(pmtSplDetailVO.vehiclRegistrationNumber != null &&pmtSplDetailVO.vehiclRegistrationNumber != "")
+					{
+						document.getElementById('in_advanceTable_5').value = pmtSplDetailVO.vehiclRegistrationNumber;
+					}
+					if(pmtSplDetailVO.brand != null &&pmtSplDetailVO.brand != "")
+					{
+						document.getElementById('in_advanceTable_9').value = pmtSplDetailVO.brand;
+					}
+					if(pmtSplDetailVO.model != null &&pmtSplDetailVO.model != "")
+					{
+						document.getElementById('in_advanceTable_10').value = pmtSplDetailVO.model;
+					}
+					if(pmtSplDetailVO.vehicleCapacity != null &&pmtSplDetailVO.vehicleCapacity != "")
+					{
+						document.getElementById('in_advanceTable_6').value = pmtSplDetailVO.vehicleCapacity;
+					}
+					if(pmtSplDetailVO.typeofVehicle==passengerCarryingVehicle){
+						document.getElementById("in_advanceTable_6").value=parseInt(document.getElementById("in_advanceTable_6").value,10)
+					} 				
+					document.getElementById('in_advanceTable_7').value = convertToKenyanShillingFormatVal(Math.ceil(parseInt(removeCommaFrmInput(taxPayableValue),10)),true);
+					document.getElementById('in_advanceTable_8').value = convertToKenyanShillingFormatVal(Math.ceil(parseInt(removeCommaFrmInput(amountToBePaid),10)),true);
+					document.getElementById('in_advanceTable_12').value = bclSplObliDtlId;
+				}
+			}
+			}});
+	}
+}
+function validateAdvDtls(id)
+{
+	//var loadCapacity=document.getElementById('in_advanceTable_6').value;
+	//document.getElementById('in_advanceTable_6').value= parseFloat(loadCapacity).toFixed(2);
+	
+	var val=(document.getElementById('in_advanceTable_5').value).toUpperCase();
+	document.getElementById('in_advanceTable_5').value=val;
+	if(document.getElementById('in_advanceTable_4').value=="-1")
+	{
+		document.getElementById('lblVehicleCapacity').innerHTML = "Vehicle Capacity" ;
+	}
+	/*var rtnFlag;
+	rtnFlag =validateFormFieldOnEvent(id,paymentRegOTRAdvTaxDetailsJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}*/
+	
+	//Added for fetching the vehicle details from NTSA for advance tax
+	getVehicleDtlsFromNTSA();
+	
+}
+function currentPaymentAdvance()
+{
+	if((selectedFlagPartial==0))
+	{
+		for(var i=3; i<14;i++)
+		{
+			document.getElementById('in_advanceTable_'+i).readOnly=false;
+			if(document.getElementById('in_advanceTable_'+i).className=='readonlyInput form101_textfcurr_width textonlyRight' || document.getElementById('in_advanceTable_'+i).className=='form101_textfcurr form101_textfcurr_width textonlyRight')
+			{
+				document.getElementById('in_advanceTable_'+i).className='form101_textfcurr form101_textfcurr_width textonlyRight';
+			}
+			else
+			{
+				document.getElementById('in_advanceTable_'+i).className='form101_textfcurr form101_textfcurr_width';
+			}
+		}
+		//document.getElementById('in_advanceTable_4').disabled=true;
+		document.getElementById('cmbTaxPeriod').disabled=false;
+		document.getElementById('in_landRentTable_6').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+		document.getElementById('in_advanceTable_7').readOnly=true;
+		document.getElementById('in_advanceTable_7').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('hidIsPartial').value = "N";
+		clear_Page_data('advanceTable','8');
+		document.getElementById('in_advanceTable_4').selectedIndex=0;
+		document.getElementById('cmbTaxPeriod').selectedIndex=0;
+	}
+}
+
+function confirmForPartialAdvance()
+{
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		if(selectedFlagPartial==0)
+		{
+			if (confirm(previousLiabilityAddingAlert))
+			{
+				return addValidationAdvance();
+			}
+		}
+		else
+		{
+			return addValidationAdvance();
+		}
+	}
+	else
+	{
+		return addValidationAdvance();
+	}
+}
+
+
+
+function isAdvanceRegistered(){
+	var taxpayerId = document.getElementById('hidTaxPayerId').value;
+	var obligationId = advanceObligationId;
+
+	var typeofVehicle = document.getElementById('in_advanceTable_4').value;
+	var vehiclRegistrationNumber = document.getElementById('in_advanceTable_5').value;
+	var taxPeriodSplAdvance = document.getElementById('cmbTaxPeriod').value;
+
+	var PmtSplDetailVO = {
+			taxpayerId  : taxpayerId,
+			obligationId : obligationId,
+
+			typeofVehicle : typeofVehicle,
+			vehiclRegistrationNumber  : vehiclRegistrationNumber,
+			taxPeriodSplAdvance : taxPeriodSplAdvance
+	};
+
+	if(isSplObligationRegisteredWeb(PmtSplDetailVO))
+		return true;
+	else
+		return false;
+
+}
+
+//Added for fetching the vehicle details from NTSA Main Table for advance tax:start
+function getVehicleDtlsFromNTSA(){
+	var vehicleNo= document.getElementById('in_advanceTable_5').value;
+	var pin=document.getElementById('txtPin').value;
+	
+	
+	if(vehicleNo!="" || vehicleNo!=null){
+		FetchVehicleDtlsForAdvTax.fetchVehicleDtlsForAdvTax(vehicleNo,pin,function(data){
+			if(data.errorMsg!=null && data.errorMsg!="" ){
+				if(data.errorMsg.includes("Invalid Owner")){
+					document.getElementById('in_advanceTable_5').value="";
+					alert("Please enter valid Vehicle Registraion Number");
+				}
+				else{
+					fetchVehicleDtlsFromNTSAWebService();
+				}
+			
+				
+			}
+			else{
+				document.getElementById('in_advanceTable_9').value=data.bodyType;
+				document.getElementById('in_advanceTable_10').value=data.make;
+				document.getElementById('in_advanceTable_6').value=data.passengerCapacity;
+				capacity=data.passengerCapacity;
+				if(data.typeOfVehicle=='P' || data.typeOfVehicle=='p'){
+					document.getElementById('in_advanceTable_4').selectedIndex=2;
+				}
+				else{
+					document.getElementById('in_advanceTable_4').selectedIndex=1;
+					document.getElementById('in_advanceTable_6').value=(data.passengerCapacity)/1000;
+					capacity=(data.passengerCapacity)/1000;
+					
+				}
+				document.getElementById('in_advanceTable_8').disabled=true;
+				calcAdvSplPayment(document.getElementById('in_advanceTable_6'));
+			}
+			
+		})
+		
+	}
+	
+}
+
+//Added for fetching the vehicle details from NTSA Main Table for advance tax:End
+
+function fetchVehicleDtlsFromNTSAWebService(){
+	var vehicleNo= document.getElementById('in_advanceTable_5').value;
+/*	 jQuery.ajax({
+			url: "${pageContext.request.contextPath}/paymentRegistration.htm?actionCode=fetchVehicleDtlsFromNTSA",
+			cache: false,
+			data:"vehicleNo="+vehicleNo,
+			type:'post',
+			dataType:'html',
+		    success: function (data) {
+		    	$.each(response, function (index, value) {
+		    		document.getElementById('in_advanceTable_9').value=value.bodyType;
+					document.getElementById('in_advanceTable_10').value=value.make;
+					document.getElementById('in_advanceTable_6').value=value.passengerCapacity;
+					calcAdvSplPayment(document.getElementById('in_advanceTable_6'));         
+		    		});
+		    	
+		    }
+		});*/
+	if(vehicleNo!="" || vehicleNo!=null){
+		FetchVehicleDtlsFromNTSA.fetchVehicleDtlsFromNTSA(vehicleNo,function(data){
+			if(data.errorMsg!=null && data.errorMsg!="" ){
+				document.getElementById('in_advanceTable_5').value="";
+				alert(data.errorMsg);
+				
+			}
+			else{
+				if(data.purpose=='PSV' || data.purpose=='psv'){
+					document.getElementById('in_advanceTable_4').selectedIndex=2;
+					document.getElementById('in_advanceTable_6').value=data.passengerCapacity;
+					document.getElementById('in_advanceTable_5').value=data.VRN;
+					capacity=data.passengerCapacity;
+					onChangeVehicleType('PCV');
+					document.getElementById('in_advanceTable_9').value=data.bodyType;
+					document.getElementById('in_advanceTable_10').value=data.make;
+					document.getElementById('in_advanceTable_8').disabled=true;
+					calcAdvSplPayment(document.getElementById('in_advanceTable_6'));
+					
+				}
+				else if(data.purpose=='Commercial' || data.purpose=='commercial'){
+					document.getElementById('in_advanceTable_4').selectedIndex=1;
+					document.getElementById('in_advanceTable_6').value=(data.tonnage)/1000;
+					capacity=(data.tonnage)/1000;
+					onChangeVehicleType('LCV');
+					document.getElementById('in_advanceTable_5').value=data.VRN;
+					document.getElementById('in_advanceTable_9').value=data.bodyType;
+					document.getElementById('in_advanceTable_10').value=data.make;
+					document.getElementById('in_advanceTable_8').disabled=true;
+					calcAdvSplPayment(document.getElementById('in_advanceTable_6'));
+					
+				}
+				else{
+					document.getElementById('in_advanceTable_5').value="";
+					alert("Please note that you are not entitled to pay Advance Taxes for this vehicle");
+				}
+				
+				
+			}
+			
+		})
+		
+	
+	}
+}

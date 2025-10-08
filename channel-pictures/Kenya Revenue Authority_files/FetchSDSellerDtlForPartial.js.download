@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchSDSellerDtlForPartial'] == 'undefined') this.FetchSDSellerDtlForPartial = {};
+
+FetchSDSellerDtlForPartial._path = '/KRA-Portal/dwr';
+
+FetchSDSellerDtlForPartial.fetchSDSellerDtlForPartial = function(p0, p1, p2, callback) {
+  dwr.engine._execute(FetchSDSellerDtlForPartial._path, 'FetchSDSellerDtlForPartial', 'fetchSDSellerDtlForPartial', p0, p1, p2, callback);
+};
+
+

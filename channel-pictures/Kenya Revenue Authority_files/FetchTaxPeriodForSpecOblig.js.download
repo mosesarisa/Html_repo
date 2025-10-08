@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchTaxPeriodForSpecOblig'] == 'undefined') this.FetchTaxPeriodForSpecOblig = {};
+
+FetchTaxPeriodForSpecOblig._path = '/KRA-Portal/dwr';
+
+FetchTaxPeriodForSpecOblig.fetchTaxPeriodForSpecOblig = function(p0, p1, p2, p3, callback) {
+  dwr.engine._execute(FetchTaxPeriodForSpecOblig._path, 'FetchTaxPeriodForSpecOblig', 'fetchTaxPeriodForSpecOblig', p0, p1, p2, p3, callback);
+};
+
+

@@ -1,0 +1,2320 @@
+var taxPayerType=null;
+var citizenshipCode=null;
+var propertyValueDelimiterStandard="@@";
+var columnsDelimiterStandard="****";
+TotalAmnt=0;
+ItAmnt=0;
+var TotalAssmntAmtForIT=0;
+var ITWithHoldingAssmntTax=0;
+var indiNonIndiCheck=true;
+//added for allowing partial payment 
+var isModifyActive=false;
+var ITModifyId;
+function resetWithholdeeInfoInWith(){
+	document.getElementById('in_withholdeeFormTable_3').value="";
+	document.getElementById('in_withholdeeFormTable_4').value="";
+	document.getElementById('in_withholdeeFormTable_12').value="";
+	document.getElementById('in_withholdeeFormTable_10').value = "";
+	document.getElementById('in_withholdeeFormTable_15').value = ""; 
+//	document.getElementById('withholStatus').value="";
+
+}
+
+function onchangeWithholPINWith(obj)
+{
+	var pin = trim(obj.value);
+	if(validPIN(obj)){
+		FetchTaxpayerDetailWithoutValidationSplObl.fetchTaxpayerDetailWithoutValidationSplObl(pin,{async:false,callback: function(data){
+			if(data != NULL &&  data != null){
+				if(data.isDataAvailable == N_FLAG){
+					if(data.isAgent == ERROR ||data.isAgent == NO_CALL_MADE){ // Handled Scenario : 1) if no call made from Controller to impl 2) impl to facade
+						alert(errorFetchingData);
+					}
+					else if(data.isAgent == NO_DETAILS_FOUND){// Handled Scenario : 1) call made to facade with invalid PIN
+						alert(validPin);
+					}
+					resetWithholdeeInfoInWith();
+					return false;
+				}
+				//Added by Mingu for handling PIN Without obligation :: START
+				if(data.isPinWithNoOblig != null && data.isPinWithNoOblig == 'Y'){
+					alert("This PIN is non-transactional and will require additional of the relevant obligations to progress")
+					resetWithholdeeInfoInWith();
+					return false;
+				}
+				//Added by Mingu for handling PIN Without obligation :: END
+				if(data.taxPayerFirstName != null || data.taxPayerId != null){
+					document.getElementById('in_withholdeeFormTable_4').readOnly=true;
+					document.getElementById('in_withholdeeFormTable_12').readOnly=true;
+					document.getElementById('in_withholdeeFormTable_15').readOnly=true;
+					document.getElementById('in_withholdeeFormTable_4').className='readonlyInput form101_textfcurr_width';
+					document.getElementById('in_withholdeeFormTable_12').className='readonlyInput form101_textfcurr_width';
+					document.getElementById('in_withholdeeFormTable_15').className='readonlyInput form101_textfcurr_width';
+					document.getElementById('in_withholdeeFormTable_10').value = data.taxPayerId;
+					document.getElementById('in_withholdeeFormTable_4').value=data.taxPayerFirstName;
+					document.getElementById('in_withholdeeFormTable_15').value=data.emailId;
+					dwr.util.setValue('withholAddressWith',data.taxPayerFullAddr);
+					taxPayerType=data.taxPayerType;
+					citizenshipCode=data.taxPayerCitizenshipCode;
+					toCheckPinIndiOrNonIndi();
+					//Added by Mingu to avoid malicious characters :: START
+					var tpName = data.taxPayerFirstName;
+					var tpAddress = data.taxPayerFullAddr;
+					tpName = tpName.replace("'","");
+					tpAddress = tpAddress.replace("'","");
+					document.getElementById('in_withholdeeFormTable_4').value=tpName;
+					dwr.util.setValue('withholAddressWith',tpAddress);
+					//Added by Mingu to avoid malicious characters :: END
+					// changes made for the suggestion in PR#52 and MOM  15022016v1.0
+					//errorDTOList=this.checkForCitizenship(pmtCustomDTO.getPmtSplWithholidingDtlDTOList());
+					/*if(indiNonIndiCheck){
+						checkResidentOrNonResident();
+					}*/
+					indiNonIndiCheck=true;
+				}
+				if(data.taxPayerFirstName == NULL || data.taxPayerFirstName == null){
+					resetWithholdeeInfoInWith();
+					alert(validPin);
+					
+					return false;
+				}
+			}
+			else{
+				alert(errorFetchingData);
+				resetWithholdeeInfoInWith();
+				return false;
+			}
+
+		}});
+		return true;
+	}
+	else{
+		resetWithholdeeInfoInWith();
+		return false;
+	}
+}
+function calcWithHoldingTax()
+{
+	var grossAmt=removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_7').value);
+	if(grossAmt!="")
+	{
+		taxRateWithHoldee=document.getElementById('in_withholdeeFormTable_8').value;
+		var transType=document.getElementById('in_withholdeeFormTable_6').value;
+		var status=document.getElementById('in_withholdeeFormTable_11').value; 
+		if(transType!=-1 && status!=-1)
+		{
+			if(transType=="WHT_0600" && status=="R" )
+			{
+				document.getElementById('in_withholdeeFormTable_8').value;
+			}
+			else
+			{
+				withHoldingTax=Math.ceil(parseInt(grossAmt,10)*parseFloat(taxRateWithHoldee)/parseInt(100,10));
+				document.getElementById('in_withholdeeFormTable_9').value=convertToKenyanShillingFormatVal(withHoldingTax,true);
+			}
+		}
+		document.getElementById('in_withholdeeFormTable_7').value=convertToKenyanShillingFormatVal(grossAmt,true);
+	}
+}
+
+function beforeAddWithHoldeeFunction(row)
+{
+	checkWithholdeeNameAndPin();
+	var checkDuplicateFlag = checkMonthYearInAddRow(row,'withholdeeFormTable');  
+	if(document.getElementById('hidIsPartial').value != "Y")
+	{
+		if(checkDuplicateFlag){
+			checkDuplicateFlag = isWithholdeeRegistered();
+		}
+	}
+	if(checkDuplicateFlag==false)
+	{
+		return false;
+	}
+
+	else
+	{
+		var checkDuplicateFlag = checkDuplicateWithholdee(row,'withholdeeFormTable');
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		else
+		{
+			taxRateWithHoldee=document.getElementById('in_withholdeeFormTable_8').value;
+			withHoldingTax=removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_9').value);
+			amtToPaidWithHoldee=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+		}
+	}
+}
+
+function afterAddWithHoldeeFunction(rows)
+{
+	amtToPaidWithHoldee=convertToKenyanShillingFormatVal(parseInt(withHoldingTax,10)+parseInt(amtToPaidWithHoldee,10),true);
+	document.getElementById('in_withholdeeFormTable_8').value=0;
+	document.getElementById('in_withholdeeFormTable_9').value=0;
+	document.getElementById('txtTotalAmountPaidOblig').value=amtToPaidWithHoldee;
+//	document.getElementById('withholStatus').value="";
+	document.getElementById('in_withholdeeFormTable_14').value="OTR";
+	document.getElementById('in_withholdeeFormTable_14').disabled=true;
+	document.getElementById('in_withholdeeFormTable_6').selectedIndex=0;
+	selectedFlagWithHoldee=selectedFlagWithHoldee+1;
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		var tabObj1 = document.getElementById('withholdeeFormTable');
+		for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+		{ 
+			document.getElementById('id_withholdeeFormTable_'+i+'_2').href = '#'; 
+			document.getElementById('id_withholdeeFormTable_'+i+'_2').style.visibility = 'hidden'; 
+		}
+		document.getElementById('withHoldeeRadio_'+rowNumbmerPartial).checked=false;
+		selectedFlagPartial=selectedFlagPartial+1;
+	}
+	document.getElementById('in_withholdeeFormTable_8').style.display="";
+	document.getElementById('WithholdingTax').style.display="";
+	document.getElementById('in_withholdeeFormTable_9').readOnly=true;
+	document.getElementById('in_withholdeeFormTable_9').className='readonlyInput form101_textfcurr_width textonlyRight';
+	document.getElementById('in_withholdeeFormTable_4').readOnly=true;
+	document.getElementById('in_withholdeeFormTable_12').readOnly=true;
+	document.getElementById('in_withholdeeFormTable_15').readOnly=true;
+	document.getElementById('in_withholdeeFormTable_4').className='readonlyInput form101_textfcurr_width';
+	document.getElementById('in_withholdeeFormTable_12').className='readonlyInput form101_textfcurr_width';
+	document.getElementById('in_withholdeeFormTable_15').className='readonlyInput form101_textfcurr_width';
+	createSkipFieldForAddRow('withholdeeFormTable','paymentRegForm');
+	sessionTimeOut=sessionTime;
+	displaySessionTimeOut();
+
+}
+
+
+
+function beforeAddWebWithHoldeeFunction(row)
+{
+
+}	
+
+function afterAddWebWithHoldeeFunction(rows)
+{
+}
+
+
+
+
+function addWebWithHoldeeData(){
+	resetErrorList();	
+	if(addConfirm('a_withholdeeWebFormTable'))
+	{
+		if(checkDuplicateRowsForWebWithholdee())
+		{
+			if(document.getElementById('a_withholdeeWebFormTable').innerHTML!="Modify")
+			{			
+				addrow('withholdeeWebFormTable', '3', '3','5','','','N','N');
+
+			}
+			else
+			{
+				return true;
+			}
+		}
+		
+	}
+	else{
+		isFalse=1;
+	}
+
+}
+
+function addWithHoldeeData(row)
+{
+	resetErrorList();
+	if(validateFormFields(withHoldeeJson))
+	{
+		if(document.getElementById('isPinReq').value=="y" || document.getElementById('isPinReq').value=="Y")
+		{
+			if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y")
+			{
+				document.getElementById('in_withholdeeFormTable_3').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_3').className='readonlyInput form101_textfcurr_width';
+			}
+			document.getElementById('in_withholdeeFormTable_4').readOnly=true;
+			document.getElementById('in_withholdeeFormTable_12').readOnly=true;
+			document.getElementById('in_withholdeeFormTable_15').readOnly=true;
+			document.getElementById('in_withholdeeFormTable_4').className='readonlyInput form101_textfcurr_width';
+			document.getElementById('in_withholdeeFormTable_12').className='readonlyInput form101_textfcurr_width';
+			document.getElementById('in_withholdeeFormTable_15').className='readonlyInput form101_textfcurr_width';
+			if(validateFormFields(withHoldeeComboJson))
+			{
+				hideTab('TabView',2);
+				resetErrorList();
+				incError=0;
+				var checkDuplicateFlag = true;//checkMonthYearInAddRow(row,'withholdeeFormTable');
+				if(checkDuplicateFlag==false)
+				{
+					return false;
+				}
+				var checkDuplicateFlag = true;//checkDuplicateWithholdee(row,'withholdeeFormTable');
+				if(checkDuplicateFlag==false)
+				{
+					return false;
+				}
+				if( removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_7').value)>0  &&  removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_9').value)>0 )
+				{
+					if(addConfirm('a_withholdeeFormTable'))
+					{
+						if(document.getElementById('a_withholdeeFormTable').innerHTML!="Modify")
+						{
+							if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+							{
+								addrow('withholdeeFormTable', '7', '18','4','validateDeleteRowWithHoldeeTable','validateModifyRowWithHoldeeTable','N','N','','7,8');
+							}
+							else
+							{
+								addrow('withholdeeFormTable', '7', '18','4','validateDeleteRowWithHoldeeTable','validateModifyRowWithHoldeeTable','N','N');
+							}
+						}
+						else
+						{
+							return true;
+						}
+					}
+					else{
+						isFalse=1;
+					}
+				}
+				else
+				{
+					document.getElementById('in_withholdeeFormTable_9').value=0;
+					document.getElementById('in_withholdeeFormTable_7').value="";
+					alert(taxGreaterThanZero);
+					return false;
+				}
+			}
+			else
+			{
+				getErrTabToggle('TabView','2');	
+				tabview_switch('TabView', '2');
+				hideAndShowTable("errorDiv");
+				document.getElementById('btnTbl').style.display="none";
+			}
+		}
+		if(document.getElementById('isPinReq').value=="n" || document.getElementById('isPinReq').value=="N")
+		{
+			if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y")
+			{
+				document.getElementById('in_withholdeeFormTable_3').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_3').className='readonlyInput form101_textfcurr_width';
+
+				document.getElementById('in_withholdeeFormTable_12').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_12').className='readonlyInput form101_textfcurr_width';
+
+				document.getElementById('in_withholdeeFormTable_15').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_15').className='readonlyInput form101_textfcurr_width';
+
+				document.getElementById('in_withholdeeFormTable_4').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_4').className='readonlyInput form101_textfcurr_width';
+			}
+			else
+			{
+				document.getElementById('in_withholdeeFormTable_4').readOnly=false;
+				document.getElementById('in_withholdeeFormTable_12').readOnly=false;
+				document.getElementById('in_withholdeeFormTable_3').readOnly=false;
+				document.getElementById('in_withholdeeFormTable_3').className='form101_textfcurr form101_textfcurr_width';
+				document.getElementById('in_withholdeeFormTable_15').readOnly=false;
+				document.getElementById('in_withholdeeFormTable_4').className='form101_textfcurr form101_textfcurr_width';
+				document.getElementById('in_withholdeeFormTable_12').className='form101_textfcurr form101_textfcurr_width';
+				document.getElementById('in_withholdeeFormTable_15').className='form101_textfcurr form101_textfcurr_width';
+			}
+
+			var whtDtlsRequr=document.getElementById('isWhtDtlReq').value;
+
+			if(	whtDtlsRequr=='Y' || whtDtlsRequr=='y')
+			{
+				if(validateFormFields(withHoldeePinNotRequired))
+				{
+					hideTab('TabView',2);
+					resetErrorList();
+					incError=0;
+					var checkDuplicateFlag = true;//checkMonthYearInAddRow(row,'withholdeeFormTable');
+					if(checkDuplicateFlag==false)
+					{
+						return false;
+					}
+					var checkDuplicateFlag = true;//checkDuplicateWithholdee(row,'withholdeeFormTable');
+					if(checkDuplicateFlag==false)
+					{
+						return false;
+					}
+					if( removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_7').value)>0  &&  removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_9').value)>0 )
+					{
+						if(addConfirm('a_withholdeeFormTable'))
+						{
+							if(document.getElementById('a_withholdeeFormTable').innerHTML!="Modify")
+							{
+								if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+								{
+									addrow('withholdeeFormTable', '7', '18','4','validateDeleteRowWithHoldeeTable','validateModifyRowWithHoldeeTable','N','N','','7,8');
+								}
+								else
+								{
+									addrow('withholdeeFormTable', '7', '18','4','validateDeleteRowWithHoldeeTable','validateModifyRowWithHoldeeTable','N','N');
+								}
+							}
+							else
+							{
+								return true;
+							}
+						}
+						else{
+							isFalse=1;
+						}
+					}
+					else
+					{
+						document.getElementById('in_withholdeeFormTable_9').value=0;
+						document.getElementById('in_withholdeeFormTable_7').value="";
+						alert(taxGreaterThanZero);
+						return false;
+					}
+				}
+				else
+				{
+					getErrTabToggle('TabView','2');	
+					tabview_switch('TabView', '2');
+					hideAndShowTable("errorDiv");
+					document.getElementById('btnTbl').style.display="none";
+				}
+			}
+			if(whtDtlsRequr=='O' || whtDtlsRequr=='o')
+			{
+				hideTab('TabView',2);
+				resetErrorList();
+				incError=0;
+				var checkDuplicateFlag = true;//checkMonthYearInAddRow(row,'withholdeeFormTable');
+				if(checkDuplicateFlag==false)
+				{
+					return false;
+				}
+				var checkDuplicateFlag = true;//checkDuplicateWithholdee(row,'withholdeeFormTable');
+				if(checkDuplicateFlag==false)
+				{
+					return false;
+				}
+				if( removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_7').value)>0  &&  removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_9').value)>0 )
+				{
+					if(addConfirm('a_withholdeeFormTable'))
+					{
+						if(document.getElementById('a_withholdeeFormTable').innerHTML!="Modify")
+						{
+							if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+							{
+								addrow('withholdeeFormTable', '7', '18','4','validateDeleteRowWithHoldeeTable','validateModifyRowWithHoldeeTable','N','N','','7,8');
+							}
+							else
+							{
+								addrow('withholdeeFormTable', '7', '18','4','validateDeleteRowWithHoldeeTable','validateModifyRowWithHoldeeTable','N','N');
+							}
+						}
+						else
+						{
+							return true;
+						}
+					}
+					else{
+						isFalse=1;
+					}
+				}
+				else
+				{
+					document.getElementById('in_withholdeeFormTable_9').value=0;
+					document.getElementById('in_withholdeeFormTable_7').value="";
+					alert(taxGreaterThanZero);
+					return false;
+				}
+			}
+			if(whtDtlsRequr=='N' || whtDtlsRequr=='n')
+			{
+				document.getElementById('in_withholdeeFormTable_4').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_12').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_15').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_3').readOnly=true;
+				document.getElementById('in_withholdeeFormTable_3').className='readonlyInput form101_textfcurr_width';
+				document.getElementById('in_withholdeeFormTable_4').className='readonlyInput form101_textfcurr_width';
+				document.getElementById('in_withholdeeFormTable_12').className='readonlyInput form101_textfcurr_width';
+				document.getElementById('in_withholdeeFormTable_15').className='readonlyInput form101_textfcurr_width';
+				hideTab('TabView',2);
+				resetErrorList();
+				incError=0;
+				var checkDuplicateFlag = true;//checkMonthYearInAddRow(row,'withholdeeFormTable');
+				if(checkDuplicateFlag==false)
+				{
+					return false;
+				}
+				var checkDuplicateFlag = true;//checkDuplicateWithholdee(row,'withholdeeFormTable');
+				if(checkDuplicateFlag==false)
+				{
+					return false;
+				}
+				if( removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_7').value)>0  &&  removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_9').value)>0 )
+				{
+					if(addConfirm('a_withholdeeFormTable'))
+					{
+						if(document.getElementById('a_withholdeeFormTable').innerHTML!="Modify")
+						{
+							if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+							{
+								addrow('withholdeeFormTable', '7', '18','4','validateDeleteRowWithHoldeeTable','validateModifyRowWithHoldeeTable','N','N','','7,8');
+							}
+							else
+							{
+								addrow('withholdeeFormTable', '7', '18','4','validateDeleteRowWithHoldeeTable','validateModifyRowWithHoldeeTable','N','N');
+							}
+						}else{
+							return true;
+						}
+					}
+					else{
+						isFalse=1;
+					}
+				}
+				else
+				{
+					document.getElementById('in_withholdeeFormTable_9').value=0;
+					document.getElementById('in_withholdeeFormTable_7').value="";
+					alert(taxGreaterThanZero);
+					return false;
+				}
+			}
+		}
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y")
+		{
+			for(var i=3; i<16;i++)
+			{
+				document.getElementById('in_withholdeeFormTable_'+i).readOnly=true;
+				if(document.getElementById('in_withholdeeFormTable_'+i).className=='readonlyInput form101_textfcurr_width textonlyRight' || document.getElementById('in_withholdeeFormTable_'+i).className=='form101_textfcurr form101_textfcurr_width textonlyRight')
+				{
+					document.getElementById('in_withholdeeFormTable_'+i).className='readonlyInput form101_textfcurr_width textonlyRight';
+				}
+				else
+				{
+					document.getElementById('in_withholdeeFormTable_'+i).className='readonlyInput form101_textfcurr_width';
+				}
+			}
+		}
+	}
+	else
+	{
+		getErrTabToggle('TabView','2');	
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+	}
+
+
+}
+
+
+function validateDeleteRowWithHoldeeTable(tab_str, rowno, cols) 
+{
+	if(deleteFlagWithHoldee==1 && modifyFlagWithHoldee==0)
+	{
+		var table = document.getElementById('withholdeeFormTable');  
+		var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+		var tempAmt = table.rows[rowno].cells[9].innerHTML;
+		totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+		document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+		document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+		selectedFlagWithHoldee=selectedFlagWithHoldee-1;
+		if(selectedFlagWithHoldee==0)
+		{
+			clear_table_data('withholdeeFormTable');
+		}
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+			selectedFlagPartial=selectedFlagPartial-1;
+		}
+		deleteFlagWithHoldee = 0;
+		currentPaymentWithHoldee();
+	}
+	else
+	{
+		deleteFlagWithHoldee = 0;
+	}
+}
+function beforeModifyWithHoldeeTable(row) 
+{
+	checkWithholdeeNameAndPin();
+	if(addWithHoldeeData())
+	{
+		/*var checkDuplicateFlag = confirmForPartialWithholdee();
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}*/
+		if(isFalse==1){
+			return false;
+		}
+		else
+		{
+			var checkDuplicateFlag = checkDuplicateWithholdee(row,'withholdeeFormTable');
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+			if(isFalse==1){
+				return false;
+			}
+			else
+			{
+				var table = document.getElementById('withholdeeFormTable');
+				amtToPaidWithHoldee=table.rows[rowno].cells[9].innerHTML;
+				taxRateWithHoldee=document.getElementById('in_withholdeeFormTable_8').value;
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+}
+function validateModifyRowWithHoldeeTable(tab_str, rowno, cols) 
+{
+	modifyFlagWithHoldee = 1;
+	commonModifyFlag=1;
+	var transType=document.getElementById('in_withholdeeFormTable_6').value;
+	if(transType=="WHT_0300" || transType=="WHT_0402" || transType=="WHT_0400" || transType=="WHT_0401"|| transType=="WHT_0411")
+	{
+		document.getElementById('in_withholdeeFormTable_14').disabled=false; 
+	}
+	else
+	{
+		document.getElementById('in_withholdeeFormTable_14').disabled=true;
+		document.getElementById('in_withholdeeFormTable_14').value="OTR";
+	}
+	onChangeComboData();
+	fetchWithholdeeTaxRate();
+	hideTaxRateCombo();
+	if(document.getElementById('in_withholdeeFormTable_3').value!=''){
+		document.getElementById('in_withholdeeFormTable_4').readOnly=true;
+		document.getElementById('in_withholdeeFormTable_12').readOnly=true;
+		document.getElementById('in_withholdeeFormTable_15').readOnly=true;
+		document.getElementById('in_withholdeeFormTable_4').className='readonlyInput form101_textfcurr_width';
+		document.getElementById('in_withholdeeFormTable_12').className='readonlyInput form101_textfcurr_width';
+		document.getElementById('in_withholdeeFormTable_15').className='readonlyInput form101_textfcurr_width';
+	}else{
+		document.getElementById('in_withholdeeFormTable_4').readOnly=false;
+		document.getElementById('in_withholdeeFormTable_12').readOnly=false;
+		document.getElementById('in_withholdeeFormTable_15').readOnly=false;
+		document.getElementById('in_withholdeeFormTable_4').className='form101_textfcurr form101_textfcurr_width';
+		document.getElementById('in_withholdeeFormTable_12').className='form101_textfcurr form101_textfcurr_width';
+		document.getElementById('in_withholdeeFormTable_15').className='form101_textfcurr form101_textfcurr_width';
+	}
+
+}
+
+function afterModifyWithHoldeeTable() 
+{
+	modifyFlagWithHoldee = 0;
+	commonModifyFlag=0;
+	var table = document.getElementById('withholdeeFormTable');
+	document.getElementById('in_withholdeeFormTable_8').value=0;
+	document.getElementById('in_withholdeeFormTable_14').value="OTR";
+	document.getElementById('in_withholdeeFormTable_14').disabled=true;
+	document.getElementById('in_withholdeeFormTable_6').selectedIndex=0;
+	var tmpAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var modifyAmt;
+	if(document.all)
+	{
+		modifyAmt=table.rows[rowno].cells[9].innerText;
+	}
+	else
+	{
+		modifyAmt=table.rows[rowno].cells[9].textContent;
+	}
+	document.getElementById('txtTotalAmountPaidOblig').value=convertToKenyanShillingFormatVal(parseInt(tmpAmt,10)+parseInt(removeCommaFrmInput(modifyAmt),"10")-parseInt(removeCommaFrmInput(amtToPaidWithHoldee),10),true); 
+	document.getElementById('txtTotalAmountPaidOblig').readOnly=true; 
+	document.getElementById('txtTotalAmountPaidOblig').className='readonlyInput form101_textfcurr_width textonlyRight';
+	document.getElementById('withholdeeFormRow1').style.display="";
+	document.getElementById('withholdeeFormRow2').style.display="";
+	document.getElementById('in_withholdeeFormTable_4').readOnly=true;
+	document.getElementById('in_withholdeeFormTable_12').readOnly=true;
+	document.getElementById('in_withholdeeFormTable_15').readOnly=true;
+	document.getElementById('in_withholdeeFormTable_4').className='readonlyInput form101_textfcurr_width';
+	document.getElementById('in_withholdeeFormTable_12').className='readonlyInput form101_textfcurr_width';
+	document.getElementById('in_withholdeeFormTable_15').className='readonlyInput form101_textfcurr_width';
+	var modifyAmt1;
+	if(document.all)
+	{
+		modifyAmt1=(table.rows[rowno].cells[7].innerText);
+	}
+	else
+	{
+		modifyAmt1=table.rows[rowno].cells[7].textContent;
+	}
+}
+function afterDeleteWithHoldeeTable()
+{
+	deleteFlagWithHoldee = 1;
+}
+function clearFormWithHoldee()
+{
+	if(clear_table('withholdeeFormTable','13'))
+	{
+		//	document.getElementById('withholStatus').value="";
+		document.getElementById('in_withholdeeFormTable_8').value="0";
+		document.getElementById('in_withholdeeFormTable_6').selectedIndex=0;
+		document.getElementById('in_withholdeeFormTable_9').value =0;
+		document.getElementById('in_withholdeeFormTable_15').value="";
+		document.getElementById('withholdeeFormRow2').style.display="";
+		if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+		{
+			document.getElementById('withHoldeeRadio_'+rowNumbmerPartial).checked=false;
+		}
+
+		currentPaymentWithHoldee();
+	}
+}
+
+//Added on 12/09/2024 to sort RENT WHT Issue.
+//Allow generation of interest or penalty only or principal only not both
+function clearFormRentWithHoldee(){
+		clear_table_data('rentIncomeWithholdeeWebFormTable');
+		document.getElementById('txtTotalAmountPaidOblig').value="0";
+}
+//End 12/09/2024
+
+function fetchWithholdeeTaxRate(){
+	if(document.getElementById('in_withholdeeFormTable_6').selectedIndex!=0 && document.getElementById('in_withholdeeFormTable_14').selectedIndex!=0 && document.getElementById('in_withholdeeFormTable_11').selectedIndex!=0 && document.getElementById('in_withholdeeFormTable_5').value!="")
+	{
+		var category = document.getElementById('in_withholdeeFormTable_6').value;
+		var obligationId = WithHoldee;
+		var status = document.getElementById('in_withholdeeFormTable_11').value;
+		var countryCode=document.getElementById('in_withholdeeFormTable_14').value ;
+		fetchTaxRateValueFromCategoryWeb(obligationId,category,status,countryCode);
+		toCheckPinIndiOrNonIndi();
+		calcWithHoldingTax();
+	}
+	else 
+	{
+		document.getElementById('in_withholdeeFormTable_8').value=0;
+	}
+
+}
+
+function validateWithHoldeeDtls(id)
+{
+	var rtnFlag;
+	/*var transType=document.getElementById('in_withholdeeFormTable_6').value;
+	if((transType=="WNT01"||transType=="WNT02"||transType=="WNT03"||transType=="WNT04"||transType=="WNT05"||transType=="WNT06")&&(document.getElementById('in_withholdeeFormTable_3').value==""))
+	{
+		document.getElementById('withholdeeFormRow1').style.display="none";
+		document.getElementById('withholdeeFormRow2').style.display="none";
+	}
+	else
+	{
+		document.getElementById('withholdeeFormRow1').style.display="";
+		document.getElementById('withholdeeFormRow2').style.display="";
+	}*/
+	/*if(document.getElementById('in_withholdeeFormTable_3').value=='' || document.getElementById('in_withholdeeFormTable_3').value==null)
+	{-*-
+		document.getElementById('in_withholdeeFormTable_4').value='';
+		document.getElementById('in_withholdeeFormTable_12').value='';
+		//	document.getElementById('withholStatus').value='';
+	}*/
+	//clearWithDetails();
+	rtnFlag = validateFormFieldOnEvent(id, withHoldeeJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}
+
+}
+
+function onChangeComboData()
+{
+	document.getElementById('in_withholdeeFormTable_14').disabled=false;
+	/*
+	var transType=document.getElementById('in_withholdeeFormTable_6').value;
+	if(transType=="WHT_0300" || transType=="WHT_0402" || transType=="WHT_0400" || transType=="WHT_0401"|| transType=="WHT_0411" ||  transType==" WHT_0221" || transType==" WHT_0222" || transType==" WHT_0333" || transType=="WHT_0100")
+	{
+		document.getElementById('in_withholdeeFormTable_14').disabled=false; 
+	}
+	else
+	{
+		document.getElementById('in_withholdeeFormTable_14').disabled=true;
+		document.getElementById('in_withholdeeFormTable_14').value="OTR";
+	}
+
+*/}
+
+function showWithHoldeePartialTable(partialDetailArray){
+	if(partialDetailArray.length>=1){
+		document.getElementById('paymentWithWebForm').style.display="";
+		
+		document.getElementById('navigationLegend').innerHTML = PreviousLiabilityDetails ;
+		document.getElementById("withWebFormLiablibilityTbl").style.display = "";
+		var cntr = 0;
+		var tabObj = document.getElementById("withWebFormLiablibilityTbl");
+		for(var l = tabObj.rows.length; l >1 ;l--){
+			tabObj.deleteRow(l -1);
+		}
+		
+		// added by Sanidhya 
+		
+		if (tabObj.value != document.getElementById('hidRadioValue').value && document.getElementById('hidRadioValue').value != '')
+		{
+			if (tabObj.value != document.getElementById('hidRadioValue').value && document.getElementById('hidRadioValue').value != '')
+			{
+				if(document.getElementById('actualLiabilityAmount_'+document.getElementById('hidRadioValue').value)){
+					document.getElementById('actualLiabilityAmount_'+document.getElementById('hidRadioValue').value).readOnly = true;
+					document.getElementById('actualLiabilityAmount_'+document.getElementById('hidRadioValue').value).className='readonlyInput form101_textfcurr_width textonlyRight';
+			}
+		}
+		}
+		// suggestion related end
+		
+		
+		
+		for(var i=0;i<partialDetailArray.length;i++){
+			cntr = parseInt(cntr);
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			tabRow.id="withHoldeeWebHdrRow_"+cntr;
+			var tabCell = new Array();
+			for (var j=0;j<8;j++){
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			var pmtSplDetailVO = partialDetailArray[i];
+		
+			var element = document.createElement('input');       
+			element.type ='radio';
+			element.onclick = function () {onSelectWithHoldeeHdrRadio(this);};
+			element.value = cntr;
+			element.id = 'withHoldeeWebFormRadio_'+cntr;
+			element.name = "withHoldeeWebFormRadio";
+			element.className='bordercl radioButtonITWHT';
+			tabCell[0].appendChild(element); 
+
+
+			tabCell[1].innerHTML = pmtSplDetailVO.taxPeriod;
+			tabCell[1].style.textAlign="center";
+			tabCell[1].style.fontSize="11";
+
+			tabCell[2].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualFineAmount).toFixed(2),true);
+			tabCell[2].style.textAlign="right";
+			tabCell[2].style.fontSize="11";
+
+
+			tabCell[3].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualPenaltyAmount).toFixed(2),true);
+			tabCell[3].style.textAlign="right";
+			tabCell[3].style.fontSize="11";
+
+			tabCell[4].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualInterestAmount).toFixed(2),true);
+			tabCell[4].style.textAlign="right";
+			tabCell[4].style.fontSize="11";
+
+			tabCell[5].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualLiabilityAmount).toFixed(2),true);
+			tabCell[5].style.textAlign="right";
+			tabCell[5].style.fontSize="11";
+
+			
+			// added by Sanidhya 
+			
+			
+			var elementTextBox = document.createElement("input");
+			elementTextBox.type="text";
+			elementTextBox.onchange=function () {onChangeAmountToBePaidITWithholding(this);/*onChangeAmtToBePaid();*/};					 	
+			elementTextBox.name="actualLiabilityAmount_"+cntr;
+			elementTextBox.id="actualLiabilityAmount_"+cntr;
+			if(pmtSplDetailVO.actualLiabilityAmount>0)
+			{
+				elementTextBox.setAttribute("value", convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualLiabilityAmount).toFixed(2),true));
+			}
+			else
+			{
+				elementTextBox.setAttribute("value", "0");
+			}     
+			elementTextBox.setAttribute("readOnly", "readOnly");
+			elementTextBox.className='readonlyInput form101_textfcurr_width textonlyRight ITWhtAmountToBePaid';
+			elementTextBox.setAttribute('maxlength', 15);
+			elementTextBox.style.textAlign = 'right'; 
+			tabCell[6].appendChild(elementTextBox);
+			tabCell[6].style.textAlign="right";
+			tabCell[6].style.fontSize="11";
+			
+			
+			// end by Sanidhya
+			
+		/*	tabCell[6].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualLiabilityAmount).toFixed(2),true);
+			tabCell[6].style.textAlign="right";
+			tabCell[6].style.fontSize="11";
+			*/
+			
+			var element = document.createElement('input');
+     		element.type = 'hidden';
+   			element.value =  convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualPrincipalAmount).toFixed(2),true);
+   			element.width = "0%";
+   			tabCell[7].appendChild(element);
+   			tabCell[7].style.display = "none";
+   			
+			cntr = cntr+1;
+		}
+		document.getElementById("navigationFieldset").style.display = "";
+		document.getElementById("withWebFormLiablibilityTbl").style.display = "";
+		document.getElementById("navigationTableTaxSpl").style.display = "";
+		document.getElementById('withholdeeWebFormTable').style.display = 'none';
+		document.getElementById("withholdeeWebFormAddRowTable").style.display = "none";
+		document.getElementById('hidNavigationFlag').value = "6";
+		validatePaginationLastTaxSpl();
+		validatePaginationFirstTaxSpl();
+	}
+}
+//added for allowing partial payment
+function beforeModifyITWithholdeeTable(row){
+	isModifyActive=true;
+	$(".radioButtonITWHT").attr('checked',false);
+	$(".ITWhtAmountToBePaid").attr('readonly' , true);
+	$(".ITWhtAmountToBePaid").addClass('readonlyInput');
+	var table=document.getElementById("withholdeeWebFormTable");
+	var taxperiod=table.rows[row].cells[3].innerHTML;
+	var tableId=document.getElementById("withWebFormLiablibilityTbl");
+	for (var i = 0, n = tableId.rows.length; i <n-1; i++) {
+		var rowref=document.getElementById('withHoldeeWebHdrRow_'+i);
+		var taxperiodtable=rowref.getElementsByTagName("TD")[1].textContent;
+		if(taxperiod==taxperiodtable){
+			document.getElementById('withHoldeeWebFormRadio_'+i).checked=true;
+			document.getElementById('actualLiabilityAmount_'+i).readOnly = false;
+			document.getElementById('actualLiabilityAmount_'+i).className='form101_textfcurr form101_textfcurr_width textonlyRight ITWhtAmountToBePaid';
+			modifyId=document.getElementById('withHoldeeWebFormRadio_'+i);
+		}
+	}
+	
+}
+
+function onSelectWithHoldeeHdrRadio(obj)
+{	rowNum=obj.value;
+	var currentId=document.getElementById('withHoldeeWebFormRadio_'+rowNum);
+	if(!(currentId == modifyId)){
+	if(isModifyActive==true){
+		alert("Please complete modify action.");
+		document.getElementById('withHoldeeWebFormRadio_'+rowNum).checked=false;
+		modifyId.checked=true;
+		return false;
+	}
+	}
+	document.getElementById('withholdeeWebFormTable').style.display = '';
+	document.getElementById("withholdeeWebFormAddRowTable").style.display = "";
+	document.getElementById("withWebFormLiablibilityTbl").style.display = "";
+	
+	document.getElementById('paymentRegWithholdeeSet').style.display = 'none';
+	$(".ITWhtAmountToBePaid").attr('readonly' , true);
+	$(".ITWhtAmountToBePaid").addClass('readonlyInput');
+	
+	var rowNum = obj.value;
+	objValue=obj.value;		
+	
+	rowNumbmerPartial=obj.value;
+	if(selectedFlagWithHoldee>0 && document.getElementById('hidIsPartial').value != "Y")
+	{
+		
+		alert(cntAddPrevLiab);
+		document.getElementById('withHoldeeWebHdrRow_'+rowNumbmerPartial).checked=false;
+		//Added on 12/09/2024 to sort RENT WHT Issue.
+		//Allow generation of interest or penalty only or principal only not both
+		document.getElementById('withHoldeeWebFormRadio_'+rowNumbmerPartial).checked=false;
+		document.getElementById('txtTotalAmountPaidOblig').value="0";
+		//End 12/09/2024
+	}
+	else
+	{
+		var taxPayerId=document.getElementById('hidTaxPayerId').value;
+		var rowNum = obj.value;
+		objValue=obj.value;
+		var rowRef = document.getElementById("withHoldeeWebHdrRow_" + rowNum);
+				
+		startIndexStr=parseInt(document.getElementById('startIndexUpdate').value);
+		
+		var principalAmount = rowRef.getElementsByTagName("input")[2].value;
+		
+		if (removeCommaFrmInput(principalAmount) > 0){
+			
+			alert ("Principal amount is pending for this period . Please make Payment of the Principal amount first.");
+			if(document.getElementById('withholdeeWebFormTable').rows.length>1)
+			{
+				document.getElementById('paymentRegWithholdeeSet').style.display = 'none';
+			}
+			else
+			{
+				document.getElementById('paymentRegWithholdeeSet').style.display = '';
+				document.getElementById('withholdeeWebFormTable').style.display = 'none';
+				clear_table_data('withholdeeFormTable');
+			}
+			rowRef.getElementsByTagName("input")[0].checked= false ;
+			return false ;
+		}
+		else {
+						// Added By Sanidhya 
+			document.getElementById('actualLiabilityAmount_'+objValue).className='form101_textfcurr form101_textfcurr_width textonlyRight ITWhtAmountToBePaid';
+			document.getElementById('actualLiabilityAmount_'+objValue).readOnly=false;
+			// End
+			var taxPeriodDisp = rowRef.getElementsByTagName("TD")[1].textContent;
+			//Added by Mingu for Amnesty Enhancement :: START
+			var taxPeriodDispArray = taxPeriodDisp.split(" ");
+			var yearStr = taxPeriodDispArray[1];
+			var yearInt = parseInt(yearStr);
+			//13/08/2024commented to open after amnesty period ended::START
+				/*if(yearInt<=2022){
+					alert("You cannot pay the Penalty and Interest for periods before January 2023.");
+					rowRef.getElementsByTagName("input")[0].checked= false ;
+					return false;
+				}*/
+			//13/08/2024commented to open after amnesty period ended :: END
+			//Added by Mingu for Amnesty Enhancement :: END
+			document.getElementById("hidTaxPeriod").value=taxPeriodDisp;
+			document.getElementById("in_withholdeeWebFormTable_3").value=taxPeriodDisp;
+
+			var obligationId=document.getElementById('cmbTaxSubHead').value;
+		
+			var taxPayable = rowRef.getElementsByTagName("TD")[5].textContent;			
+			taxPayable=	convertToKenyanShillingFormatValWithDecimal(parseInt(removeCommaFrmInput(taxPayable),10).toFixed(2),true);				
+			document.getElementById("in_withholdeeWebFormTable_4").value=taxPayable;
+			
+
+			var amountPaid = (document.getElementById('actualLiabilityAmount_'+objValue).value);
+			amountPaid=	convertToKenyanShillingFormatValWithDecimal(parseInt(removeCommaFrmInput(amountPaid),10).toFixed(2),true);
+			document.getElementById("in_withholdeeWebFormTable_5").value=amountPaid;
+			
+		}
+	
+
+	}
+}
+
+function currentPaymentWithHoldee()
+{
+	if((document.getElementById('hidIsPartial').value != "Y" || document.getElementById('hidIsPartial').value != "y" )&&(selectedFlagPartial==0))
+	{
+		document.getElementById('in_withholdeeFormTable_3').readOnly=false;
+		document.getElementById('in_withholdeeFormTable_3').className='form101_textfcurr form101_textfcurr_width';
+		document.getElementById('in_withholdeeFormTable_7').readOnly=false;
+		document.getElementById('in_withholdeeFormTable_7').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+		document.getElementById('in_withholdeeFormTable_5').readOnly=false;
+		document.getElementById('in_withholdeeFormTable_5').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+
+		document.getElementById('in_withholdeeFormTable_6').disabled=false;
+		document.getElementById('in_withholdeeFormTable_11').disabled=false;
+		document.getElementById('in_withholdeeFormTable_11').className='form101_combo form101_textfcurr_width'; 
+		document.getElementById('in_withholdeeFormTable_6').className='form101_combo'; 
+		//	document.getElementById('in_withholdeeFormTable_6').className='form101_combo';
+		document.getElementById('in_withholdeeFormTable_6').selectedIndex=0;
+		document.getElementById('hidIsPartial').value = "N";
+		document.getElementById('btnWithholdeeDate').style.display="";
+		document.getElementById('withholdeeFormRow3').style.display="";
+		document.getElementById('withholdeeFormRow8').style.display="none";
+		document.getElementById('withholdeeFormRow7').style.display="none";
+		document.getElementById('grossAmtHeader').style.display="";
+		document.getElementById('taxRateHeader').style.display="";
+		modifyFlagWithHoldee=0;
+		commonModifyFlag=0;
+		document.getElementById('hidIsPartial').value='N';
+		clear_Page_data('withholdeeFormTable','17');
+		document.getElementById('in_withholdeeFormTable_6').selectedIndex=0;
+		document.getElementById('in_withholdeeFormTable_8').style.display="";
+		document.getElementById('WithholdingTax').style.display="";
+		document.getElementById('in_withholdeeFormTable_9').readOnly=true;
+		document.getElementById('in_withholdeeFormTable_9').className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('in_withholdeeFormTable_14').value="OTR";
+		//	document.getElementById('withholStatus').value="";
+	}
+}
+
+function confirmForPartialWithholdee()
+{
+	if(document.getElementById('hidIsPartial').value == "Y" || document.getElementById('hidIsPartial').value == "y" )
+	{
+		if(selectedFlagPartial==0)
+		{
+			if (confirm(previousLiabilityAddingAlert))
+			{
+				return addWithHoldeeData();
+			}
+		}
+		else
+		{
+			return addWithHoldeeData();
+		}
+	}
+	else
+	{
+		return addWithHoldeeData();
+	}
+}
+
+function beforeDeleteWithHoldee()
+{
+	if(modifyFlagWithHoldee==1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+}
+function checkMonthYearInAddRow(r,id)
+{
+	rows=r;
+	{
+
+		document.getElementById(id).value;
+		var transactionDate=document.getElementById('in_'+id+'_5').value.substr(2, document.getElementById('in_'+id+'_5').value.length);
+		var tabObj1 = document.getElementById(id);
+		if(tabObj1.rows.length==1)
+		{
+		}
+		else
+		{ 	
+			for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+			{ 
+				//Added on 18/07/2022 Ticket #69232 Finance act 2023 changes
+				var transactionDate1=document.getElementById('in_'+id+'_5').value;
+				var year=transactionDate1.substr(6);
+				var month=transactionDate1.substr(3, 2);
+				if((parseInt(year)==2023 && parseInt(month)>=7) || parseInt(year) > 2023 ){
+					if((trim(document.getElementById('id_temp_'+id+'_'+i+'_1').value))=="Delete" &&  (tabObj1.rows[i].cells[5].innerHTML !=transactionDate1)  && (tabObj1.rows[i].cells[2].innerHTML.indexOf('Modifying')==-1))
+					{
+						document.getElementById('in_withholdeeFormTable_5').value=tabObj1.rows[i].cells[5].innerHTML;
+						//alert("You cannot generate the payment slip with multiple Transactions of different Day/Month/Year.");
+						alert("Please declare transactions with similar payment dates (Day/Month/Year). For different payment dates, capture the transactions in separate payment slip.");
+						return false;
+					}
+				}else{
+				//End on 18/07/2022 Ticket # Finance act 2023 changes				
+					if((trim(document.getElementById('id_temp_'+id+'_'+i+'_1').value))=="Delete" &&  (tabObj1.rows[i].cells[5].innerHTML.substr(2, tabObj1.rows[i].cells[5].innerHTML.length)!=transactionDate) && (tabObj1.rows[i].cells[2].innerHTML.indexOf('Modifying')==-1))
+					{
+						alert(cntGenPaymentslip);
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+}
+function checkDuplicateWithholdee(r,id)
+{
+	rows=r;
+	{
+
+		//	document.getElementById(id).value;
+		var transactionDate=document.getElementById('in_withholdeeFormTable_5').value;
+		var pin=document.getElementById('in_withholdeeFormTable_3').value;
+		var natureOfTrans = document.getElementById('in_withholdeeFormTable_6').selectedIndex;
+		var natureOfTransValue =document.getElementById('in_withholdeeFormTable_6')[natureOfTrans].text;
+
+		var status = document.getElementById('in_withholdeeFormTable_11').value;
+
+		var countryCd = document.getElementById('in_withholdeeFormTable_14').value;
+		var tabObj1 = document.getElementById(id);
+		var countryCdTableValue;
+		var statusTableValue;
+		if(tabObj1.rows.length==1)
+		{
+		}
+		else
+		{ 	
+			for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+			{ 
+				var modify;
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+					var tableData=tabObj1.rows[i].getElementsByTagName("INPUT")[1].value.split(propertyValueDelimiterStandard);
+					var countryArr=tableData[11].split(columnsDelimiterStandard);
+					countryCdTableValue=countryArr[1];
+
+					var statusArr=tableData[8].split(columnsDelimiterStandard);
+					statusTableValue=statusArr[1];
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+					var tableData=tabObj1.rows[i].getElementsByTagName("INPUT")[1].value.split(propertyValueDelimiterStandard);
+					var countryArr=tableData[11].split(columnsDelimiterStandard);
+					countryCdTableValue=countryArr[1];
+
+					var statusArr=tableData[8].split(columnsDelimiterStandard);
+					statusTableValue=statusArr[1];
+				}
+				if(document.getElementById('in_withholdeeFormTable_3').value!="")
+				{
+					if((trim(document.getElementById('id_temp_'+id+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&  (tabObj1.rows[i].cells[5].innerHTML==transactionDate)&&  (tabObj1.rows[i].cells[3].innerHTML==pin)&&  (tabObj1.rows[i].cells[6].innerHTML==natureOfTransValue) &&  (statusTableValue==status) && (countryCdTableValue==countryCd))
+					{
+						alert(detailsExists);
+						return false;
+					}
+				}
+				else
+				{
+					if((trim(document.getElementById('id_temp_'+id+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&  (tabObj1.rows[i].cells[5].innerHTML==transactionDate) &&  (tabObj1.rows[i].cells[6].innerHTML==natureOfTransValue) &&   (statusTableValue==status) && (countryCdTableValue==countryCd))
+					{
+						alert(detailsExists);
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+}
+function isWithholdeeRegistered(){
+	var taxpayerId = document.getElementById('hidTaxPayerId').value;
+	var obligationId = WithHoldee;
+	//var obligationId = document.getElementById('hidTaxPayerId').value;
+
+	var withholTransationDtWith = document.getElementById('in_withholdeeFormTable_5').value;
+	var withholNatureTranWith = document.getElementById('in_withholdeeFormTable_6').value;
+	var withholIdWith = document.getElementById('in_withholdeeFormTable_10').value;
+	var statusOFWht= document.getElementById('in_withholdeeFormTable_11').value; 
+	var countryCd= document.getElementById('in_withholdeeFormTable_14').value; 
+	var emailId= document.getElementById('in_withholdeeFormTable_15').value; 
+	var addressWith= document.getElementById('in_withholdeeFormTable_12').value; 
+	var nameWith= document.getElementById('in_withholdeeFormTable_4').value; 
+		
+
+	var PmtSplDetailVO = {
+			taxpayerId  : taxpayerId,
+			obligationId : obligationId,
+
+			withholTransationDtWith : withholTransationDtWith,
+			withholNatureTranWith  : withholNatureTranWith,
+			withholIdWith : withholIdWith,
+			withCuntryCd:countryCd,
+			withHoldeeEmail:emailId,
+			/*withholAddressWith:addressWith,*/
+			withholNameWith:nameWith,
+			withholStatusWith:statusOFWht
+	};
+
+	if(isSplObligationRegisteredWeb(PmtSplDetailVO))
+		return true;
+	else
+		return false;
+
+}
+function toCheckPinIndiOrNonIndi()
+{
+	var transType=document.getElementById('in_withholdeeFormTable_6').value;
+	var status=document.getElementById('in_withholdeeFormTable_11').value; 
+	if((transType=="WHT_0200" ||transType=="WHT_0201"||transType=="WHT_0203") && status== "R" )
+	{
+		if(taxPayerType=="INDI")
+		{
+			alert(cntEnterIndiPin);
+			document.getElementById('in_withholdeeFormTable_4').value="";
+			document.getElementById('in_withholdeeFormTable_12').value="";
+			document.getElementById('in_withholdeeFormTable_15').value="";
+			document.getElementById('in_withholdeeFormTable_3').value="";
+			taxPayerType="";
+			indiNonIndiCheck=false;
+		}
+	}
+	if(transType=="WHT_0600")
+	{
+		if(taxPayerType=="NONINDI")
+		{
+			alert(cntEnterNonIndiPin);
+			document.getElementById('in_withholdeeFormTable_4').value="";
+			document.getElementById('in_withholdeeFormTable_12').value="";
+			document.getElementById('in_withholdeeFormTable_15').value="";
+			document.getElementById('in_withholdeeFormTable_3').value="";
+			taxPayerType="";
+			indiNonIndiCheck=false;
+		}
+	}	
+}
+function hideTaxRateCombo()
+{
+	var transType=document.getElementById('in_withholdeeFormTable_6').value;
+	var status=document.getElementById('in_withholdeeFormTable_11').value; 
+	if(transType!=-1 && status!=-1)
+	{
+		if(transType=="WHT_0600" && status=="R" )
+		{
+			document.getElementById('in_withholdeeFormTable_8').style.display="none";
+			document.getElementById('WithholdingTax').style.display="none";
+			document.getElementById('in_withholdeeFormTable_9').readOnly=false;
+			document.getElementById('in_withholdeeFormTable_9').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+
+		}
+		else
+		{
+			document.getElementById('in_withholdeeFormTable_8').style.display="";
+			document.getElementById('WithholdingTax').style.display="";
+			document.getElementById('in_withholdeeFormTable_9').readOnly=true;
+			document.getElementById('in_withholdeeFormTable_9').className='readonlyInput form101_textfcurr_width textonlyRight';
+		}
+
+	}
+	else
+	{
+		document.getElementById('in_withholdeeFormTable_8').style.display="";
+		document.getElementById('WithholdingTax').style.display="";
+		document.getElementById('in_withholdeeFormTable_9').readOnly=true;
+		document.getElementById('in_withholdeeFormTable_9').className='readonlyInput form101_textfcurr_width textonlyRight';
+	}
+}
+function onChangeWhtTaxAmt()
+{
+	if(document.getElementById('in_withholdeeFormTable_9').value!="" && document.getElementById('in_withholdeeFormTable_7').value!="")
+	{
+		amt=removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_9').value);
+		var grossAmt=removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_7').value);
+		if(parseInt(grossAmt,10)<parseInt(amt,10))
+		{
+			alert(amtGreaterThanTax);
+			amt=0;
+		}
+		document.getElementById('in_withholdeeFormTable_9').value=convertToKenyanShillingFormatVal(amt,true);
+		calcTaxRateForPension();
+	}
+}
+function calcTaxRateForPension()
+{
+	if(document.getElementById('in_withholdeeFormTable_9').value!="" && document.getElementById('in_withholdeeFormTable_7').value!="")
+	{
+		var grossAmt=removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_7').value);
+		var taxAmt=removeCommaFrmInput(document.getElementById('in_withholdeeFormTable_9').value);
+		var transType=document.getElementById('in_withholdeeFormTable_6').value;
+		var status=document.getElementById('in_withholdeeFormTable_11').value; 
+		if(transType!=-1 && status!=-1)
+		{
+			if(transType=="WHT_0600" && status=="R" )
+			{
+				document.getElementById('in_withholdeeFormTable_8').value=((parseInt(taxAmt,10)*parseInt(100,10))/parseInt(grossAmt,10)).toFixed(2);
+			}
+		}
+		document.getElementById('in_withholdeeFormTable_7').value=convertToKenyanShillingFormatVal(grossAmt,true);	
+	}
+}
+
+function checkDuplicateRowsForWebWithholdee()
+{
+	var table = document.getElementById('withholdeeWebFormTable');  
+	var amt = document.getElementById('in_withholdeeWebFormTable_4').value;
+	var taxPeriod= document.getElementById('in_withholdeeWebFormTable_3').value;
+	if ((amt==null || amt=="") || (taxPeriod==null || taxPeriod==""))
+		{
+		alert("Please select atleast one liability");
+		return false;
+		}
+	else if(!(table.rows.length==1))
+		{ 	
+			for (var i = 1, n = table.rows.length; i <n; i++) 
+			{ 
+				modify=trim(table.rows[i].cells[2].getElementsByTagName('A')[0].innerHTML);
+				if((trim(document.getElementById('id_temp_'+'withholdeeWebFormTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&
+					(table.rows[i].cells[3].innerHTML==taxPeriod))
+				{
+					alert("You already added this details.");
+					return false;
+				}
+			}
+		}
+		return true;
+}
+
+function beforeAddWebWithHoldeeTable()
+{
+	ItAmnt=removeCommaFrmInput(document.getElementById('in_withholdeeWebFormTable_5').value);
+	TotalAmnt=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+}
+function afterAddWebWithHoldeeTable()
+{
+	TotalAmnt=convertToKenyanShillingFormatVal(parseInt(ItAmnt,10)+parseInt(TotalAmnt,10),true);
+	document.getElementById('txtTotalAmountPaidOblig').value=TotalAmnt;
+	$(".radioButtonITWHT").attr('checked',false);
+	$(".ITWhtAmountToBePaid").attr('readonly' , true);
+	$(".ITWhtAmountToBePaid").addClass('readonlyInput');
+	
+}
+function afterDeleteWebWithHoldeeTable(rowno)
+{
+	var table = document.getElementById('withholdeeWebFormTable');  
+	var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var tempAmt = table.rows[rowno].cells[5].innerHTML;
+	totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+	document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+	document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+}
+function beforeDeleteWebWithHoldeeTable()
+{
+	
+}
+function afterModifyWebWithHoldeeTable()
+{
+	var table = document.getElementById('withholdeeWebFormTable');
+	var tmpAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var newAmt=table.rows[rowno].cells[5].innerHTML;
+	var newAmountArray=newAmt.split('<');
+	newAmt=newAmountArray[0];
+	$(".radioButtonITWHT").attr('checked',false);
+	$(".ITWhtAmountToBePaid").attr('readonly' , true);
+	$(".ITWhtAmountToBePaid").addClass('readonlyInput');
+	document.getElementById('txtTotalAmountPaidOblig').value=convertToKenyanShillingFormatVal(parseInt(tmpAmt,10)+parseInt(removeCommaFrmInput(newAmt),"10")-parseInt(removeCommaFrmInput(ItAmnt),10),true); 
+	document.getElementById('txtTotalAmountPaidOblig').readOnly=true; 
+}
+//added for allowing partial payment
+function beforeModifyWebWithHoldeeTable(row)
+{	isModifyActive=false;
+	if(checkDuplicateRowsForWebWithholdee()){
+		rowno=row;
+		var table = document.getElementById('withholdeeWebFormTable');
+		ItAmnt=table.rows[rowno].cells[5].innerHTML;
+		var amtToPaidWithHoldeeArray=ItAmnt.split('<');
+		ItAmnt=amtToPaidWithHoldeeArray[0];
+	}
+	else {
+		return false;
+	}
+}
+function validateDeleteRowITWHTWebTable(tab_str, rowno, cols)
+{
+	var table = document.getElementById('withholdeeWebFormTable');  
+	var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var tempAmt = table.rows[rowno].cells[5].innerHTML;
+	totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+	document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+	document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+
+}
+
+function afterModifyITWHTAssmntTable()
+{
+	var table = document.getElementById('ITWHTAdditionalAssmntTable');
+	var tmpAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var newAmt=table.rows[rowno].cells[5].innerHTML;
+	var newAmountArray=newAmt.split('<');
+	newAmt=newAmountArray[0];
+	document.getElementById('txtTotalAmountPaidOblig').value=convertToKenyanShillingFormatVal(parseInt(tmpAmt,10)+parseInt(removeCommaFrmInput(newAmt),"10")-parseInt(removeCommaFrmInput(ITWithHoldingAssmntTax),10),true); 
+	document.getElementById('txtTotalAmountPaidOblig').readOnly=true; 
+}
+function afterAddITWHTAssmntTable()
+{
+	TotalAssmntAmtForIT=convertToKenyanShillingFormatVal(parseInt(ITWithHoldingAssmntTax,10)+parseInt(TotalAssmntAmtForIT,10),true);
+	document.getElementById('txtTotalAmountPaidOblig').value=TotalAssmntAmtForIT;
+}
+//added to check duplicate tax period 
+function beforeAddITWHTAssmntTable(row){
+	var checkDuplicateFlag = checkMonthYearInAddRowForAssmnt(row,'ITWHTAdditionalAssmntTable');
+	if(checkDuplicateFlag==false)
+	{
+		return false;
+	}
+
+	ITWithHoldingAssmntTax=removeCommaFrmInput(document.getElementById('in_ITWHTAdditionalAssmntTable_5').value);
+	TotalAssmntAmtForIT=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+}
+
+function checkMonthYearInAddRowForAssmnt(r,id)
+{
+	rows=r;
+	{
+
+		document.getElementById(id).value;
+		var transactionDate=document.getElementById('in_'+id+'_4').value.substr(2, document.getElementById('in_'+id+'_4').value.length);
+		var tabObj1 = document.getElementById(id);
+		if(tabObj1.rows.length==1)
+		{
+		}
+		else
+		{ 	
+			for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+			{ 
+				
+				if((trim(document.getElementById('id_temp_'+id+'_'+i+'_1').value))=="Delete" &&  (tabObj1.rows[i].cells[4].innerHTML.substr(2, tabObj1.rows[i].cells[4].innerHTML.length)!=transactionDate) && (tabObj1.rows[i].cells[2].innerHTML.indexOf('Modifying')==-1))
+				{
+					alert(cntGenPaymentslip);
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+}
+function beforeModifyITWHTAssmntTable(row)
+{
+	if(checkDuplicateITWithAssessmentRows()){
+		rowno=row;
+		var table = document.getElementById('ITWHTAdditionalAssmntTable');
+		ITWithHoldingAssmntTax=table.rows[rowno].cells[5].innerHTML;
+		var amtToPaidWithHoldeeArray=ITWithHoldingAssmntTax.split('<');
+		ITWithHoldingAssmntTax=amtToPaidWithHoldeeArray[0];
+	}
+	else {
+		return false;
+	}	
+}
+function checkDuplicateITWithAssessmentRows()
+{
+	var table = document.getElementById('ITWHTAdditionalAssmntTable');  
+	var assmntNo = document.getElementById('in_ITWHTAdditionalAssmntTable_3').value;
+	var taxPeriod= document.getElementById('in_ITWHTAdditionalAssmntTable_4').value;
+	if(document.getElementById('txtTotalAmountPaidOblig').value>0)
+		{
+			alert(cntAddMoreDetails);
+			return false;
+		}
+	if(!(table.rows.length==1))
+	{ 	
+		for (var i = 1, n = table.rows.length; i <n; i++) 
+		{ 
+			modify=trim(table.rows[i].cells[2].getElementsByTagName('A')[0].innerHTML);
+			if((trim(document.getElementById('id_temp_'+'ITWHTAdditionalAssmntTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&
+					(table.rows[i].cells[3].innerHTML==assmntNo) && (table.rows[i].cells[4].innerHTML==taxPeriod))
+			{
+				alert("You already added this details.");
+				return false;
+			}
+		}
+	}
+	return true;
+}
+function validateITWithAssessmentDetails()
+{
+ if(document.getElementById("in_ITWHTAdditionalAssmntTable_3").value=='' || 
+   			document.getElementById("in_ITWHTAdditionalAssmntTable_3").value==null)
+	   		{
+	   			alert("Please enter Assessment Notice Number.");
+	   			return false;
+	   		}
+ if(document.getElementById("in_ITWHTAdditionalAssmntTable_4").value=='' || 
+   			document.getElementById("in_ITWHTAdditionalAssmntTable_4").value==null)
+	   		{
+	   			return false;
+	   		}
+ /*Edited by kirui on 16062022 :: Start*/
+ if(document.getElementById("in_ITWHTAdditionalAssmntTable_5").value=='' || 
+   			document.getElementById("in_ITWHTAdditionalAssmntTable_5").value==null)
+	   		{
+	   			alert("Amount to be paid can not be 0.");
+	   			document.getElementById("in_ITWHTAdditionalAssmntTable_5").value='';
+	   			return false;
+	   		}
+ if(document.getElementById("in_ITWHTAdditionalAssmntTable_5").value!='' || 
+   			document.getElementById("in_ITWHTAdditionalAssmntTable_5").value!=null)
+	   		{
+ 			var amt= parseInt(document.getElementById("in_ITWHTAdditionalAssmntTable_5").value);
+	 			if(amt == 0 || amt== 0.0)
+	 				{
+		 				alert("Amount to be paid can not be 0.");
+		 				document.getElementById("in_ITWHTAdditionalAssmntTable_5").value='';
+			   			return false;
+	 				}
+	   		}
+ /*Edited by kirui on 16062022 :: Start*/
+ if(document.getElementById("totalAddAssAmountid").value=='' || 
+			document.getElementById("totalAddAssAmountid").value==null)
+	   		{
+	   			alert("Additional Assessment Amount can not be 0.");
+	   			document.getElementById("in_ITWHTAdditionalAssmntTable_5").value='';
+	   			return false;
+	   		}
+if(document.getElementById("totalAddAssAmountid").value!='' || 
+			document.getElementById("totalAddAssAmountid").value!=null)
+	   		{
+			var amt= parseInt(document.getElementById("totalAddAssAmountid").value);
+	 			if(amt == 0 || amt== 0.0)
+	 				{
+		 				alert("Additional Assessment Amount can not be 0.");
+		 				document.getElementById("in_ITWHTAdditionalAssmntTable_5").value='';
+			   			return false;
+	 				}
+	   		}
+if(document.getElementById("in_ITWHTAdditionalAssmntTable_5").value!='' || 
+			document.getElementById("in_ITWHTAdditionalAssmntTable_5").value!=null ||
+			document.getElementById("totalAddAssAmountid").value!='' || 
+			document.getElementById("totalAddAssAmountid").value!=null)
+   		{
+			var amtToBePaidAss= parseInt(removeCommaFrmInput(document.getElementById("in_ITWHTAdditionalAssmntTable_5").value));
+			var totalAssAmt= removeCommaFrmInput(document.getElementById('totalAddAssAmountid').value);
+ 			if(amtToBePaidAss > totalAssAmt)
+ 				{
+ 					alert("Amount to be Paid can not be greater than the Total Amount");
+ 					document.getElementById("in_ITWHTAdditionalAssmntTable_5").value='';
+		   			return false;
+ 				}
+ 			else if(isNaN(amtToBePaidAss))
+ 			{
+ 				alert("Please enter valid amount to be paid.");
+ 				document.getElementById("in_ITWHTAdditionalAssmntTable_5").value='';
+ 				return false;
+ 			}
+ 			else if(isNaN(totalAssAmt))
+ 			{
+ 				alert("Please enter valid amount to be paid.");
+ 				document.getElementById("in_ITWHTAdditionalAssmntTable_5").value='';
+ 				return false;
+ 			}
+   		}/*Edited by kirui on 16062022 :: End*/
+	 return true;
+}
+
+function addAssessmentDetailsForIT()
+{
+	if(checkDuplicateITWithAssessmentRows()){
+		if(confirm("Do you want to add details?"))
+		{
+			addrow('ITWHTAdditionalAssmntTable','3','5','3','validateDeleteRowITWHTAdditionalAssmntTable','','N','N','6,7');
+			/*Added by Ben on 16062022 :: Start  clearing totalAmount on add*/
+			document.getElementById('totalAddAssAmountid').value =  "";
+		}
+		
+	}
+}
+
+function validateDeleteRowITWHTAdditionalAssmntTable()
+{
+	var table = document.getElementById('ITWHTAdditionalAssmntTable');  
+	var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var tempAmt = table.rows[rowno].cells[5].innerHTML;
+	totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+	document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+	document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+}
+
+function fetchITWHTAssessmentDetails(obj)
+{
+
+	if(document.getElementById('in_ITWHTAdditionalAssmntTable_3').value!=null 
+					&& document.getElementById('in_ITWHTAdditionalAssmntTable_3').value!='')
+			{
+				var paramArray = new Array();
+				paramArray[0] = obj;
+				paramArray[1]=document.getElementById('txtPin');
+				paramArray[2]=document.getElementById('cmbPaymentType');
+				paramArray[3]=document.getElementById('cmbTaxSubHead');
+				paramArray[4]=document.getElementById('cmbCGTType');
+				FetchAdditionalAssessmentDetails.fetchAdditionalAssessmentDetails(paramArray[0].value, 
+						paramArray[1].value,paramArray[2].value, paramArray[3].value,paramArray[4].value,{async:false,callback:function(data){
+						if(data!=null){
+							if(data.errorMsg!=null && data.errorMsg!="")
+							{
+								alert(data.errorMsg);
+								resetAdditionalAssmntDtlsForITWHT();
+							}else{/*Edited by kirui on 16062022*/
+							document.getElementById('totalAddAssAmountid').value=data.totalAmountForAdditionalAssessment;
+							document.getElementById('totalAddAssAmountid').value=convertToKenyanShillingFormatVal(document.getElementById('totalAddAssAmountid').value);
+							//document.getElementById('in_ITWHTAdditionalAssmntTable_5').value=convertToKenyanShillingFormatVal(document.getElementById('in_ITWHTAdditionalAssmntTable_5').value);
+							document.getElementById('in_ITWHTAdditionalAssmntTable_4').value=data.taxPeriodForAdditionalAssessment;
+							document.getElementById('in_ITWHTAdditionalAssmntTable_6').value=data.bclSplObligationHdrId;
+							document.getElementById('in_ITWHTAdditionalAssmntTable_7').value=data.bclSplWithholdingHdrId;
+							}
+						}
+						else{
+							alert("Error fetching data.");
+						}
+				}});
+			}
+		else{
+			alert("Please enter Assessment Notice Number.");
+			resetAdditionalAssmntDtlsForITWHT();
+			return false;
+		}
+
+}
+
+/*Start: Added for partial payment of Transmission - 26/03/2025 */
+function fetchTransmissionAssessmentDetails(obj)
+{
+	if(document.getElementById('in_TrnsMsAdditionalAssmntTable_3').value!=null 
+					&& document.getElementById('in_TrnsMsAdditionalAssmntTable_3').value!='')
+			{
+				var paramArray = new Array();
+				paramArray[0] = obj;
+				paramArray[1]=document.getElementById('txtPin');
+				paramArray[2]=document.getElementById('cmbPaymentType');
+				paramArray[3]=document.getElementById('cmbTaxSubHead');
+				paramArray[4]=document.getElementById('cmbCGTType');
+				FetchAdditionalAssessmentDetails.fetchAdditionalAssessmentDetails(paramArray[0].value, 
+						paramArray[1].value,paramArray[2].value, paramArray[3].value,paramArray[4].value,{async:false,callback:function(data){
+						if(data!=null){
+							if(data.errorMsg!=null && data.errorMsg!="")
+							{
+								alert(data.errorMsg);
+								resetAdditionalAssmntDtlsForTrnsMs();
+							}else{
+							document.getElementById('totalAddAssAmountTrnsMsid').value=data.totalAmountForAdditionalAssessment;
+							document.getElementById('totalAddAssAmountTrnsMsid').value=convertToKenyanShillingFormatVal(document.getElementById('totalAddAssAmountTrnsMsid').value);
+							document.getElementById('in_TrnsMsAdditionalAssmntTable_4').value=data.taxPeriodForAdditionalAssessment;
+							document.getElementById('in_TrnsMsAdditionalAssmntTable_6').value=data.bclSplObligationHdrId;
+							document.getElementById('in_TrnsMsAdditionalAssmntTable_7').value=data.bclSplTrnsHdrId;
+							}
+						}
+						else{
+							alert("Error fetching data.");
+						}
+				}});
+			}
+		else{
+			alert("Please enter Assessment Notice Number.");
+			resetAdditionalAssmntDtlsForTrnsMs();
+			return false;
+		}
+
+}
+
+function validateTrnsMsAssessmentDetails()
+{
+ if(document.getElementById("in_TrnsMsAdditionalAssmntTable_3").value=='' || 
+   			document.getElementById("in_TrnsMsAdditionalAssmntTable_3").value==null)
+	   		{
+	   			alert("Please enter Assessment Notice Number.");
+	   			return false;
+	   		}
+ if(document.getElementById("in_TrnsMsAdditionalAssmntTable_4").value=='' || 
+   			document.getElementById("in_TrnsMsAdditionalAssmntTable_4").value==null)
+	   		{
+	   			return false;
+	   		}
+ if(document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value=='' || 
+   			document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value==null)
+	   		{
+	   			alert("Amount to be paid can not be 0.");
+	   			document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value='';
+	   			return false;
+	   		}
+ if(document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value!='' || 
+   			document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value!=null)
+	   		{
+ 			var amt= parseInt(document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value);
+	 			if(amt == 0 || amt== 0.0)
+	 				{
+		 				alert("Amount to be paid can not be 0.");
+		 				document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value='';
+			   			return false;
+	 				}
+	   		}
+ if(document.getElementById("totalAddAssAmountTrnsMsid").value=='' || 
+			document.getElementById("totalAddAssAmountTrnsMsid").value==null)
+	   		{
+	   			alert("Additional Assessment Amount can not be 0.");
+	   			document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value='';
+	   			return false;
+	   		}
+if(document.getElementById("totalAddAssAmountTrnsMsid").value!='' || 
+			document.getElementById("totalAddAssAmountTrnsMsid").value!=null)
+	   		{
+			var amt= parseInt(document.getElementById("totalAddAssAmountTrnsMsid").value);
+	 			if(amt == 0 || amt== 0.0)
+	 				{
+		 				alert("Additional Assessment Amount can not be 0.");
+		 				document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value='';
+			   			return false;
+	 				}
+	   		}
+if(document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value!='' || 
+			document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value!=null ||
+			document.getElementById("totalAddAssAmountTrnsMsid").value!='' || 
+			document.getElementById("totalAddAssAmountTrnsMsid").value!=null)
+   		{
+			var amtToBePaidAss= parseInt(removeCommaFrmInput(document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value));
+			var totalAssAmt= removeCommaFrmInput(document.getElementById('totalAddAssAmountTrnsMsid').value);
+ 			if(amtToBePaidAss > totalAssAmt)
+ 				{
+ 					alert("Amount to be Paid can not be greater than the Total Amount");
+ 					document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value='';
+		   			return false;
+ 				}
+ 			else if(isNaN(amtToBePaidAss))
+ 			{
+ 				alert("Please enter valid amount to be paid.");
+ 				document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value='';
+ 				return false;
+ 			}
+ 			else if(isNaN(totalAssAmt))
+ 			{
+ 				alert("Please enter valid amount to be paid.");
+ 				document.getElementById("in_TrnsMsAdditionalAssmntTable_5").value='';
+ 				return false;
+ 			}
+   		}
+	 return true;
+}
+function resetAdditionalAssmntDtlsForTrnsMs()
+{
+	document.getElementById('in_TrnsMsAdditionalAssmntTable_3').value="";
+	document.getElementById('in_TrnsMsAdditionalAssmntTable_4').value="";
+	document.getElementById('in_TrnsMsAdditionalAssmntTable_5').value="";
+	document.getElementById('totalAddAssAmountTrnsMsid').value="";
+}
+
+function addAssessmentDetailsForTrnsMs()
+{
+	if(checkDuplicateTrnsAssessmentRows()){
+		if(confirm("Do you want to add details?"))
+		{
+			document.getElementById('txtTotalAmountPaidOblig').value=removeCommaFrmInput(document.getElementById('in_TrnsMsAdditionalAssmntTable_5').value);
+			addrow('TrnsMsAdditionalAssmntTable','3','5','3','validateDeleteRowTrnsMsAdditionalAssmntTable','','N','N','6,7');
+			document.getElementById('totalAddAssAmountTrnsMsid').value =  "";
+		}
+	}
+}
+
+function checkDuplicateTrnsAssessmentRows()
+{
+	var table = document.getElementById('TrnsMsAdditionalAssmntTable');  
+	var assmntNo = document.getElementById('in_TrnsMsAdditionalAssmntTable_3').value;
+	var taxPeriod= document.getElementById('in_TrnsMsAdditionalAssmntTable_4').value;
+	if(document.getElementById('txtTotalAmountPaidOblig').value>0)
+		{
+			alert(cntAddMoreDetails);
+			return false;
+		}
+	if(!(table.rows.length==1))
+	{ 	
+		for (var i = 1, n = table.rows.length; i <n; i++) 
+		{ 
+			modify=trim(table.rows[i].cells[2].getElementsByTagName('A')[0].innerHTML);
+			if((trim(document.getElementById('id_temp_'+'TrnsMsAdditionalAssmntTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&
+					(table.rows[i].cells[3].innerHTML==assmntNo) && (table.rows[i].cells[4].innerHTML==taxPeriod))
+			{
+				alert("You already added this details.");
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+function validateDeleteRowTrnsMsAdditionalAssmntTable()
+{
+	var table = document.getElementById('TrnsMsAdditionalAssmntTable');
+	var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var tempAmt = table.rows[rowno].cells[5].innerHTML;
+
+	totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+	document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+	document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+	
+}
+
+function addCommaToAmountToBePaidTrns()
+{
+	document.getElementById('in_TrnsMsAdditionalAssmntTable_5').value=convertToKenyanShillingFormatVal(document.getElementById('in_TrnsMsAdditionalAssmntTable_5').value);
+}
+
+function clearAllAdditionalAssmntDataTrnsMs()
+{
+	resetAdditionalAssmntDtlsForTrnsMs();
+	clear_table_data('TrnsMsAdditionalAssmntTable');
+}
+/* Shipping */
+
+function fetchShippingAssessmentDetails(obj)
+{
+	if(document.getElementById('in_ShippingAdditionalAssmntTable_3').value!=null 
+					&& document.getElementById('in_ShippingAdditionalAssmntTable_3').value!='')
+			{
+				var paramArray = new Array();
+				paramArray[0] = obj;
+				paramArray[1]=document.getElementById('txtPin');
+				paramArray[2]=document.getElementById('cmbPaymentType');
+				paramArray[3]=document.getElementById('cmbTaxSubHead');
+				paramArray[4]=document.getElementById('cmbCGTType');
+				FetchAdditionalAssessmentDetails.fetchAdditionalAssessmentDetails(paramArray[0].value, 
+						paramArray[1].value,paramArray[2].value, paramArray[3].value,paramArray[4].value,{async:false,callback:function(data){
+						if(data!=null){
+							if(data.errorMsg!=null && data.errorMsg!="")
+							{
+								alert(data.errorMsg);
+								resetAdditionalAssmntDtlsForShipping();
+							}else{
+							document.getElementById('totalAddAssAmountTrnsMsid').value=data.totalAmountForAdditionalAssessment;
+							document.getElementById('totalAddAssAmountShippingid').value=convertToKenyanShillingFormatVal(document.getElementById('totalAddAssAmountTrnsMsid').value);
+							document.getElementById('in_ShippingAdditionalAssmntTable_4').value=data.taxPeriodForAdditionalAssessment;
+							document.getElementById('in_ShippingAdditionalAssmntTable_6').value=data.bclSplObligationHdrId;
+							document.getElementById('in_ShippingAdditionalAssmntTable_7').value=data.bclSplShippingHdrId;
+							}
+						}
+						else{
+							alert("Error fetching data.");
+						}
+				}});
+			}
+		else{
+			alert("Please enter Assessment Notice Number.");
+			resetAdditionalAssmntDtlsForShipping();
+			return false;
+		}
+}
+
+function validateShippingAssessmentDetails()
+{
+ if(document.getElementById("in_ShippingAdditionalAssmntTable_3").value=='' || 
+   			document.getElementById("in_ShippingAdditionalAssmntTable_3").value==null)
+	   		{
+	   			alert("Please enter Assessment Notice Number.");
+	   			return false;
+	   		}
+ if(document.getElementById("in_ShippingAdditionalAssmntTable_4").value=='' || 
+   			document.getElementById("in_ShippingAdditionalAssmntTable_4").value==null)
+	   		{
+	   			return false;
+	   		}
+ if(document.getElementById("in_ShippingAdditionalAssmntTable_5").value=='' || 
+   			document.getElementById("in_ShippingAdditionalAssmntTable_5").value==null)
+	   		{
+	   			alert("Amount to be paid can not be 0.");
+	   			document.getElementById("in_ShippingAdditionalAssmntTable_5").value='';
+	   			return false;
+	   		}
+ if(document.getElementById("in_ShippingAdditionalAssmntTable_5").value!='' || 
+   			document.getElementById("in_ShippingAdditionalAssmntTable_5").value!=null)
+	   		{
+ 			var amt= parseInt(document.getElementById("in_ShippingAdditionalAssmntTable_5").value);
+	 			if(amt == 0 || amt== 0.0)
+	 				{
+		 				alert("Amount to be paid can not be 0.");
+		 				document.getElementById("in_ShippingAdditionalAssmntTable_5").value='';
+			   			return false;
+	 				}
+	   		}
+ if(document.getElementById("totalAddAssAmountShippingid").value=='' || 
+			document.getElementById("totalAddAssAmountShippingid").value==null)
+	   		{
+	   			alert("Additional Assessment Amount can not be 0.");
+	   			document.getElementById("in_ShippingAdditionalAssmntTable_5").value='';
+	   			return false;
+	   		}
+if(document.getElementById("totalAddAssAmountShippingid").value!='' || 
+			document.getElementById("totalAddAssAmountShippingid").value!=null)
+	   		{
+			var amt= parseInt(document.getElementById("totalAddAssAmountShippingid").value);
+	 			if(amt == 0 || amt== 0.0)
+	 				{
+		 				alert("Additional Assessment Amount can not be 0.");
+		 				document.getElementById("in_ShippingAdditionalAssmntTable_5").value='';
+			   			return false;
+	 				}
+	   		}
+if(document.getElementById("in_ShippingAdditionalAssmntTable_5").value!='' || 
+			document.getElementById("in_ShippingAdditionalAssmntTable_5").value!=null ||
+			document.getElementById("totalAddAssAmountShippingid").value!='' || 
+			document.getElementById("totalAddAssAmountShippingid").value!=null)
+   		{
+			var amtToBePaidAss= parseInt(removeCommaFrmInput(document.getElementById("in_ShippingAdditionalAssmntTable_5").value));
+			var totalAssAmt= removeCommaFrmInput(document.getElementById("totalAddAssAmountShippingid").value);
+ 			if(amtToBePaidAss > totalAssAmt)
+ 				{
+ 					alert("Amount to be Paid can not be greater than the Total Amount");
+ 					document.getElementById("in_ShippingAdditionalAssmntTable_5").value='';
+		   			return false;
+ 				}
+ 			else if(isNaN(amtToBePaidAss))
+ 			{
+ 				alert("Please enter valid amount to be paid.");
+ 				document.getElementById("in_ShippingAdditionalAssmntTable_5").value='';
+ 				return false;
+ 			}
+ 			else if(isNaN(totalAssAmt))
+ 			{
+ 				alert("Please enter valid amount to be paid.");
+ 				document.getElementById("in_ShippingAdditionalAssmntTable_5").value='';
+ 				return false;
+ 			}
+   		}
+	 return true;
+}
+
+function addAssessmentDetailsForShipping()
+{
+	if(checkDuplicateShippingAssessmentRows()){
+		if(confirm("Do you want to add details?"))
+		{
+			document.getElementById('txtTotalAmountPaidOblig').value=removeCommaFrmInput(document.getElementById('in_ShippingAdditionalAssmntTable_5').value);
+			addrow('ShippingAdditionalAssmntTable','3','5','3','validateDeleteRowShippingAdditionalAssmntTable','','N','N','6,7');
+			document.getElementById('totalAddAssAmountShippingid').value =  "";
+		}
+	}
+}
+
+function resetAdditionalAssmntDtlsForShipping()
+{
+	document.getElementById('in_ShippingAdditionalAssmntTable_3').value="";
+	document.getElementById('in_ShippingAdditionalAssmntTable_4').value="";
+	document.getElementById('in_ShippingAdditionalAssmntTable_5').value="";
+	document.getElementById('totalAddAssAmountShippingid').value="";
+}
+
+
+function checkDuplicateShippingAssessmentRows()
+{
+	var table = document.getElementById('ShippingAdditionalAssmntTable');  
+	var assmntNo = document.getElementById('in_ShippingAdditionalAssmntTable_3').value;
+	var taxPeriod= document.getElementById('in_ShippingAdditionalAssmntTable_4').value;
+	if(document.getElementById('txtTotalAmountPaidOblig').value>0)
+		{
+			alert(cntAddMoreDetails);
+			return false;
+		}
+	if(!(table.rows.length==1))
+	{ 	
+		for (var i = 1, n = table.rows.length; i <n; i++) 
+		{ 
+			modify=trim(table.rows[i].cells[2].getElementsByTagName('A')[0].innerHTML);
+			if((trim(document.getElementById('id_temp_'+'ShippingAdditionalAssmntTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&
+					(table.rows[i].cells[3].innerHTML==assmntNo) && (table.rows[i].cells[4].innerHTML==taxPeriod))
+			{
+				alert("You already added this details.");
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+function validateDeleteRowShippingAdditionalAssmntTable()
+{
+	var table = document.getElementById('ShippingAdditionalAssmntTable');
+	var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var tempAmt = table.rows[rowno].cells[5].innerHTML;
+
+	totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+	document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+	document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+	
+}
+
+function addCommaToAmountToBePaidShipping()
+{
+	document.getElementById('in_ShippingAdditionalAssmntTable_5').value=convertToKenyanShillingFormatVal(document.getElementById('in_ShippingAdditionalAssmntTable_5').value);
+}
+
+function clearAllAdditionalAssmntDataShipping()
+{
+	resetAdditionalAssmntDtlsForShipping();
+	clear_table_data('ShippingAdditionalAssmntTable');
+}
+/*End: Added for partial payment of Transmission and shipping - 26/03/2025 */
+
+/*added by Kirui 27062022 for part payment Enhancement :: Start*/
+function addCommaToAmountToBePaidWHTIT()
+{
+	document.getElementById('in_ITWHTAdditionalAssmntTable_5').value=convertToKenyanShillingFormatVal(document.getElementById('in_ITWHTAdditionalAssmntTable_5').value);
+}
+/*added by Kirui 27062022 for part payment Enhancement :: End*/
+function resetAdditionalAssmntDtlsForITWHT()
+{
+	document.getElementById('in_ITWHTAdditionalAssmntTable_3').value="";
+	document.getElementById('in_ITWHTAdditionalAssmntTable_4').value="";
+	document.getElementById('in_ITWHTAdditionalAssmntTable_5').value="";
+	document.getElementById('totalAddAssAmountid').value="";/*Added by kirui on 16062022*/
+}
+function clearAllAdditionalAssmntDataITWithholding()
+{
+	resetAdditionalAssmntDtlsForITWHT();
+	clear_table_data('ITWHTAdditionalAssmntTable');
+}
+
+
+// Added change for PR101
+function checkResidentOrNonResident()
+{
+	var status=document.getElementById('in_withholdeeFormTable_11').value;
+	if(status=='R')
+	{
+		if(!(citizenshipCode=='KE' || citizenshipCode=='NKE'))
+		{
+			alert('Please enter a PIN of type Resident');
+			document.getElementById('in_withholdeeFormTable_4').value="";
+			document.getElementById('in_withholdeeFormTable_12').value="";
+			document.getElementById('in_withholdeeFormTable_15').value="";
+			document.getElementById('in_withholdeeFormTable_3').value="";
+			taxPayerType="";
+			citizenshipCode="";
+		}
+	}
+	else if(status=='NR')
+	{
+		if(!(citizenshipCode=='NKENR' || citizenshipCode=='NKNR'))
+		{
+
+			alert('Please enter a PIN of type Non-Resident');
+			document.getElementById('in_withholdeeFormTable_4').value="";
+			document.getElementById('in_withholdeeFormTable_12').value="";
+			document.getElementById('in_withholdeeFormTable_15').value="";
+			document.getElementById('in_withholdeeFormTable_3').value="";
+			taxPayerType="";
+			citizenshipCode="";
+
+		}
+	}
+}
+
+function clearWithDetails()
+{
+	document.getElementById('in_withholdeeFormTable_4').value="";
+	document.getElementById('in_withholdeeFormTable_12').value="";
+	document.getElementById('in_withholdeeFormTable_15').value="";
+	document.getElementById('in_withholdeeFormTable_3').value="";
+	taxPayerType="";
+	citizenshipCode="";
+}
+
+function checkWithholdeeNameAndPin()
+{
+	var pinRequr=document.getElementById('isPinReq').value;
+	var whtDtlsRequr=document.getElementById('isWhtDtlReq').value;
+	if((pinRequr=='N' || pinRequr=='n') &&(whtDtlsRequr=='O' || whtDtlsRequr=='o'))
+	{
+		if((document.getElementById('in_withholdeeFormTable_3').value==null || document.getElementById('in_withholdeeFormTable_3').value=="") && (document.getElementById('in_withholdeeFormTable_3').value!=null && (document.getElementById('in_withholdeeFormTable_4').value==null || document.getElementById('in_withholdeeFormTable_4').value=="")||(document.getElementById('in_withholdeeFormTable_12').value==null || document.getElementById('in_withholdeeFormTable_12').value=="")||((document.getElementById('in_withholdeeFormTable_15').value==null || document.getElementById('in_withholdeeFormTable_15').value==""))))
+		{
+			alert('You have not entered Withholdee PIN and Withholdee Details. So Withholdee Details/PIN will not be populated in the Withholding Certificate');
+		}
+	}
+
+
+}
+
+
+function onChangeAmountToBePaidITWithholding(obj)
+{/*
+	var amtToBePaid=obj.value;
+	amtPayable=convertToKenyanShillingFormatValWithDecimal(Math.ceil(amtPayable));
+	if (amtToBePaid>0 && amtToBePaid<=amtPayable){
+		onChangeAmtToBePaid();
+		document.getElementById("in_withholdeeWebFormTable_5").value=convertToKenyanShillingFormatValWithDecimal(Math.ceil(amtToBePaid));
+		
+		return true;
+	}
+	else if (amtToBePaid<=0){
+		alert ("'Amount To Be Paid' cannot be equal to zero");
+		obj.value=amtPayable;
+		return false;
+	}else if(amtToBePaid>amtPayable){
+		alert ("'Amount To Be Paid' cannot be greater than 'Amount Payable'");
+		obj.value=amtPayable; 
+		return false;
+	}
+*/
+	
+
+		var arr=obj.id.split("_");
+		var row=arr[1];
+		var rowRef = document.getElementById("withHoldeeWebHdrRow_" + row);
+		var amtPayable = rowRef.getElementsByTagName("TD")[5].textContent;
+		amtPayable=parseInt(removeCommaFrmInput(amtPayable),10).toFixed(2);
+		if((parseInt(obj.value))<0 || (parseInt(obj.value))>(parseInt(amtPayable))){
+			alert("Amount to be paid should be greater than 0 and less than amount payable");
+			obj.value=amtPayable;
+			return false;
+		}
+		
+		
+		
+		document.getElementById("in_withholdeeWebFormTable_5").value=convertToKenyanShillingFormatVal(obj.value,true);
+		return true;
+
+	
+
+
+}
+//By Miral for CGT :START
+function fetchCGTAssessmentDetails(obj)
+{
+	if(document.getElementById('cmbCGTType').value==-1 || document.getElementById('cmbCGTType').value==null || document.getElementById('cmbCGTType').value == "" )
+		{
+			alert("Please select CGT Type.");
+			resetAdditionalAssmntDtlsForCGT();
+			return false;
+		}
+
+	if(document.getElementById('in_CGTAdditionalAssmntTable_3').value!=null 
+					&& document.getElementById('in_CGTAdditionalAssmntTable_3').value!='')
+			{
+				var paramArray = new Array();
+				paramArray[0] = obj;
+				paramArray[1]=document.getElementById('txtPin');
+				paramArray[2]=document.getElementById('cmbPaymentType');
+				paramArray[3]=document.getElementById('cmbTaxSubHead');
+				paramArray[4]=document.getElementById('cmbCGTType');
+				
+				FetchAdditionalAssessmentDetails.fetchAdditionalAssessmentDetails(paramArray[0].value, 
+						paramArray[1].value,paramArray[2].value, paramArray[3].value,paramArray[4].value,{async:false,callback:function(data){
+						if(data!=null){
+							if(data.errorMsg!=null && data.errorMsg!="")
+							{
+								alert(data.errorMsg);
+								resetAdditionalAssmntDtlsForCGT();
+							}else{/*Edited by kirui and ben on 23062022 :: Start*/
+							document.getElementById('totalCGTAddAssAmountid').value=data.totalAmountForAdditionalAssessment;
+							document.getElementById('totalCGTAddAssAmountid').value=convertToKenyanShillingFormatVal(document.getElementById('totalCGTAddAssAmountid').value);
+							//document.getElementById('in_CGTAdditionalAssmntTable_4').value=data.taxPeriodForAdditionalAssessment;
+							document.getElementById('in_CGTAdditionalAssmntTable_5').value=data.bclSplObligationHdrId;
+							document.getElementById('in_CGTAdditionalAssmntTable_6').value=data.bclSplCgtSummaryDtlsId;
+							document.getElementById('in_CGTAdditionalAssmntTable_7').value=data.cgtType;
+							
+							}
+						}
+						else{
+							alert("Error fetching data.");
+						}
+				}});
+			}
+		else{
+			alert("Please enter Assessment Notice Number.");
+			resetAdditionalAssmntDtlsForCGT();
+			return false;
+		}
+
+}
+function addCommaToAmountToBePaidWHTCGT()
+{
+	document.getElementById('in_CGTAdditionalAssmntTable_4').value=convertToKenyanShillingFormatVal(document.getElementById('in_CGTAdditionalAssmntTable_4').value);
+}
+function resetAdditionalAssmntDtlsForCGT()
+{
+	document.getElementById('in_CGTAdditionalAssmntTable_3').value="";
+	document.getElementById('totalCGTAddAssAmountid').value="";
+	document.getElementById('in_CGTAdditionalAssmntTable_4').value=""; /*Edited by kirui on 23062022*/
+}
+
+function validateCGTWithAssessmentDetails()
+{
+ if(document.getElementById("in_CGTAdditionalAssmntTable_3").value=='' || 
+   			document.getElementById("in_CGTAdditionalAssmntTable_3").value==null)
+	   		{
+	   			alert("Please enter Assessment Notice Number.");
+	   			return false;
+	   		}
+/* if(document.getElementById("in_CGTAdditionalAssmntTable_4").value=='' || 
+   			document.getElementById("in_CGTAdditionalAssmntTable_4").value==null)
+	   		{
+	   			return false;
+	   		}*/
+ if(document.getElementById("in_CGTAdditionalAssmntTable_4").value=='' || 
+   			document.getElementById("in_CGTAdditionalAssmntTable_4").value==null)
+	   		{
+	   			alert("Amount to be paid can not be 0.");
+	   			document.getElementById("in_CGTAdditionalAssmntTable_4").value='';
+	   			return false;
+	   		}
+ if(document.getElementById("in_CGTAdditionalAssmntTable_4").value!='' || 
+   			document.getElementById("in_CGTAdditionalAssmntTable_4").value!=null)
+	   		{
+ 			var amt= parseInt(document.getElementById("in_CGTAdditionalAssmntTable_4").value);
+	 			if(amt == 0 || amt== 0.0)
+	 				{
+	 				alert("Amount to be paid can not be 0.");
+		   			document.getElementById("in_CGTAdditionalAssmntTable_4").value='';
+			   			return false;
+	 				}
+	   		}
+ /*Edited by kirui on 16062022 :: Start*/
+ if(document.getElementById("totalCGTAddAssAmountid").value=='' || 
+			document.getElementById("totalCGTAddAssAmountid").value==null)
+	   		{
+	   			alert("Additional Assessment Amount can not be 0.");
+	   			document.getElementById("in_CGTAdditionalAssmntTable_4").value='';
+	   			return false;
+	   		}
+if(document.getElementById("totalCGTAddAssAmountid").value!='' || 
+			document.getElementById("in_CGTAdditionalAssmntTable_4").value!=null)
+	   		{
+			var amt= parseInt(document.getElementById("totalCGTAddAssAmountid").value);
+	 			if(amt == 0 || amt== 0.0)
+	 				{
+		 				alert("Additional Assessment Amount can not be 0.");
+		 				document.getElementById("in_CGTAdditionalAssmntTable_4").value='';
+			   			return false;
+	 				}
+	   		}
+if(document.getElementById("in_CGTAdditionalAssmntTable_4").value!='' || 
+			document.getElementById("in_CGTAdditionalAssmntTable_4").value!=null ||
+			document.getElementById("totalCGTAddAssAmountid").value!='' || 
+			document.getElementById("totalCGTAddAssAmountid").value!=null)
+   		{
+			var amtToBePaidAss= parseInt(removeCommaFrmInput(document.getElementById("in_CGTAdditionalAssmntTable_4").value));
+			var totalAssAmt= removeCommaFrmInput(document.getElementById('totalCGTAddAssAmountid').value);
+ 			if(amtToBePaidAss > totalAssAmt)
+ 				{
+ 					alert("Amount to be Paid can not be greater than the Total Amount");
+ 					document.getElementById("in_CGTAdditionalAssmntTable_4").value='';
+		   			return false;
+ 				}
+ 			else if(isNaN(amtToBePaidAss))
+ 			{
+ 				alert("Please enter valid amount to be paid.");
+ 				document.getElementById("in_CGTAdditionalAssmntTable_4").value='';
+ 				return false;
+ 			}
+ 			else if(isNaN(totalAssAmt))
+ 			{
+ 				alert("Please enter valid amount to be paid.");
+ 				document.getElementById("in_CGTAdditionalAssmntTable_4").value='';
+ 				return false;
+ 			}
+   		}/*Edited by kirui on 16062022 :: End*/
+	 return true;
+}
+
+function addAssessmentDetailsForCGT()
+{
+	if(checkDuplicateCGTWithAssessmentRows()){
+		if(confirm("Do you want to add details?"))
+		{
+			var hideCols='5,6,7';
+			addrow('CGTAdditionalAssmntTable',2,5,4,'validateDeleteRowCGTAdditionalAssmntTable','','N','N','hideCols','');
+			document.getElementById('txtTotalAmountPaidOblig').value=removeCommaFrmInput(document.getElementById('total_CGTAdditionalAssmntTable_4').value);
+		}
+		
+	}
+	resetAdditionalAssmntDtlsForCGT();
+}
+
+function checkDuplicateCGTWithAssessmentRows()
+{
+	var table = document.getElementById('CGTAdditionalAssmntTable');  
+	var assmntNo = document.getElementById('in_CGTAdditionalAssmntTable_3').value;
+	//var taxPeriod= document.getElementById('in_CGTAdditionalAssmntTable_4').value;
+	if(document.getElementById('txtTotalAmountPaidOblig').value>0)
+		{
+			alert(cntAddMoreDetails);
+			return false;
+		}
+	if(!(table.rows.length==1))
+	{ 	
+		for (var i = 1, n = table.rows.length; i <n; i++) 
+		{ 
+			modify=trim(table.rows[i].cells[2].getElementsByTagName('A')[0].innerHTML);
+			if((trim(document.getElementById('id_temp_'+'CGTAdditionalAssmntTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&
+					(table.rows[i].cells[3].innerHTML==assmntNo))
+			{
+				alert("You already added this details.");
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+function validateDeleteRowCGTAdditionalAssmntTable()
+{
+	var table = document.getElementById('CGTAdditionalAssmntTable'); 
+	var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	var tempAmt = table.rows[rowno].cells[4].innerHTML;
+	totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+	document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+	document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+}
+
+//By Miral for CGT :END

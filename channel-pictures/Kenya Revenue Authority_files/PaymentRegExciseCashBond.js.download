@@ -1,0 +1,118 @@
+var paymentRegCashBondDetailsJson={"field":[{"name":"in_exciseCashBondTbl_4","rule":[{"required":"y","type":"onlyalphanumeric","dispName":"Acknowledgment Number"}]}]};
+
+function fetchExciseCashBondAmount(obj)
+{
+	var ackNo=obj.value;
+	var taxPayerId=document.getElementById('hidTaxPayerId').value;
+	var obligationId=document.getElementById('cmbTaxSubHead').value;
+	GetExciseBondAmount.getExciseBondAmount(ackNo,taxPayerId,obligationId,{async:false,callback:function(data)
+		{
+
+		if(data != null)
+		{
+			if(data.isDataAvailable==Y_FLAG)
+			{
+				document.getElementById("txtTotalAmountPaidExciseBond").value=convertToKenyanShillingFormatVal(Math.ceil(data.totalAmountTobePaid), true);
+			}
+			if(data.isDataAvailable==N_FLAG && data.isAgent==ERROR)
+			{
+				alert(validAckNo);
+				document.getElementById("txtTotalAmountPaidExciseBond").value=0;
+			}
+			if(data.isDataAvailable==N_FLAG && data.isAgent==NO_CALL_MADE)
+			{
+				alert(errFetchingData);
+				document.getElementById("txtTotalAmountPaidExciseBond").value=0;
+			}
+		}
+		else
+		{
+			alert(errFetchingData);
+			document.getElementById("txtTotalAmountPaidExciseBond").value=0;
+		}
+		}});
+}
+
+function savePaymentDetailForeignAmnesty()
+{	
+		if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidExciseBond").value)>0)
+			{
+				hideTab('TabView',5);
+				resetErrorList();
+				incError=0;
+				if(saveConfirm())
+				{
+					document.getElementById('cmdSaveOblig').disabled=true;
+					document.getElementById('cmdClearOblig').disabled=true;
+					document.getElementById("txtTotalAmountPaidExciseBond").value = removeCommaFrmInput(document.getElementById("txtTotalAmountPaidExciseBond").value);
+					document.paymentRegForm.action="paymentRegistration.htm?actionCode=saveObligationDetail";
+					document.paymentRegForm.submit();
+				}
+			}
+			else
+			{
+				alert(totalAmtGreaterThenZero);
+				return false;
+			}
+}
+
+function savePaymentDetailCashBond()
+{	
+	if(isExciseCashBondRegistered()){
+		if(validateFormFields(paymentRegCashBondDetailsJson))
+		{
+			if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidExciseBond").value)>0)
+			{
+				hideTab('TabView',5);
+				resetErrorList();
+				incError=0;
+				if(saveConfirm())
+				{
+					document.getElementById('cmdSaveOblig').disabled=true;
+					document.getElementById('cmdClearOblig').disabled=true;
+					document.getElementById("txtTotalAmountPaidExciseBond").value = removeCommaFrmInput(document.getElementById("txtTotalAmountPaidExciseBond").value);
+					document.paymentRegForm.action="paymentRegistration.htm?actionCode=saveObligationDetail";
+					document.paymentRegForm.submit();
+				}
+			}
+			else
+			{
+				alert(totalAmtGreaterThenZero);
+				return false;
+			}
+		}
+		else
+		{
+			getErrTabToggle('TabView','2');	
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+	}
+	else{
+		return false;
+	}
+
+}
+
+function isExciseCashBondRegistered(){
+	var taxpayerId = document.getElementById('hidTaxPayerId').value;
+	var obligationId = document.getElementById('hidObligationId').value;
+
+	var ackNoCashBond = document.getElementById('in_exciseCashBondTbl_4').value;
+	var amountPayable = document.getElementById('txtTotalAmountPaidExciseBond').value;
+
+	var PmtSplDetailVO = {
+			taxpayerId  : taxpayerId,
+			obligationId : obligationId,
+
+			ackNoCashBond : ackNoCashBond,
+			amountPayable  : amountPayable
+	};
+
+	if(isSplObligationRegisteredWeb(PmtSplDetailVO,N_FLAG))
+		return true;
+	else
+		return false;
+
+}

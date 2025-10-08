@@ -1,0 +1,1332 @@
+var selectedFlagAdvanceTax=0;
+var deleteFlagAdvanceTax = 0;
+var modifyFlagAdvanceTax=0;
+var amtToPaidAdvanceTax=0;
+var TotalAmtToPaidAdvanceTax=0;
+var AdvanceTaxAssmntTax=0;
+var tempAmtValAdvanceTax=0;
+var paymentRegAdvTaxDetailsJson={"field":[{"name":"in_advanceTaxTable_4","rule":[{"required":"y","dispName":"Amount to be Paid","type":"amount"}]}
+]};
+function beforeAddIntoadvanceTaxTable(row)
+{
+	var checkDuplicateFlag = checkDuplicateForAdvance(row,'advanceTaxTable');
+	if(checkDuplicateFlag==false)
+	{
+		return false;
+	}
+	else
+	{
+		document.getElementById('hidObligationId').value = document.getElementById('cmbTaxSubHead').value;
+		
+		var taxTypeIndex = document.getElementById('cmbTaxSubHead').selectedIndex;
+		var taxTypeName =  document.getElementById('cmbTaxSubHead')[taxTypeIndex].text;
+		document.getElementById('in_advanceTaxTable_3').value = taxTypeName;
+		tempAmtValAdvanceTax=removeCommaFrmInput(document.getElementById('in_advanceTaxTable_4').value);
+		document.getElementById('in_advanceTaxTable_5').value=document.getElementById('cmbTaxSubHead').value;
+		document.getElementById('in_advanceTaxTable_9').value = Obligation_Type_Tax;
+		document.getElementById('in_advanceTaxTable_10').value=document.getElementById('cmbTaxHead').value;
+		document.getElementById('in_advanceTaxTable_11').value=document.getElementById('cmbPaymentType').value;
+	}
+}
+
+
+function afterAddIntoadvanceTaxTable()
+{
+	var tmpAmtToPaid=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	document.getElementById('txtTotalAmountPaidOblig').value=convertToKenyanShillingFormatVal(removeCommaFrmInput(parseInt(tmpAmtToPaid,10)+parseInt(tempAmtValAdvanceTax,10)),true);
+	/*document.getElementById('cmbTaxPeriod').selectedIndex='0';
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex='0';
+	document.getElementById('cmbTaxPeriodMonth').disabled=true;
+	document.getElementById('cmbTaxPeriodYear').selectedIndex='0';*/
+	//document.getElementById('cmbTaxSubHead').selectedIndex='0';
+	document.getElementById('in_advanceTaxTable_9').value = Obligation_Type_Tax;
+	document.getElementById('in_advanceTaxTable_4').value=0;
+	document.getElementById('in_advanceTaxTable_6').value = "0";
+	/*document.getElementById('CmbTaxPeriodTd').style.display = 'none';
+	document.getElementById('tdCmbTaxPeriod').style.display = 'none';
+	document.getElementById('tdCmbTaxPeriodMonth').style.display = 'none';
+	document.getElementById('tdCmbTaxPeriodYear').style.display = 'none';
+	document.getElementById('CmbTaxPeriodMonthLabelTd').style.display = 'none';
+	document.getElementById('CmbTaxPeriodYearLabelTd').style.display = 'none';
+	document.getElementById('noTaxPeriodTd').style.display = '';
+	document.getElementById('noTaxPeriodTd1').style.display = '';*/
+	selectedFlagAdvanceTax=selectedFlagAdvanceTax+1;
+}
+
+function beforeDeleteIntoadvanceTaxTable()
+{
+	if(modifyFlagAdvanceTax==1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+}
+
+function afterDeleteIntoadvanceTaxTable()
+{
+	deleteFlagAdvanceTax = 1;
+	selectedFlagAdvanceTax = selectedFlagAdvanceTax -1;
+}
+
+function validateDeleteRowIntoAdvanceTaxTable(tab_str, rowno, cols) 
+{
+	if(deleteFlagAdvanceTax==1 && modifyFlagAdvanceTax==0)
+	{
+		var table = document.getElementById('advanceTaxTable');
+		totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+		var tempAmt = table.rows[rowno].cells[4].innerHTML;
+		totalAmt =  parseInt(totalAmt,10) - parseInt(removeCommaFrmInput(tempAmt),10);
+		document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(totalAmt, true);
+		deleteFlagAdvanceTax = 0;
+	}
+	else
+	{
+		deleteFlagAdvanceTax = 0;
+	}
+}
+
+function beforeModifyIntoadvanceTaxTable(row) 
+{
+	if(addValidationAdvanceTax())
+	{	
+		var checkDuplicateFlag = addValidationAdvanceTax(row);
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		else
+		{
+		/*if(document.getElementById('tdCmbTaxPeriodYear').style.display=="")
+		{
+			var taxPeriod=document.getElementById('cmbTaxPeriodMonth').selectedIndex;
+			var taxPeriodValue= document.getElementById('cmbTaxPeriodMonth')[taxPeriod].text;
+			var taxPeriod = document.getElementById('cmbTaxPeriodYear').selectedIndex;
+			var taxPeriodYear =document.getElementById('cmbTaxPeriodYear')[taxPeriod].text;
+			//document.getElementById('in_advanceTaxTable_4').value=taxPeriodValue+" "+taxPeriodYear;
+			//document.getElementById('in_advanceTaxTable_11').value=document.getElementById('cmbTaxPeriodMonth').value;
+		}
+		if(document.getElementById('tdCmbTaxPeriod').style.display=="")
+		{
+			var taxPeriod = document.getElementById('cmbTaxPeriod').selectedIndex;
+			var taxPeriodYear =document.getElementById('cmbTaxPeriod')[taxPeriod].text;
+			//document.getElementById('in_advanceTaxTable_4').value=taxPeriodYear;
+			//document.getElementById('in_advanceTaxTable_11').value=document.getElementById('cmbTaxPeriod').value;
+		}*/
+			var taxTypeIndex = document.getElementById('cmbTaxSubHead').selectedIndex;
+			var taxTypeName =  document.getElementById('cmbTaxSubHead')[taxTypeIndex].text;
+			document.getElementById('in_advanceTaxTable_3').value = taxTypeName;
+			document.getElementById('in_advanceTaxTable_5').value=document.getElementById('cmbTaxSubHead').value;
+			totalAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+			document.getElementById('in_advanceTaxTable_10').value=document.getElementById('cmbTaxHead').value;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+function afterModifyIntoadvanceTaxTable() 
+{
+	modifyFlagAdvanceTax = 0;
+	commonModifyFlag=0;
+	var table = document.getElementById('advanceTaxTable'); 
+	var modifyingAmt;
+	if(document.all)
+	{
+		modifyingAmt=table.rows[rowno].cells[4].innerText;
+	}
+	else
+	{
+		modifyingAmt=table.rows[rowno].cells[4].textContent;
+	}
+	totalAmt = parseInt(removeCommaFrmInput(totalAmt),10) + parseInt(removeCommaFrmInput(modifyingAmt),10) - parseInt(removeCommaFrmInput(tempAmtValAdvanceTax),10);
+	document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(totalAmt, true);
+	/*document.getElementById('cmbTaxPeriod').selectedIndex='0';
+	document.getElementById('cmbTaxPeriodMonth').selectedIndex='0';
+	document.getElementById('cmbTaxPeriodMonth').disabled=true;
+	document.getElementById('cmbTaxPeriodYear').selectedIndex='0';*/
+	//document.getElementById('cmbTaxSubHead').selectedIndex='0';
+	document.getElementById('in_advanceTaxTable_9').value = Obligation_Type_Tax;
+	document.getElementById('in_advanceTaxTable_4').value=0;
+	document.getElementById('in_advanceTaxTable_6').value = "0";
+	/*document.getElementById('CmbTaxPeriodTd').style.display = 'none';
+	document.getElementById('tdCmbTaxPeriod').style.display = 'none';
+	document.getElementById('tdCmbTaxPeriodMonth').style.display = 'none';
+	document.getElementById('tdCmbTaxPeriodYear').style.display = 'none';
+	document.getElementById('CmbTaxPeriodMonthLabelTd').style.display = 'none';
+	document.getElementById('CmbTaxPeriodYearLabelTd').style.display = 'none';
+	document.getElementById('noTaxPeriodTd').style.display = '';
+	document.getElementById('noTaxPeriodTd1').style.display = '';*/
+}
+
+function validateModifyRowIntoAdvanceTaxTable()
+{
+	modifyFlagAdvanceTax=1;
+	commonModifyFlag=1;
+	document.getElementById('cmbTaxHead').value=document.getElementById('in_advanceTaxTable_10').value;
+	onChangeCmbTaxHead(document.getElementById('cmbTaxHead'));
+	document.getElementById('cmbTaxSubHead').value=document.getElementById('in_advanceTaxTable_5').value;
+	onChangeCmbSubTaxHead(document.getElementById('cmbTaxSubHead'));
+//	var obligationId=document.getElementById('cmbTaxSubHead').value;
+	document.getElementById('cmbPaymentType').value=document.getElementById('in_advanceTaxTable_11').value;
+	//fetchTaxPeriod();
+	tempAmtValAdvanceTax=removeCommaFrmInput(document.getElementById('in_advanceTaxTable_4').value);
+}
+
+function clearAdvanceTaxDetails()
+{
+	if(clear_table('advanceTaxTable', '6'))
+	{
+		document.getElementById('cmbTaxPeriod').selectedIndex='0';
+		document.getElementById('cmbTaxPeriodMonth').selectedIndex='0';
+		document.getElementById('cmbTaxPeriodMonth').disabled=true;
+		document.getElementById('cmbTaxPeriodYear').selectedIndex='0';
+		//document.getElementById('cmbTaxSubHead').selectedIndex='0';
+		document.getElementById('in_advanceTaxTable_9').value = Obligation_Type_Tax;
+		document.getElementById('in_advanceTaxTable_4').value=0;
+		document.getElementById('in_advanceTaxTable_6').value = "0";
+		document.getElementById('CmbTaxPeriodTd').style.display = 'none';
+		document.getElementById('tdCmbTaxPeriod').style.display = 'none';
+		document.getElementById('tdCmbTaxPeriodMonth').style.display = 'none';
+		document.getElementById('tdCmbTaxPeriodYear').style.display = 'none';
+		document.getElementById('CmbTaxPeriodMonthLabelTd').style.display = 'none';
+		document.getElementById('CmbTaxPeriodYearLabelTd').style.display = 'none';
+		document.getElementById('noTaxPeriodTd').style.display = '';
+		document.getElementById('noTaxPeriodTd1').style.display = '';
+		modifyFlagAdvanceTax=0;
+		commonModifyFlag=0;
+	}
+}
+
+function validateAdvTaxDtls(id)
+{
+	var rtnFlag;
+	rtnFlag =validateFormFieldOnEvent(id,paymentRegAdvTaxDetailsJson);
+	{
+		getErrTabToggle('TabView','2');	
+		if(!rtnFlag)
+		{
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}
+		return rtnFlag;	
+	}
+}
+
+function addValidationAdvanceTax(row)
+{
+	resetErrorList();
+	if(validateFormFields(paymentRegTaxHeadJson,paymentRegTaxDetailsJson,paymentRegPmtTtypeJson))
+	{
+		var checkDuplicateFlag = checkDuplicateForAdvance(row,'advanceTaxTable');
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		if(removeCommaFrmInput(document.getElementById('in_advanceTaxTable_4').value)<=0)
+		{
+			alert(amtPaid);
+			return false;
+		}
+		if(addConfirm('a_advanceTaxTable'))
+		{
+			if(document.getElementById('a_advanceTaxTable').innerHTML!="Modify")
+			{
+				addrow('advanceTaxTable', '2', '9','3','validateDeleteRowIntoAdvanceTaxTable','validateModifyRowIntoAdvanceTaxTable','N','N');
+			}
+			else 
+			{
+				return true;
+			}
+		}
+	}
+	else
+	{
+		getErrTabToggle('TabView','2');	
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+		return false;
+	}
+
+}
+function checkDuplicateForAdvance(r,id)
+{
+	rows=r;
+	var obligationId=document.getElementById('cmbTaxSubHead').value;
+	tabObj1 = document.getElementById(id);
+	var taxObligation = document.getElementById('cmbTaxSubHead').selectedIndex;
+	var taxObligationValue =  trim(document.getElementById('cmbTaxSubHead')[taxObligation].text);
+	{
+		if(tabObj1.rows.length==1)
+		{
+		}
+		else
+		{ 	
+			var modify;
+
+			for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+			{ 
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+				}
+				if((trim(document.getElementById('id_temp_'+id+'_'+i+'_1').value))=="Delete" && (trim(modify))=="Modify" &&  (trim(tabObj1.rows[i].cells[3].innerHTML)==taxObligationValue))
+				{
+					alert(detailsAlreadyExists);
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+}
+	/*changes done for Enhancement 1*/
+	function onSelectionOfRadioForAdvTaxOblig(radioValue)
+	{
+		if(radioValue=='e')
+		  {
+			document.getElementById("navigationTableSplHdr").style.display='none';
+			document.getElementById('txtTotalAmountPayableOTR').style.display='none'; 
+			document.getElementById('txtTotalAmountPaidOTR').style.display='none';
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('lblTotalAmountPayable').style.display='none';
+			document.getElementById('lblTotalAmountPaid').style.display='none';
+			document.getElementById('lblasterisk').style.display='none';
+			document.getElementById('hide1').style.display='none';
+			document.getElementById('asrk').style.display='none';
+			
+			document.getElementById('CmbTaxPeriodLabelTd').style.display=''; 
+			document.getElementById('CmbTaxPeriodTd').style.display='';
+			document.getElementById('AdvTaxPeriodYearAmnd').selectedIndex=-1 ;
+			document.getElementById('tdCmbTaxPeriodYearDiv').style.display='none';
+			document.getElementById('tdCmbTaxPeriodYearAmnd').style.display='none';
+			
+			document.getElementById("AdvanceTaxpaymentRadioDiv").style.display='';
+			document.getElementById('paymentAdvExcelUploadForm').style.display ='';
+			document.getElementById('paymentAdvTaxWebForm').style.display='none';
+			resetAdvTaxInfo();
+			clear_table_data("advanceTable");
+			document.getElementById('fileAdv').disabled=false;
+			document.getElementById('excelAdvPmtTypeRadio2').checked=true;
+			document.getElementById("excelAdvPmtTypeRadio1").checked=false;
+			amendmentOrNormalForAdvTax(document.getElementById('excelAdvPmtTypeRadio2'));
+			
+			//document.getElementById("excelAdvPmtTypeRadio2").checked=false;
+		  }
+		else{
+			//document.getElementById("navigationTableSplHdr").style.display='';
+			document.getElementById('AdvTaxPeriodYearAmnd').selectedIndex=-1 ;
+			document.getElementById('tdCmbTaxPeriodYearDiv').style.display='none';
+			document.getElementById('tdCmbTaxPeriodYearAmnd').style.display='none';
+			document.getElementById('CmbTaxPeriodLabelTd').style.display=''; 
+			document.getElementById('CmbTaxPeriodTd').style.display='';
+			document.getElementById("totalAmountPaidTbl").style.display='';
+			document.getElementById('paymentAdvExcelUploadForm').style.display ='none';
+			document.getElementById('paymentAdvTaxWebForm').style.display='';
+			document.getElementById('fileAdv').value='';
+			document.getElementById("AdvanceTaxpaymentRadioDiv").style.display='';
+			clear_table_data("AdvPreviousDetailsTable");
+			document.getElementById('AdvPreviousDetailsTable').style.display='none';
+			document.getElementById("navigationFieldsetForAdv").style.display = 'none';
+			document.getElementById("scrollableDivAdv").style.display = 'none';
+			/*document.getElementById("AdvPeriodMonth").selectedIndex=-1;
+			document.getElementById("AdvTaxPeriodYear").selectedIndex=-1;*/
+			document.getElementById('fileAdv').disabled=true;
+			document.getElementById('amendButtonAdv').style.display='none';
+			document.getElementById('excelAdvPmtTypeRadio1').checked=false;
+			document.getElementById('excelAdvPmtTypeRadio2').checked=false;
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPayableOTR').style.display='';
+			document.getElementById('txtTotalAmountPaidOTR').style.display='';
+			document.getElementById('txtTotalAmountPaidOTR').value="0"; 
+			document.getElementById('txtTotalAmountPayableOTR').readOnly=true;
+			document.getElementById('lblTotalAmountPayable').style.display='';
+			document.getElementById('lblTotalAmountPaid').style.display='';
+			document.getElementById('lblasterisk').style.display='';
+			document.getElementById('hide1').style.display='';
+			document.getElementById('asrk').style.display='';
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value="0";
+			document.getElementById('in_advanceTable_6').value="";
+			document.getElementById('in_advanceTable_7').value="";
+			document.getElementById('in_advanceTable_8').value="";
+					}
+	}
+	
+	function amendmentOrNormalForAdvTax(obj)
+	{
+		if(obj.value=='amendment')
+			{
+				document.getElementById('chooseExcelPaymentMethod').style.display='';
+				//document.getElementById('navigationFieldsetForAdv').style.display='';
+				//document.getElementById('navigationLegendForAdv').style.display='';
+				document.getElementById('fileAdv').disabled=true;
+				document.getElementById('instructionsTableAdv').style.display='none';
+				document.getElementById('tdCmbTaxPeriodYearDiv').style.display='';
+				document.getElementById('tdCmbTaxPeriodYearAmnd').style.display='';
+				document.getElementById('AdvTaxPeriodYearAmnd').selectedIndex=0 ;
+				document.getElementById('CmbTaxPeriodLabelTd').style.display='none'; 
+				document.getElementById('CmbTaxPeriodTd').style.display='none';
+			//	if(document.getElementById('isWithoutLogin').value == "N")
+					//fetchSplOblHdrWebByObligationForAdv("N");
+			}
+		else if(obj.value=='normal')
+			{
+				document.getElementById('chooseExcelPaymentMethod').style.display='none';
+				document.getElementById('AdvPreviousDetailsTable').style.display='none';
+				clear_table_data("AdvPreviousDetailsTable");
+				/*document.getElementById('AdvTaxPeriodYear').selectedIndex=0;
+				document.getElementById('AdvPeriodMonth').selectedIndex=0;*/
+				document.getElementById('navigationFieldsetForAdv').style.display='none';
+				document.getElementById("scrollableDivAdv").style.display = 'none';
+				document.getElementById('fileAdv').disabled=false;
+				document.getElementById('instructionsTableAdv').style.display='';
+				document.getElementById('amendButtonAdv').style.display='none';
+				document.getElementById('CmbTaxPeriodLabelTd').style.display=''; 
+				document.getElementById('CmbTaxPeriodTd').style.display='';
+				document.getElementById('AdvTaxPeriodYearAmnd').selectedIndex=-1 ;
+				document.getElementById('tdCmbTaxPeriodYearDiv').style.display='none';
+				document.getElementById('tdCmbTaxPeriodYearAmnd').style.display='none';
+				
+				
+			}
+	}
+	
+	function downloadAdvPrnAmendment(){
+		var  tableObj =document.getElementById('AdvPreviousDetailsTable');
+		document.getElementById('prnString').value='';
+		var prnstring ='';
+		var prn = null; 
+		if(tableObj.rows.length > 1){
+			for(var i = 1, n = tableObj.rows.length; i <n; i++) 
+			{
+				if(document.getElementById('advTaxHdrCheckbox_'+(i-1)).checked){
+					if (document.all) {// for IE
+						prn = tableObj.rows[i].cells[1].innerText;
+					}
+					else{
+						var innrhtmltext = tableObj.rows[i].cells[1].textContent;
+						prn = innrhtmltext; 
+					}
+					
+					prnstring =prnstring.concat(prn+',');
+				}
+
+			}
+			if(prnstring.length==0){
+				alert("Please select Prn for amendedment");
+			}else{
+				document.getElementById('prnString').value=prnstring;
+				//var excelFor=document.getElementById("excelForPaymentOrAdv").value;
+				
+					if (confirm('Are you sure you want to download amendment ?')){
+						document.getElementById('cmdSaveOblig').disabled=false;//changed
+						document.paymentRegForm.action="paymentRegistration.htm?actionCode=downloadPaymentAmendment";
+						document.paymentRegForm.submit();
+					}
+				}
+			
+			
+
+		}else{
+			alert("No payment details avalible  this period");
+		}
+	}
+	
+	function downloadFileAdv()
+	{
+		//var excelFor=document.getElementById("excelForPaymentOrAdv").value;
+		
+		commonDownloadFile(document.paymentRegForm,'Bcl_Advance_Tax.xls','templates');
+			
+	}
+	
+	
+	function onChangeYearForAdvAmnd(obj){
+	
+		if(obj.selectedIndex!= 0){
+			clear_table_data("AdvPreviousDetailsTable");
+			
+			var year =document.getElementById("AdvTaxPeriodYearAmnd").value;
+			var dateArray=year.split('-');
+			var fromDate=dateArray[0];
+			var toDate= dateArray[1];
+			document.getElementById('navigationFieldsetForAdv').style.display='';
+			document.getElementById('navigationLegendForAdv').style.display='';
+			document.getElementById('hidObligationFromDate').value = fromDate; 
+			document.getElementById('hidObligationToDate').value = toDate  ;
+			
+			document.getElementById("cmbTaxPeriod").value=year; 
+			fetchSplOblHdrWebByObligationForAdv("N");
+		}
+		
+	}
+	
+	function onChangeYearForAdv(obj)
+	{
+		if(obj.value==-1)
+			{
+				/*document.getElementById("AdvPeriodMonth").selectedIndex=-1;*/
+			}
+		if(onChangeYearValidation())
+		{
+				//getSelectedMonthOfSelectedYearWeb('VatWhtTaxPeriodYear','VatWhtPeriodMonth','true');
+			if(obj.selectedIndex!= 0)
+			{/*
+			document.getElementById('AdvPeriodMonth').disabled=false;
+			GetMonthsForTaxAdv.getMonthsForAdvTax(document.getElementById('AdvTaxPeriodYear').value, 
+					document.getElementById('initialLoginPin').value, {async:false,callback:function(data){
+					if(data!=null){
+						if(data.length>=1)
+						{
+							dwr.util.removeAllOptions(document.getElementById("AdvPeriodMonth"));
+							var oOption = document.createElement("OPTION"); 
+							oOption.text="--Month--"; 
+							oOption.value="-1"; 
+							document.getElementById("AdvPeriodMonth").add(oOption); 
+							dwr.util.addOptions(document.getElementById("AdvPeriodMonth"),data,'fromDate','toDate');
+							return true;
+						}
+					}
+					else{
+						alert("error fetching data.");
+					}
+			}});
+		*/
+
+				if(document.getElementById('isWithoutLogin').value == "N")
+					fetchSplOblHdrWebByObligationForAdv("N");
+				
+			}
+		}else
+			{/*
+			document.getElementById('AdvPeriodMonth').disabled=true;
+			return true;
+			*/}
+	}
+
+	function onChangeMonthForAdv(obj)
+	{
+		var val=obj.value;
+		if(val!=-1)
+			{
+				if(document.getElementById('isWithoutLogin').value == "N")
+					fetchSplOblHdrWebByObligationForAdv("N");
+			}	
+	}
+	
+	function showAdvPreviousDetailsTable(partialDetailArray)
+	{
+		var flag=0;
+		if(partialDetailArray.length>=1){
+			document.getElementById('navigationLegendForAdv').innerHTML = PreviousLiabilityDetails ;
+			var cntr = 0;
+			var tabObj = document.getElementById("AdvPreviousDetailsTable");
+			for(var l = tabObj.rows.length; l >1 ;l--){
+				tabObj.deleteRow(l -1);
+			}	
+			var period=document.getElementById("AdvTaxPeriodYearAmnd").value;
+			var dateArray=period.split('-');
+			var firstDate=dateArray[0];
+			var lastDate= dateArray[1];
+			for(var i=0;i<partialDetailArray.length;i++){
+				if(partialDetailArray[i].taxperiodFromDtWid!=null && partialDetailArray[i].taxperiodFromDtWid!=""){
+					var value=CompareDates(firstDate,partialDetailArray[i].taxperiodFromDtWid);
+					if(value==0 || value==2)
+						{
+						  var val=CompareDates(partialDetailArray[i].taxperiodFromDtWid,lastDate);
+						  if(val==0 || val==2)
+							{  
+							  	flag=1;
+								cntr = parseInt(cntr);
+								var tabRow = tabObj.insertRow(tabObj.rows.length);
+								tabRow.id="advTaxHdrRow_"+cntr;
+								var tabCell = new Array();
+								for (var j=0;j<8;j++){
+									tabCell[j] = tabRow.insertCell(j);
+								}
+								var pmtSplDetailVO = partialDetailArray[i];
+								var element = document.createElement('input');       
+								element.type ='checkbox';
+								element.onclick = function () {onSelectAdvTaxPrevDetailRadio(this);};
+								element.value = cntr;
+								element.id = 'advTaxHdrCheckbox_'+cntr;
+								element.name = "advTaxHdrCheckbox";
+								element.className='bordercl';
+								tabCell[0].appendChild(element); 
+					
+					
+								tabCell[1].innerHTML = pmtSplDetailVO.prn;
+								tabCell[1].style.textAlign="center";
+								tabCell[1].style.fontSize="11";
+					
+								tabCell[2].innerHTML = pmtSplDetailVO.vatWitholdeePaymentDt;
+								tabCell[2].style.textAlign="center";
+								tabCell[2].style.fontSize="11";
+					
+								tabCell[3].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.totalAmount).toFixed(2),true);
+								tabCell[3].style.textAlign="right";
+								tabCell[3].style.fontSize="11";
+					
+								tabCell[4].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualFineAmount).toFixed(2),true);
+								tabCell[4].style.textAlign="right";
+								tabCell[4].style.fontSize="11";
+					
+								tabCell[5].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualPenaltyAmount).toFixed(2),true);
+								tabCell[5].style.textAlign="right";
+								tabCell[5].style.fontSize="11";
+					
+								tabCell[6].innerHTML = convertToKenyanShillingFormatValWithDecimal(Math.ceil(pmtSplDetailVO.actualInterestAmount).toFixed(2),true);
+								tabCell[6].style.textAlign="right";
+								tabCell[6].style.fontSize="11";
+					
+								cntr = cntr+1;
+							}
+						}
+				}
+				
+			}
+			if(flag==0)
+				{
+					var table = document.getElementById("AdvPreviousDetailsTable");
+					var tabRow = table.insertRow(tabObj.rows.length);
+					var tabCell = new Array();
+					tabCell[0] = tabRow.insertCell(0);
+					tabCell[0].innerHTML ="System has not found any PRN for Advance Tax which are not reconciled. Please select proper period.";
+					tabCell[0].style.textAlign="center";
+					tabCell[0].colSpan="7";
+					tabCell[0].style.color="red";
+					document.getElementById("scrollableDivAdv").style.height='60px';
+				}
+			else
+			{
+				var px= cntr*35;
+				if(px<100){
+					px=80;
+				}
+				if(px>270)
+				{
+					px=270;
+				}
+				document.getElementById("scrollableDivAdv").style.height=px+'px';
+			}
+			document.getElementById("scrollableDivAdv").style.display = "";
+			document.getElementById("navigationFieldsetForAdv").style.display = "";
+			document.getElementById("AdvPreviousDetailsTable").style.display = "";
+			document.getElementById('hidNavigationFlag').value = "29";
+		}
+	}
+
+	function onSelectAdvTaxPrevDetailRadio(obj)
+	{
+		var rows = document.getElementById('AdvPreviousDetailsTable').rows.length;
+		var flag=false;
+		for(var i=0; i<rows-1;i++)
+			{
+				if(document.getElementById('advTaxHdrCheckbox_'+i).checked==true)
+					{
+						flag=true;
+					}
+			}
+		if(flag==true)
+			{
+			 document.getElementById('amendButtonAdv').style.display='';
+			 document.getElementById('fileAdv').disabled=false;
+			 return true;
+			}
+		else
+			{
+				document.getElementById('amendButtonAdv').style.display='none';
+				 document.getElementById('fileAdv').disabled=true;
+				 document.getElementById('fileAdv').value='';
+				return false;
+			}
+	}
+	
+	function resetAdvTaxInfo()
+	{		
+			document.getElementById('in_advanceTable_10').value='';
+			//document.getElementById('total_VATWithholdeeFormTable_10').value=0.0;
+			document.getElementById('in_advanceTable_3').value='';
+			document.getElementById('in_advanceTable_4').value='';
+			document.getElementById('in_advanceTable_5').value='';
+			document.getElementById('in_advanceTable_6').value='';
+			document.getElementById('in_advanceTable_7').value='';
+			document.getElementById('in_advanceTable_8').value='';
+			document.getElementById('in_advanceTable_9').value='';
+		
+	}
+
+	function checkAmendmentOrNormalForAdvTax()
+	{
+		if(document.getElementById('excelAdvPmtTypeRadio1').checked==true)
+			{
+				var rows = document.getElementById('AdvPreviousDetailsTable').rows.length;
+				var flag=false;
+				for(var i=0; i<rows-1;i++)
+					{
+						if(document.getElementById('advTaxHdrCheckbox_'+i).checked==true)
+							{
+								flag=true;
+							}
+					}
+				if(!flag==true)
+					{
+						alert("Please select a PRN to amend.");
+						document.getElementById('fileAdv').value='';
+						return false;
+					}
+			}
+	}
+	
+	function saveAdvTaxDetailOblig()
+	{  
+		if(document.getElementById('cmbTaxSubHead').value==advanceObligationId)
+			{
+				if(document.getElementById('specOblAdvPmtTypeRadio1').checked == false && 
+						document.getElementById('specOblAdvPmtTypeRadio2').checked == false)
+				{
+					alert('Please select atleast one operation for Advance Tax payment.');
+					return false;
+				}
+				/*if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+				{
+					alert(totalAmtPayebleGreaterThenZero);
+					return false;
+				}
+				if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+				{
+					alert(totalAmtGreaterThenZero);
+					return false;
+				}*/
+				if(document.getElementById('specOblAdvPmtTypeRadio2').checked == true)
+					{
+					if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+							{
+							alert("Please add atleast one payment detail.");
+							return false;
+							}
+					}
+				
+				if(!validateFormFields(paymentModeJson,bankNameJson))
+				{
+					getErrTabToggle('TabView','2');	
+					tabview_switch('TabView', '2');
+					hideAndShowTable("errorDiv");
+					document.getElementById('btnTbl').style.display="none";
+					return false;
+				}
+				if(document.getElementById('cmbPaymentMode').value==RTGS)
+				{
+					resetErrorList();
+					if(!validateFormFields(RTGSJson))
+					{
+						getErrTabToggle('TabView','2');	
+						tabview_switch('TabView', '2');
+						hideAndShowTable("errorDiv");
+						document.getElementById('btnTbl').style.display="none";
+						return false;				
+					}
+					if(trim(document.getElementById('swiftCodeRTGS').value)!="" ){
+						if(trim(document.getElementById('interBankRTGS').value)=="" ){
+							alert(interBankForTrans);
+							return false;
+						}
+					}
+					if(trim(document.getElementById('interBankRTGS').value)!="" ){
+						if(trim(document.getElementById('swiftCodeRTGS').value)=="" ){
+							alert(swiftCodeForTrans);
+							return false;
+						}
+					}
+				}
+				if(document.getElementById('specOblAdvPmtTypeRadio1').checked == true)
+				{
+					if(!document.getElementById('fileAdv').value=='')
+					{
+						if(validateFileForAdvTax())
+						{
+							if(confirm("Do you wish to submit the data?"))
+							{
+								if(document.getElementById('excelAdvPmtTypeRadio1').checked == true)
+								{
+									var rows = document.getElementById('AdvPreviousDetailsTable').rows.length;
+									var flag=false;
+									for(var i=0; i<rows-1;i++)
+									{
+										if(document.getElementById('advTaxHdrCheckbox_'+i).checked==true)
+										{
+											flag=true;
+										}
+									}
+									if(flag==true)
+									{
+										document.getElementById('isAmendment').value='Y';
+									}
+									else
+									{
+										document.getElementById('isAmendment').value='N';
+									}
+								}else
+								{
+									document.getElementById('isAmendment').value='N';
+								}
+								
+								if(document.getElementById('isAmendment').value=='Y')
+									{
+									var  tableObj =document.getElementById('AdvPreviousDetailsTable');
+									
+									var year =document.getElementById("AdvTaxPeriodYearAmnd").value;
+									//document.getElementById("cmbTaxPeriod").value =year;
+									
+									var oOption=document.createElement("option");
+									optionValue=year;
+									oOption.value=optionValue;
+									document.getElementById("cmbTaxPeriod").add(oOption);
+									document.getElementById("cmbTaxPeriod").value =year;
+									document.getElementById('prnString').value='';
+									var prnstring ='';
+									var prn = null; 
+									if(tableObj.rows.length > 1){
+										for(var i = 1, n = tableObj.rows.length; i <n; i++) 
+										{
+											if(document.getElementById('advTaxHdrCheckbox_'+(i-1)).checked){
+												if (document.all) {// for IE
+													prn = tableObj.rows[i].cells[1].innerText;
+												}
+												else{
+													var innrhtmltext = tableObj.rows[i].cells[1].textContent;
+													prn = innrhtmltext; 
+												}
+												
+												prnstring =prnstring.concat(prn+',');
+											}
+
+										}
+										if(prnstring.length==0){
+											alert("Please select Prn for amendedment");
+											return false;
+										}else{
+											document.getElementById('prnString').value=prnstring;
+										}
+									}
+								}
+								document.getElementById('hidPaymentType').value='SAT';
+								document.getElementById('hidObligationType').value='TAX';
+								document.getElementById('hidObligationId').value='22';
+								document.getElementById('cmdSaveOblig').disabled=true;
+								document.getElementById('cmdClearOblig').disabled=true;
+								document.getElementById('back').disabled=true;
+								if(document.getElementById('cmbTaxSubHead').value==advanceObligationId)
+								{
+									
+									document.paymentRegForm.action="paymentRegistration.htm?actionCode=savePaymentExcelDetail";
+									document.paymentRegForm.submit();
+								}
+							}
+						}
+
+					}
+					else 
+					{
+						alert("Please select a file to upload in the system.");
+						return false;
+					}
+				}
+				if(document.getElementById('specOblAdvPmtTypeRadio2').checked == true)
+				{
+					if(modifyFlagAdvanceTax == 1 || modifyFlagAdvance == 1)
+					{
+						alert(firstModify);
+						return false;
+					}
+					else
+					{
+						if(selectedFlagAdvance>0)
+						{
+							if(removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value)<=0)
+							{
+								alert(totalAmtPayebleGreaterThenZero);
+								return false;
+							}
+							if(removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value)<=0)
+							{
+								alert(totalAmtGreaterThenZero);
+								return false;
+							}
+							if(saveConfirm())
+							{
+								document.getElementById('hidPaymentType').value='SAT';
+								document.getElementById('hidObligationType').value='TAX';
+								document.getElementById('hidObligationId').value='22';
+								document.getElementById("txtTotalAmountPayableOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPayableOTR").value);
+								document.getElementById("txtTotalAmountPaidOTR").value=removeCommaFrmInput(document.getElementById("txtTotalAmountPaidOTR").value);
+								document.getElementById('cmdSaveOblig').disabled=true;
+								document.getElementById('cmdClearOblig').disabled=true;
+								document.getElementById('back').disabled=true;
+								document.paymentRegForm.action="paymentRegistration.htm?actionCode=saveObligationDetail";
+								document.paymentRegForm.submit();
+								return true;
+							}
+						}
+						else
+						{
+							alert(atleastOneVehicle);
+							return false;
+						}
+					}
+					
+					/*if(confirm("Do you wish to submit the data?"))
+						{
+							document.getElementById('hidPaymentType').value='SAT';
+							document.getElementById('hidObligationType').value='TAX';
+							document.getElementById('hidObligationId').value='22';
+						var total = removeCommaFrmInput(document.getElementById('total_VATWithholdeeFormTable_10').value);
+						document.getElementById('total_VATWithholdeeFormTable_10').value=total;
+							document.getElementById('cmdSaveOblig').disabled=true;
+							document.getElementById('cmdClearOblig').disabled=true;
+							document.getElementById('back').disabled=true;
+							if(document.getElementById('cmbTaxSubHead').value==VatWithholding)
+							{
+								createSkipFieldForAddRow('VATWithholdeeFormTable','paymentRegForm');
+							document.getElementById('txtTotalAmountPaidOblig').value=document.getElementById('total_VATWithholdeeFormTable_10').value;
+								document.paymentRegForm.action="paymentRegistration.htm?actionCode=saveObligationDetail";
+								document.paymentRegForm.submit();
+							}
+							else{
+								createSkipFieldForAddRow('VATWithholdeeFormTable','VATWitholdingPaymentRegForm');
+								document.VATWitholdingPaymentRegForm.action="paymentRegistration.htm?actionCode=saveObligationDetail";
+								document.VATWitholdingPaymentRegForm.submit();}
+						}*/
+				}
+				
+			}
+			else 
+			{
+			alert("error in submit");
+			}
+
+	}
+	
+	function validateFileForAdvTax()
+	{
+		var file=document.getElementById("fileAdv");
+		var returnValue = true;
+		
+		if(file){
+			fileName= file.value;
+		
+		if(fileName=="")
+		{	
+			alert('Please upload file.');
+			file.value='';
+			file.focus();
+			return false;
+		}else{
+			var index = fileName.lastIndexOf(".");
+			var length = fileName.length;
+			var ext = fileName.substring(index+1).toLowerCase();
+			if(fileName!='')
+			{
+				if (!(ext == 'xls'|| ext == 'zip' ))
+				{
+					alert("Please upload xls or zip file.");
+					file.value='';
+					file.focus();
+					return false;
+				}else{
+					return true;
+				}
+		    }
+		}
+	}
+		else{
+			alert('Please upload file.');
+			return false;
+		}
+	}
+	
+	function fetchSplOblHdrWebByObligationForAdv(flagForTaxPeriod){
+		var obligationId = "";
+		var taxPayerId=document.getElementById('hidTaxPayerId').value;
+		var startIndexStr=document.getElementById('startIndex').value;
+		/*if(document.getElementById('cmbTaxHead').value==AGENCY_REVENUE || (document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value==advanceObligationId)){
+			obligationId=document.getElementById('cmbTaxSubHead').value;
+		}
+		if((document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value!=advanceObligationId) || document.getElementById('cmbTaxHead').value==VAT || document.getElementById('cmbTaxHead').value==EXCISE ){
+			obligationId=document.getElementById('cmbTaxSubHead').value;
+		}
+		if(document.getElementById('cmbTaxSubHead').value=='VAT-Withholding' || document.getElementById('cmbTaxSubHead').value==VatWithholding)
+			{
+				obligationId=VatWithholding;
+			}
+		if(document.getElementById('cmbTaxSubHead').value!='VAT-Withholding')
+			{
+				clearPartialTableForTax();
+			}*/
+		
+		
+		if(document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value==advanceObligationId)
+			{
+				obligationId=advanceObligationId;
+			}
+	
+		var fromDate = document.getElementById('hidObligationFromDate').value;
+		var toDate = document.getElementById('hidObligationToDate').value;
+
+		FetchSplOblHdrWebByObligationForAdv.fetchSplOblHdrWebByObligationForAdv(fromDate,toDate,taxPayerId,obligationId,flagForTaxPeriod,startIndexStr,{async:false,callback: function(data) {
+			pmtSplDetailVOListForPartial =  data;
+			//	document.getElementById("navigationTableSplHdr").style.display = '';
+			//	document.getElementById("navigationTableSpltbl").style.display = '';
+			//document.getElementById("goBtn").disabled = false;
+			var count=0;
+			/*if(obligationId!=VatWithholding)
+			{
+				document.getElementById("goBtnSplHdr").disabled = false;
+				if(pmtSplDetailVOListForPartial!= null && pmtSplDetailVOListForPartial[0].isDataAvailable=="Y"){
+		
+					document.getElementById('startIndex').value 		= pmtSplDetailVOListForPartial[0].startIndex;
+					document.getElementById('endIndex').value 			= pmtSplDetailVOListForPartial[0].endIndex;
+					document.getElementById('pageNo').value 			= pmtSplDetailVOListForPartial[0].pageNo;
+					document.getElementById('totalRecords').value 		= pmtSplDetailVOListForPartial[0].totalRecords;
+					document.getElementById('totalPagesId').value 		= pmtSplDetailVOListForPartial[0].totalPages;
+					document.getElementById('recordsPerPage').value 	= pmtSplDetailVOListForPartial[0].recordsPerPage;
+					document.getElementById('startIndexUpdate').value 	= pmtSplDetailVOListForPartial[0].startIndexUpdate;
+					document.getElementById('oldStartIndex').value 		= pmtSplDetailVOListForPartial[0].oldStartIndex;
+					document.getElementById('lastStartIndex').value 	= pmtSplDetailVOListForPartial[0].lastStartIndex;
+					document.getElementById('maxResult').value 			= pmtSplDetailVOListForPartial[0].maxResult;
+		
+		
+					//	document.getElementById('navigationTableSplHdr').style.display='';
+					document.getElementById('totalRecordsTdSplHdr').innerHTML="Total No. of Records " ;
+					document.getElementById('totalRecordsTdSplHdr').style.textAlign="center";
+					document.getElementById('totalRecordsTdSplHdr').style.fontWeight="bold";
+					document.getElementById('totalRecordsTdSplHdr').innerHTML+=document.getElementById('totalRecords').value;
+		
+		
+					document.getElementById('recordsFromToTdSplHdr').innerHTML="Records From ";
+					document.getElementById('recordsFromToTdSplHdr').style.textAlign="center";
+					document.getElementById('recordsFromToTdSplHdr').style.fontWeight="bold";
+					document.getElementById('recordsFromToTdSplHdr').innerHTML+=document.getElementById('oldStartIndex').value+" ";
+					document.getElementById('recordsFromToTdSplHdr').innerHTML+=" to ";
+					document.getElementById('recordsFromToTdSplHdr').innerHTML+=document.getElementById('endIndex').value;
+		
+					document.getElementById('pageNoTdSplHdr').innerHTML="Page No. ";
+					document.getElementById('pageNoTdSplHdr').style.textAlign="center";
+					document.getElementById('pageNoTdSplHdr').style.fontWeight="bold";
+					document.getElementById('pageNoTdSplHdr').innerHTML+=document.getElementById('pageNo').value+" ";
+					document.getElementById('pageNoTdSplHdr').innerHTML+=" of ";
+					document.getElementById('pageNoTdSplHdr').innerHTML+=document.getElementById('totalPagesId').value;
+				}}*/
+			if(pmtSplDetailVOListForPartial!= null && pmtSplDetailVOListForPartial[0].isDataAvailable=="Y"){
+				partialDetailArray.length=0;
+				for(var i = 0; i< pmtSplDetailVOListForPartial.length ; i++){
+					var pmtSplDetailVO = pmtSplDetailVOListForPartial[i];
+					partialDetailArray[i] = pmtSplDetailVO;
+				}
+				/*if(!(obligationId==VatWithholding || obligationId == shippingOblCode || obligationId == TransmissionOblCode || obligationId == VisOblCode || obligationId == WithHoldee))
+				{
+					clearAllPartialTable();
+					validatePaginationLastSplHdr();
+					validatePaginationFirstSplHdr();
+				}
+				if(obligationId == landRentObligationId){
+					clearAllPartialTable();
+					showLandRentPartialTable(partialDetailArray);
+				}
+				else if(obligationId == advanceObligationId){
+					clearAllPartialTable();
+					showAdvancePartialTable(partialDetailArray);
+				}
+				else if(obligationId == sugarObligationId){
+					clearAllPartialTable();
+					showSuagrPartialTable(partialDetailArray);
+				}
+				else  if(obligationId == standardObligationId){
+					clearAllPartialTable();
+					showStandardPartialTable(partialDetailArray);
+				}
+				else  if(obligationId == stampDutyObligationId){
+					clearAllPartialTable();
+					showStampDutyPartialTable(partialDetailArray);
+				}
+				else if(obligationId == widowAndChildrenObligationId){
+					clearAllPartialTable();
+					showWidowAndChildrenPartialTable(partialDetailArray);
+				}
+
+				else if(obligationId == shippingOblCode || obligationId == TransmissionOblCode || obligationId == VisOblCode || obligationId == WithHoldee)
+				{
+					clearAllPartialTable();
+					clearPartialTableForTax();
+					showTaxObligationSplPartial(data,obligationId);
+				}*/
+				if(obligationId==advanceObligationId)
+				{
+					count=1;
+					showAdvPreviousDetailsTable(partialDetailArray);
+				}
+				else{
+					alert(validObligation);
+					return false;
+				}
+			}
+			if(count==0){
+				partialDetailArray.length=0;
+				for(var i = 0; i< pmtSplDetailVOListForPartial.length ; i++){
+					var pmtSplDetailVO = pmtSplDetailVOListForPartial[i];
+					partialDetailArray[i] = pmtSplDetailVO;
+				}
+				if(obligationId==advanceObligationId)
+				{
+					showAdvPreviousDetailsTable(partialDetailArray);
+				}
+			}
+			
+		}});
+
+
+	}
+	
+
+	function cancelPRN(){
+		var  tableObj =document.getElementById('AdvPreviousDetailsTable');
+		var obligationId="";
+		if(document.getElementById('cmbTaxHead').value==IT && document.getElementById('cmbTaxSubHead').value==advanceObligationId)
+		{
+			obligationId=advanceObligationId;
+		}
+		document.getElementById('prnString').value='';
+		var prnstring ='';
+		var pinNo = "";
+		var prn = null; 
+		if(tableObj.rows.length > 1){
+			for(var i = 1, n = tableObj.rows.length; i <n; i++) 
+			{
+				if(document.getElementById('advTaxHdrCheckbox_'+(i-1)).checked){
+					if (document.all) {// for IE
+						prn = tableObj.rows[i].cells[1].innerText;
+					}
+					else{
+						var innrhtmltext = tableObj.rows[i].cells[1].textContent;
+						prn = innrhtmltext; 
+					}
+					
+					prnstring =prnstring.concat(prn+',');
+				}
+
+			}
+			if(prnstring.length==0){
+				alert("Please select Prn for Cancellation");
+			}else{
+				document.getElementById('prnString').value=prnstring;
+				//var excelFor=document.getElementById("excelForPaymentOrAdv").value;
+				pinNo = document.getElementById('txtPin').value ;
+					if (confirm('Are you sure you want to cancel the  PRN(s) ?')){
+						document.getElementById('cmdSaveOblig').disabled=false;//changed
+						/*document.paymentRegForm.action="paymentRegistration.htm?actionCode=cancelSelectedPRNs";
+						document.paymentRegForm.submit();*/
+						CancelAdvPRNs.cancelSelectedPRNs(prnstring,obligationId,pinNo,{async:false,callback: function(data){
+							var success=data;
+							if(data==true)
+								{
+								alert("PRN(s) cancelled successfully");
+								if(document.getElementById('isWithoutLogin').value == "N")
+									fetchSplOblHdrWebByObligationForAdv("N");
+								}
+							else if(data==false)
+								{
+								alert("Cannot cancel the PRN(s). Please try again");
+								}
+						}
+					});
+				}
+			
+			
+
+		}/*else{
+			alert("No payment details avalible for this period");
+		}*/
+	}
+	}
+	//end*r
+	//START:added for addtional and default assesment types in advance tax obligation  for enh 6
+	function validateAdvancetaxAssessmentDetails(){
+		if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_3").value=='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_3").value==null)
+		   		{
+		   			alert("Please enter Assessment Notice Number.");
+		   			return false;
+		   		}
+	 if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_4").value=='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_4").value==null)
+		   		{
+		   			return false;
+		   		}
+	 if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_5").value=='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_5").value==null)
+		   		{
+		   			alert("Additional Assessment Amount can not be 0.");
+		   			return false;
+		   		}
+	 if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_5").value!='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_5").value!=null)
+		   		{
+	 			var amt= parseInt(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_5").value);
+		 			if(amt == 0 || amt== 0.0)
+		 				{
+			 				alert("Additional Assessment Amount can not be 0.");
+				   			return false;
+		 				}
+		   		}
+	 if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_6").value!='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_6").value!=null)
+		   		{
+	 			var amt= parseInt(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_6").value);
+		 			if(amt == 0 || amt== 0.0)
+		 				{
+			 				alert("Additional Assessment Amount can not be 0.");
+				   			return false;
+		 				}
+		   		}
+		 return true;
+	}
+	function addrowAdvanceTaxAssessmentDetails()
+	{
+		if(checkDuplicateAdvanceTaxAssessmentRows()){
+			if(confirm("Do you want to add details?"))
+			{
+				addrow('AdvanceTaxAdditionalAssmntTable','4','6','4','validateDeleteRowAdvanceTaxAdditionalAssmntTable','','N','N','6,7');
+			}
+		}
+	}
+	function validateDeleteRowAdvanceTaxAdditionalAssmntTable(tab_str, rowno, cols)
+	{
+		var table = document.getElementById('AdvanceTaxAdditionalAssmntTable');  
+		var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+		var tempAmt = table.rows[rowno].cells[6].innerHTML;
+		totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+		document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+		document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+	}
+	function afterModifyAdvanceTaxAssmntTable()
+	{
+		var table = document.getElementById('AdvanceTaxAdditionalAssmntTable');
+		var tmpAmt=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+		var newAmt=table.rows[rowno].cells[6].innerHTML;
+		var newAmountArray=newAmt.split('<');
+		newAmt=newAmountArray[0];
+		document.getElementById('txtTotalAmountPaidOblig').value=convertToKenyanShillingFormatVal(parseInt(tmpAmt,10)+parseInt(removeCommaFrmInput(newAmt),"10")-parseInt(removeCommaFrmInput(AdvanceTaxAssmntTax),10),true); 
+		document.getElementById('txtTotalAmountPaidOblig').readOnly=true; 
+	}
+	function afterAddAdvanceTaxAssmntTable()
+	{	if(document.getElementById('txtTotalAmountPaidOblig').value>0){
+		alert("you cannot add more than one details.");
+		return false;
+	}
+		TotalAssmntAmtForIT=convertToKenyanShillingFormatVal(parseInt(AdvanceTaxAssmntTax,10)+parseInt(TotalAssmntAmtForIT,10),true);
+		document.getElementById('txtTotalAmountPaidOblig').value=TotalAssmntAmtForIT;
+	}
+	//added to check duplicate tax period 
+	function beforeAddAdvanceTaxAssmntTable(row){
+		var checkDuplicateFlag = checkMonthYearInAddRowForAssmnt(row,'AdvanceTaxAdditionalAssmntTable');
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		AdvanceTaxAssmntTax=removeCommaFrmInput(document.getElementById('in_AdvanceTaxAdditionalAssmntTable_6').value);
+		TotalAssmntAmtForIT=removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+	}
+	function beforeModifyAdvanceTaxAssmntTable(row)
+	{
+		if(checkDuplicateAdvanceTaxAssessmentRows()){
+			rowno=row;
+			var table = document.getElementById('AdvanceTaxAdditionalAssmntTable');
+			AdvanceTaxAssmntTax=table.rows[rowno].cells[6].innerHTML;
+			var amtToPaidWithHoldeeArray=AdvanceTaxAssmntTax.split('<');
+			AdvanceTaxAssmntTax=amtToPaidWithHoldeeArray[0];
+		}
+		else {
+			return false;
+		}	
+	}
+	function checkDuplicateAdvanceTaxAssessmentRows()
+	{
+		var table = document.getElementById('AdvanceTaxAdditionalAssmntTable');  
+		var assmntNo = document.getElementById('in_AdvanceTaxAdditionalAssmntTable_3').value;
+		var taxPeriod= document.getElementById('in_AdvanceTaxAdditionalAssmntTable_4').value;
+		if(!(table.rows.length==1))
+		{ 	
+			for (var i = 1, n = table.rows.length; i <n; i++) 
+			{ 
+				modify=trim(table.rows[i].cells[2].getElementsByTagName('A')[0].innerHTML);
+				if((trim(document.getElementById('id_temp_'+'AdvanceTaxAdditionalAssmntTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&
+						(table.rows[i].cells[3].innerHTML==assmntNo) && (table.rows[i].cells[4].innerHTML==taxPeriod))
+				{
+					alert("You already added this details.");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	function validateAdvanceTaxAssessmentDetails()
+	{
+	 if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_3").value=='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_3").value==null)
+		   		{
+		   			alert("Please enter Assessment Notice Number.");
+		   			return false;
+		   		}
+	 if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_4").value=='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_4").value==null)
+		   		{
+		   			return false;
+		   		}
+	 if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_5").value=='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_5").value==null)
+		   		{
+		   			alert("Additional Assessment Amount can not be 0.");
+		   			return false;
+		   		}
+	 if(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_6").value!='' || 
+	   			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_6").value!=null)
+		   		{
+	 			var amt= parseInt(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_6").value);
+		 			if(amt == 0 || amt== 0.0)
+		 				{
+			 				alert("Additional Assessment Amount can not be 0.");
+				   			return false;
+		 				}
+		   		}
+		 return true;
+	}
+	function clearAllAdditionalAssmntDataAdvanceTax()
+	{
+		resetAdditionalAssmntDtlsForITWHT();
+		clear_table_data('AdvanceTaxAdditionalAssmntTable');
+	}
+	function beforeModifylinkClickedAdvanceTaxAssmntTable(){
+		//document.getElementById('txtTotalAmountPaidOblig').value=0.0;
+	}
+		function onChangeAmountToBePaidAdvanceTax(amount){
+			document.getElementById("in_AdvanceTaxAdditionalAssmntTable_6").value=convertToKenyanShillingFormatVal(amount,true);
+
+			var totalAmt=removeCommaFrmInput(document.getElementById("in_AdvanceTaxAdditionalAssmntTable_5").value);
+			if(parseFloat(amount)>parseFloat(totalAmt)){
+				alert("Amount to be paid cannot be more than total amount.");
+				document.getElementById("in_AdvanceTaxAdditionalAssmntTable_6").value=0;
+				return false;
+			}
+		}
+	

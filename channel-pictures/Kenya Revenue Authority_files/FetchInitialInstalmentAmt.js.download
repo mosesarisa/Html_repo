@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchInitialInstalmentAmt'] == 'undefined') this.FetchInitialInstalmentAmt = {};
+
+FetchInitialInstalmentAmt._path = '/KRA-Portal/dwr';
+
+FetchInitialInstalmentAmt.fetchInitialInstalmentAmt = function(p0, p1, callback) {
+  dwr.engine._execute(FetchInitialInstalmentAmt._path, 'FetchInitialInstalmentAmt', 'fetchInitialInstalmentAmt', p0, p1, callback);
+};
+
+

@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchTaxpayerListForTR'] == 'undefined') this.FetchTaxpayerListForTR = {};
+
+FetchTaxpayerListForTR._path = '/KRA-Portal/dwr';
+
+FetchTaxpayerListForTR.fetchTaxpayerListForTR = function(p0, callback) {
+  dwr.engine._execute(FetchTaxpayerListForTR._path, 'FetchTaxpayerListForTR', 'fetchTaxpayerListForTR', p0, callback);
+};
+
+

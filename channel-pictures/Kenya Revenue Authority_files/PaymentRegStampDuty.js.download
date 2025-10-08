@@ -1,0 +1,2925 @@
+function onchangeTranferorPinNumber(obj) {
+	var pin = trim(obj.value);
+	if (validatePIN(pin)) {
+		FetchTaxpayerDetailWithoutValidationSplObl.fetchTaxpayerDetailWithoutValidationSplObl(
+				pin,
+				function(data) {
+					if (data != NULL && data != null) {
+						if (data.isDataAvailable == N_FLAG) {
+							if (data.isAgent == ERROR
+									|| data.isAgent == NO_CALL_MADE) { // Handled
+								// Scenario
+								// : 1)
+								// if
+								// no
+								// call
+								// made
+								// from
+								// Controller
+								// to
+								// impl
+								// 2)
+								// impl
+								// to
+								// facade
+								alert(errFetchingData);
+							} else if (data.isAgent == NO_DETAILS_FOUND) {// Handled
+								// Scenario
+								// : 1)
+								// call
+								// made
+								// to
+								// facade
+								// with
+								// invalid
+								// PIN
+								alert(invalidPin);
+							}
+							resetTransferorPrimaryDetail();
+							return false;
+						}
+						if (data.taxPayerFirstName != null
+								|| data.taxPayerId != null) {
+							if (data.taxPayerId != null
+									|| data.taxPayerId != "") {
+								document
+								.getElementById('in_TranferorDetailTab_7').value = data.taxPayerId;
+							}
+							if (data.taxPayerFirstName != null
+									|| data.taxPayerFirstName != "") {
+								document
+								.getElementById('in_TranferorDetailTab_4').value = data.taxPayerFirstName;
+							}
+							if (data.mobileNumber != null
+									|| data.mobileNumber != "") {
+								document
+								.getElementById('in_TranferorDetailTab_5').value = data.mobileNumber;
+							}
+							if (data.taxPayerFullAddr != null
+									|| data.taxPayerFullAddr != "") {
+								dwr.util.setValue(
+										'in_TranferorDetailTab_6',
+										data.taxPayerFullAddr);
+							}
+						}
+					} else {
+						alert(errFetchingData);
+						resetTransferorPrimaryDetail();
+						return false;
+					}
+				});
+		return true;
+	} else {
+		resetTransferorPrimaryDetail();
+		return false;
+	}
+}
+
+function addTranferorDetails(row) {
+	resetErrorList();
+	if (validateFormFields(paymentRegOTRTranferorPinDetailsJson)) {
+		var checkDuplicateFlagPin = checkDuplicatePin(row);
+		if (checkDuplicateFlagPin == false) {
+			return false;
+		} else {
+			hideTab('TabView', 5);
+			resetErrorList();
+			incError = 0;
+			if(allowAddingTransfereeTransferor){
+				if(addConfirm('a_TranferorDetailTab'))
+				{
+					if(document.getElementById('a_TranferorDetailTab').innerHTML!="Modify")
+					{
+						addrow('TranferorDetailTab', '2', '5', '4', 'validateDeleteRowTransferorInfoDtls', '', 'N','Y');
+					}
+				}
+			}else
+				{
+					alert("You are not allowed to add any Transferor details.");
+					resetTransferorPrimaryDetail();
+				}
+		}
+	} else {
+		getErrTabToggle('TabView', '2');
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display = "none";
+	}
+}
+function addTransfereeDetails(row) {
+	resetErrorList();
+	if (validateFormFields(paymentRegOTRTransfereePinDetailsJson)) {
+		var checkDuplicateFlagPin = checkDuplicatePin(row);
+		if (checkDuplicateFlagPin == false) {
+			return false;
+		} else {
+			hideTab('TabView', 5);
+			resetErrorList();
+			incError = 0;
+			if(allowAddingTransfereeTransferor)
+			{
+				if(addConfirm('a_TransfereeDetailTab'))
+				{
+					if(document.getElementById('a_TransfereeDetailTab').innerHTML!="Modify")
+					{
+						addrow('TransfereeDetailTab', '2', '5', '4', 'validateDeleteRowTransfereeInfoDtls', '', 'N','Y');
+					}
+				}
+			}
+			else{
+				alert("You are not allowed to add transferee details.");
+				resetTransfereePrimaryDetail();
+			}
+		}
+
+	} else {
+		getErrTabToggle('TabView', '2');
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display = "none";
+	}
+}
+function onchangeTransfereePinNumber(obj) {
+	var pin = trim(obj.value);
+	if (validatePIN(pin)) {
+		FetchTaxpayerDetailWithoutValidationSplObl.fetchTaxpayerDetailWithoutValidationSplObl(
+				pin,
+				function(data) {
+					if (data.isDataAvailable == N_FLAG) {
+						if (data.isAgent == ERROR
+								|| data.isAgent == NO_CALL_MADE) { // Handled
+							// Scenario
+							// : 1)
+							// if
+							// no
+							// call
+							// made
+							// from
+							// Controller
+							// to
+							// impl
+							// 2)
+							// impl
+							// to
+							// facade
+							alert(errFetchingData);
+						} else if (data.isAgent == NO_DETAILS_FOUND) {// Handled
+							// Scenario
+							// : 1)
+							// call
+							// made
+							// to
+							// facade
+							// with
+							// invalid
+							// PIN
+							alert(invalidPin);
+						}
+						resetTransfereePrimaryDetail();
+						return false;
+					}
+					if (data != NULL && data != null) {
+
+						if (data.taxPayerFirstName != null
+								|| data.taxPayerId == null) {
+							if (data.taxPayerId != null
+									|| data.taxPayerId != "") {
+								document
+								.getElementById('in_TransfereeDetailTab_7').value = data.taxPayerId;
+							}
+							if (data.taxPayerFirstName != null
+									|| data.taxPayerFirstName != "") {
+								document
+								.getElementById('in_TransfereeDetailTab_4').value = data.taxPayerFirstName;
+							}
+							if (data.mobileNumber != null
+									|| data.mobileNumber != "") {
+								document
+								.getElementById('in_TransfereeDetailTab_5').value = data.mobileNumber;
+							}
+							if (data.taxPayerFullAddr != null
+									|| data.taxPayerFullAddr != "") {
+								dwr.util.setValue(
+										'in_TransfereeDetailTab_6',
+										data.taxPayerFullAddr);
+							}
+						}
+					} else {
+						alert(errFetchingData);
+						resetTransfereePrimaryDetail();
+						return false;
+					}
+
+				});
+		return true;
+	} else {
+		resetTransfereePrimaryDetail();
+		return false;
+	}
+}
+
+function onchangeCmbTnstrumnetType(obj) {
+	var instrumentValue = obj.value.charAt(0);
+	allowAddingTransfereeTransferor = true;
+	document.getElementById('stampDutyIsValReq').value = obj.value;
+	document.getElementById("txtLRNumber").value = '';
+	document.getElementById("txtLRNumber").readonly=false;
+	document.getElementById("transferorHeaderDeleteStampDuty").style.display="";
+	document.getElementById("transfereeHeaderDeleteStampDuty").style.display="";
+	document.getElementById("transfereeId").value='';
+	document.getElementById('ackNoForTwining').value= '';
+	clear_table_data("transferorDetailTable");
+	clear_table_data("transfereeDetailTable");
+	clear_table_data("TranferorDetailTab");
+	clear_table_data("TransfereeDetailTab");
+	var flag=false;
+	for(var j=0;j<stampDutyLookupCode.length;j++)
+	{
+		var codes =  stampDutyLookupCode[j].value;
+
+		var selectedValueofCodeValue =  document.getElementById('cmbTnstrumnetType').value;
+
+		if(codes == selectedValueofCodeValue)
+		{
+			//do nothing
+			flag=true;
+		}
+		else
+		{
+			afterAddStampTrnsfrDtls();
+		}
+	}
+	
+	if(flag)
+	{
+		document.getElementById("lblAckNoForTwining").style.display = "";
+		document.getElementById("tdAckNoForTwining").style.display = "";
+	}else
+	{
+		document.getElementById("tdAckNoForTwining").style.display = "none";
+		document.getElementById("lblAckNoForTwining").style.display = "none";
+		document.getElementById("ackNoForTwining").value = "";
+	}
+	
+			if (instrumentValue == 'r' || instrumentValue == 'R') {
+				document.getElementById('ackNoForTwining').style.display='';
+				document.getElementById('tblStamDutyValuationRequired').style.display = "";
+				document.getElementById('lblLRNumber').style.display = "";
+				document.getElementById('txtLRNumber').style.display = "";
+				document.getElementById('tblStamDutyValuationNotRequired').style.display = "none";
+				document.getElementById('isValuationReq').value = "y";
+				document.getElementById('txtReferenceNumber').value = "";
+				document.getElementById('txtDescOfTranaction').value = "";
+				document.getElementById('txtTitleNumber').value = "";
+				document.getElementById('txtLoaction').value = "";
+				document.getElementById('txtAreaSize').value = "";
+				document.getElementById('txtTnstrumnetDate').value = "";
+				document.getElementById('txtDeclaredValue').value = "0";
+				document.getElementById('txtPenaltyStampDuty').value = "0";
+				document.getElementById('txtAmntOfDtyAssessedToPay').value = "0";
+				document.getElementById('txtTotalAmountPaidOTR').value = "0";
+				document.getElementById('txtTotalAmountPayableOTR').value = "0";
+				document.getElementById('cmbLROfficeData').selectedIndex = 0;
+				prevDeclaredValue = 0;
+				prevPenaltyForLatePayment = 0;
+				PrevAmtOfDuty = 0;
+				hideTab('TabView', 5);
+				resetErrorList();
+				incError = 0;
+			} else if (instrumentValue == 'n' || instrumentValue == 'N') {
+				document.getElementById('tblStamDutyValuationNotRequired').style.display = "";
+				document.getElementById('tblStamDutyValuationRequired').style.display = "none";
+				document.getElementById('lblLRNumber').style.display = "none";
+				document.getElementById('txtLRNumber').style.display = "none";
+				document.getElementById('isValuationReq').value = "n";
+				document.getElementById('txtTitleNumber').value = "";
+				document.getElementById('txtLoaction').value = "";
+				document.getElementById('txtAreaSize').value = "";
+				document.getElementById('txtReferenceNumber').value = "";
+				document.getElementById('txtDescOfTranaction').value = "";
+				document.getElementById('txtTnstrumnetDate').value = "";
+				document.getElementById('txtDeclaredValue').value = "0";
+				document.getElementById('txtPenaltyStampDuty').value = "0";
+				document.getElementById('txtAmntOfDtyAssessedToPay').value = "0";
+				document.getElementById('txtTotalAmountPaidOTR').value = "0";
+				document.getElementById('txtTotalAmountPayableOTR').value = "0";
+				document.getElementById('cmbLROfficeData').selectedIndex = 0;
+				prevDeclaredValue = 0;
+				prevPenaltyForLatePayment = 0;
+				PrevAmtOfDuty = 0;
+				hideTab('TabView', 5);
+				resetErrorList();
+				incError = 0;
+			}
+	
+	
+	if (document.getElementById('cmbTnstrumnetType').selectedIndex != 0) {
+		/*
+		 * var TnstrumnetType =
+		 * document.getElementById('cmbTnstrumnetType').selectedIndex; var
+		 * TnstrumnetName =
+		 * document.getElementById('cmbTnstrumnetType')[TnstrumnetType].text;
+		 * document.getElementById('hidInstType').value = TnstrumnetName;
+		 */
+		document.getElementById('hidInstType').value = obj.value;
+	}
+	if (document.getElementById('cmbTnstrumnetType').selectedIndex == 0) {
+		document.getElementById('tblStamDutyValuationNotRequired').style.display = "none";
+		document.getElementById('tblStamDutyValuationRequired').style.display = "none";
+		document.getElementById('lblLRNumber').style.display = "none";
+		document.getElementById('txtLRNumber').style.display = "none";
+	}
+
+}
+function onchangeCmbTnstrumnetTypeToBeChanged(obj) {
+	document.getElementById('stampDutyIsValReq').value = obj;
+	var instrumentValue = obj.charAt(0);
+	if (instrumentValue == 'r' || instrumentValue == 'R') {
+		document.getElementById('tblStamDutyValuationRequired').style.display = "";
+		document.getElementById('lblLRNumber').style.display = "";
+		document.getElementById('txtLRNumber').style.display = "";
+		document.getElementById('isValuationReq').value = "y";
+		document.getElementById('tblStamDutyValuationNotRequired').style.display = "none";
+		document.getElementById('txtReferenceNumber').value = "";
+		document.getElementById('txtDescOfTranaction').value = "";
+		document.getElementById('txtTitleNumber').value = "";
+		document.getElementById('txtLoaction').value = "";
+		document.getElementById('txtAreaSize').value = "";
+		document.getElementById('txtTnstrumnetDate').value = "";
+		document.getElementById('txtDeclaredValue').value = "0";
+		document.getElementById('txtPenaltyStampDuty').value = "0";
+		document.getElementById('txtAmntOfDtyAssessedToPay').value = "0";
+		document.getElementById('txtTotalAmountPaidOTR').value = "0";
+		document.getElementById('txtTotalAmountPayableOTR').value = "0";
+		document.getElementById('cmbLROfficeData').selectedIndex = 0;
+		prevDeclaredValue = 0;
+		prevPenaltyForLatePayment = 0;
+		PrevAmtOfDuty = 0;
+		hideTab('TabView', 5);
+		resetErrorList();
+		incError = 0;
+	} else if (instrumentValue == 'n' || instrumentValue == 'N') {
+		document.getElementById('tblStamDutyValuationNotRequired').style.display = "";
+		document.getElementById('isValuationReq').value = "n";
+		document.getElementById('tblStamDutyValuationRequired').style.display = "none";
+		document.getElementById('lblLRNumber').style.display = "none";
+		document.getElementById('txtLRNumber').style.display = "none";
+		document.getElementById('txtTitleNumber').value = "";
+		document.getElementById('txtLoaction').value = "";
+		document.getElementById('txtAreaSize').value = "";
+		document.getElementById('txtReferenceNumber').value = "";
+		document.getElementById('txtDescOfTranaction').value = "";
+		document.getElementById('txtTnstrumnetDate').value = "";
+		document.getElementById('txtDeclaredValue').value = "0";
+		document.getElementById('txtPenaltyStampDuty').value = "0";
+		document.getElementById('txtAmntOfDtyAssessedToPay').value = "0";
+		document.getElementById('txtTotalAmountPaidOTR').value = "0";
+		document.getElementById('txtTotalAmountPayableOTR').value = "0";
+		document.getElementById('cmbLROfficeData').selectedIndex = 0;
+		prevDeclaredValue = 0;
+		prevPenaltyForLatePayment = 0;
+		PrevAmtOfDuty = 0;
+		hideTab('TabView', 5);
+		resetErrorList();
+		incError = 0;
+	}
+	if (document.getElementById('cmbTnstrumnetType').selectedIndex != 0) {
+		/*
+		 * var TnstrumnetType =
+		 * document.getElementById('cmbTnstrumnetType').selectedIndex; var
+		 * TnstrumnetName =
+		 * document.getElementById('cmbTnstrumnetType')[TnstrumnetType].text;
+		 * document.getElementById('hidInstType').value = TnstrumnetName;
+		 */
+		document.getElementById('hidInstType').value = obj;
+	}
+	if (document.getElementById('cmbTnstrumnetType').selectedIndex == 0) {
+		document.getElementById('tblStamDutyValuationNotRequired').style.display = "none";
+		document.getElementById('tblStamDutyValuationRequired').style.display = "none";
+		document.getElementById('lblLRNumber').style.display = "none";
+		document.getElementById('txtLRNumber').style.display = "none";
+	}
+
+}
+
+function amtPayableStampDuty() {
+	var declaredValue = 0;
+	var penaltyForLatePayment = 0;
+	var amtOfDuty = 0;
+	var amtToPayble = 0;
+	document.getElementById('txtTotalAmountPayableOTR').value='';
+	declaredValue = removeCommaFrmInput(document
+			.getElementById('txtDeclaredValue').value);
+	penaltyForLatePayment = removeCommaFrmInput(document
+			.getElementById('txtPenaltyStampDuty').value);
+	amtOfDuty = removeCommaFrmInput(document
+			.getElementById('txtAmntOfDtyAssessedToPay').value);
+	if (declaredValue < 0 || declaredValue == "" || declaredValue == null
+			|| declaredValue == "null") {
+		declaredValue = 0;
+	}
+	if (penaltyForLatePayment < 0 || penaltyForLatePayment == ""
+		|| penaltyForLatePayment == null || penaltyForLatePayment == "null") {
+		penaltyForLatePayment = 0;
+	}
+	if (amtOfDuty < 0 || amtOfDuty == "" || amtOfDuty == null
+			|| amtOfDuty == "null") {
+		amtOfDuty = 0;
+	}
+	if(document.getElementById('txtTotalAmountPayableOTR').value==""){
+		amtToPayble =  declaredValue;
+	}
+	else{
+		amtToPayble = declaredValue;
+			}
+	document.getElementById('txtDeclaredValue').value = convertToKenyanShillingFormatVal(
+			declaredValue, true);
+	document.getElementById('txtPenaltyStampDuty').value = convertToKenyanShillingFormatVal(
+			penaltyForLatePayment, true);
+	document.getElementById('txtAmntOfDtyAssessedToPay').value = convertToKenyanShillingFormatVal(
+			amtOfDuty, true);
+	document.getElementById('txtTotalAmountPaidOTR').value = convertToKenyanShillingFormatVal(
+			amtToPayble, true);
+	document.getElementById("txtTotalAmountPayableOTR").value=convertToKenyanShillingFormatVal(
+			amtToPayble, true);
+	prevDeclaredValue = declaredValue;
+	prevPenaltyForLatePayment = penaltyForLatePayment;
+	PrevAmtOfDuty = amtOfDuty;
+}
+
+function validatePIN(pin) {
+	if (pin == null || pin == '') {
+		alert(pinRequired);
+		return false;
+	}
+	if (pin.length == 11) {
+		if (pin.substring(0, 1).toString() != "A"
+			&& pin.substring(0, 1).toString() != "P") {
+			alert(invalidPin);
+			return false;
+		}
+		if (isNaN(pin.substring(1, 10).toString())) {
+			alert(invalidPin);
+			return false;
+		}
+
+		var charCode = pin.substring(10).toString();
+		var check = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		flag = 0;
+		for ( var i = 0; i < check.length; i++) {
+			if (charCode == check.charAt(i)) {
+				flag = 1;
+			}
+		}
+
+		if (flag == 0) {
+			alert(invalidPin);
+			return false;
+		} else
+			flag = 0;
+	} else if(pin.length==15){
+		return true;
+	}
+	
+	else {
+		alert(invalidPin);
+		return false;
+	}
+	return true;
+}
+
+function resetTransferorPrimaryDetail() {
+	document.getElementById('in_TranferorDetailTab_3').value = '';
+	document.getElementById('in_TranferorDetailTab_4').value = '';
+	document.getElementById('in_TranferorDetailTab_6').value = '';
+	document.getElementById('in_TranferorDetailTab_5').value = "";
+	document.getElementById('in_TranferorDetailTab_3').focus();
+}
+
+function resetTransfereePrimaryDetail() {
+	document.getElementById('in_TransfereeDetailTab_3').value = "";
+	document.getElementById('in_TransfereeDetailTab_4').value = "";
+	document.getElementById('in_TransfereeDetailTab_5').value = "";
+	document.getElementById('in_TransfereeDetailTab_6').value = "";
+	document.getElementById('in_TransfereeDetailTab_3').focus();
+}
+
+function fetchInstrumentType() {
+	// alert("fetchInstrumentType called");
+	FetchInstrumentType.fetchInstrumentType(function(data) {
+		if (data.length > 1) {
+			// alert("fetchInstrumentType--->"+data.length);
+			dwr.util.removeAllOptions('cmbTnstrumnetType');
+			dwr.util.addOptions('cmbTnstrumnetType', data, 'value', 'label');
+		} else {
+		}
+
+	});
+	return true;
+}
+
+function beforeAddIntoTranferorDetailTab(row) {
+	var checkDuplicateFlagPin = checkDuplicatePin(row);
+	if (checkDuplicateFlagPin == false) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function validateDeleteRowTransferorInfoDtls(tab_str, rowno, cols) {
+	if (deleteFlagTransferor == 1) {
+		selectedFlagTransferor = selectedFlagTransferor - 1;
+		deleteFlagTransferor = 0;
+	} else {
+		deleteFlagTransferor = 0;
+	}
+}
+function afterDeleteTransferorInfoDtls() {
+	deleteFlagTransferor = 1;
+	//Added for CGT stamp duty transfer 7/12/2016
+	afterAddStampTrnsfrDtls();
+}
+function validateDeleteRowTransfereeInfoDtls(tab_str, rowno, cols) {
+	if (deleteFlagTransferee == 1) {
+		selectedFlagTransferee = selectedFlagTransferee - 1;
+		deleteFlagTransferee = 0;
+	} else {
+		deleteFlagTransferee = 0;
+	}
+}
+function afterDeleteTransfereeInfoDtls() {
+	deleteFlagTransferee = 1;
+	//Added for CGT stamp duty transfer 7/12/2016
+	afterAddStampTrnsfrDtls();
+}
+
+function afterAddIntoTranferorDetailTab() {
+	document.getElementById('TranferorDetailTab').style.display = "";
+	selectedFlagTransferor = selectedFlagTransferor + 1;
+	createSkipFieldForAddRow('TranferorDetailTab','paymentRegForm');
+}
+function afterAddIntoTransfereeDetailTab() {
+	document.getElementById('TransfereeDetailTab').style.display = "";
+	selectedFlagTransferee = selectedFlagTransferee + 1;
+	createSkipFieldForAddRow('TransfereeDetailTab','paymentRegForm');
+}
+
+function beforeAddTransfereeDetailTab(row) {
+	var checkDuplicateFlagPin = checkDuplicatePin(row);
+	if (checkDuplicateFlagPin == false) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function beforeDeleteIntoTransfereeDetailTab() {
+	// alert("called beforeDeleteIntoTransfereeDetailTab");
+}
+function afterDeleteIntoTransfereeDetailTab() {
+	// alert("called afterDeleteIntoTransfereeDetailTab");
+}
+
+function fetchStampDetail(hdrId, obligationId) {/*
+	FetchSpecialObligationDtlWeb
+	.fetchSpecialObligationDtlWeb(
+			hdrId,
+			obligationId,
+			function(data) {
+				document.getElementById("hidgsonStrForPmtDetailDTO").value = data.gsonStrForPmtDetailDTO;
+				var PmtDetailDTO = data;
+				var pmtSplDetailVOTransfereeList = data.pmtSplDetailVOTransfereeList;
+				var pmtSplDetailVOTransferorList = data.pmtSplDetailVOTransferorList;
+
+				if (PmtDetailDTO.isValuationReq == "y"
+					|| PmtDetailDTO.isValuationReq == "Y") {
+					var cntr = 0;
+					var tabObj = document
+					.getElementById("stampDutyDetailTableForValuation");
+					for ( var l = tabObj.rows.length; l > 1; l--) {
+						tabObj.deleteRow(l - 1);
+					}
+					cntr = parseInt(cntr);
+					var tabRow = tabObj.insertRow(tabObj.rows.length);
+					tabRow.id = "stampDutyDetailTableForValuation"
+						+ cntr;
+					var tabCell = new Array();
+					for ( var j = 0; j < 13; j++) {
+						tabCell[j] = tabRow.insertCell(j);
+					}
+					tabCell[0].innerHTML = cntr + 1;
+					tabCell[0].style.textAlign = "center";
+					tabCell[0].style.fontSize = "11";
+
+					tabCell[1].innerHTML = PmtDetailDTO.instDate;
+					tabCell[1].style.textAlign = "center";
+					tabCell[1].style.fontSize = "11";
+
+					tabCell[2].innerHTML = PmtDetailDTO.instType;
+					tabCell[2].style.textAlign = "center";
+					tabCell[2].style.fontSize = "11";
+
+					tabCell[3].innerHTML = convertToKenyanShillingFormatVal(
+							Math.ceil(PmtDetailDTO.decValue), true);
+					tabCell[3].style.textAlign = "right";
+					tabCell[3].style.fontSize = "11";
+
+					tabCell[4].innerHTML = convertToKenyanShillingFormatVal(
+							Math.ceil(PmtDetailDTO.penalty), true);
+					tabCell[4].style.textAlign = "center";
+					tabCell[4].style.fontSize = "11";
+
+					tabCell[5].innerHTML = convertToKenyanShillingFormatVal(
+							Math.ceil(PmtDetailDTO.amtOfdtyAsdToPay),
+							true);
+					tabCell[5].style.textAlign = "right";
+					tabCell[5].style.fontSize = "11";
+
+					tabCell[6].innerHTML = PmtDetailDTO.titleNo;
+					tabCell[6].style.textAlign = "center";
+					tabCell[6].style.fontSize = "11";
+
+					tabCell[7].innerHTML = PmtDetailDTO.lrNumber;
+					tabCell[7].style.textAlign = "center";
+					tabCell[7].style.fontSize = "11";
+
+					tabCell[8].innerHTML = PmtDetailDTO.location;
+					tabCell[8].style.textAlign = "right";
+					tabCell[8].style.fontSize = "11";
+
+					tabCell[9].innerHTML = PmtDetailDTO.AreaSize;
+					tabCell[9].style.textAlign = "right";
+					tabCell[9].style.fontSize = "11";
+
+					var element = document.createElement('input');
+					element.type = 'hidden';
+					element.value = PmtDetailDTO.hdrId; // dtl id
+					element.width = "0%";
+					tabCell[10].appendChild(element);
+					tabCell[10].style.display = "none";
+
+					var element = document.createElement('input');
+					element.type = 'hidden';
+					element.value = hdrId;
+					element.width = "0%";
+					tabCell[11].appendChild(element);
+					tabCell[11].style.display = "none";
+
+					document
+					.getElementById("stampDutyDetailTableForValuation").style.display = "";
+
+				} else if (PmtDetailDTO.isValuationReq == "n"
+					|| PmtDetailDTO.isValuationReq == "N") {
+					var cntr = 0;
+					var tabObj = document
+					.getElementById("stampDutyDetailTableForNotValuation");
+					for ( var l = tabObj.rows.length; l > 1; l--) {
+						tabObj.deleteRow(l - 1);
+					}
+					cntr = parseInt(cntr);
+					var tabRow = tabObj.insertRow(tabObj.rows.length);
+					tabRow.id = "stampDutyDetailTableForNotValuation"
+						+ cntr;
+					var tabCell = new Array();
+					for ( var j = 0; j < 11; j++) {
+						tabCell[j] = tabRow.insertCell(j);
+					}
+					tabCell[0].innerHTML = cntr + 1;
+					tabCell[0].style.textAlign = "center";
+					tabCell[0].style.fontSize = "11";
+
+					tabCell[1].innerHTML = PmtDetailDTO.instDate;
+					tabCell[1].style.textAlign = "center";
+					tabCell[1].style.fontSize = "11";
+
+					tabCell[2].innerHTML = PmtDetailDTO.instType;
+					tabCell[2].style.textAlign = "center";
+					tabCell[2].style.fontSize = "11";
+
+					tabCell[3].innerHTML = convertToKenyanShillingFormatVal(
+							Math.ceil(PmtDetailDTO.decValue), true);
+					tabCell[3].style.textAlign = "right";
+					tabCell[3].style.fontSize = "11";
+
+					tabCell[4].innerHTML = convertToKenyanShillingFormatVal(
+							Math.ceil(PmtDetailDTO.penalty), true);
+					tabCell[4].style.textAlign = "center";
+					tabCell[4].style.fontSize = "11";
+
+					tabCell[5].innerHTML = convertToKenyanShillingFormatVal(
+							Math.ceil(PmtDetailDTO.amtOfdtyAsdToPay),
+							true);
+					tabCell[5].style.textAlign = "right";
+					tabCell[5].style.fontSize = "11";
+
+					tabCell[6].innerHTML = PmtDetailDTO.refNumber;
+					tabCell[6].style.textAlign = "center";
+					tabCell[6].style.fontSize = "11";
+
+					tabCell[7].innerHTML = PmtDetailDTO.descOfTrnctn;
+					tabCell[7].style.textAlign = "center";
+					tabCell[7].style.fontSize = "11";
+
+					var element = document.createElement('input');
+					element.type = 'hidden';
+					element.value = PmtDetailDTO.hdrId; // dtl id
+					element.width = "0%";
+					tabCell[8].appendChild(element);
+					tabCell[8].style.display = "none";
+
+					var element = document.createElement('input');
+					element.type = 'hidden';
+					element.value = hdrId;
+					element.width = "0%";
+					tabCell[9].appendChild(element);
+					tabCell[9].style.display = "none";
+
+					document
+					.getElementById("stampDutyDetailTableForNotValuation").style.display = "";
+
+				}
+				if (pmtSplDetailVOTransferorList.length >= 1) {
+					var cntr = 0;
+					var tabObj = document
+					.getElementById("transferorDetailTable");
+					for ( var l = tabObj.rows.length; l > 1; l--) {
+						tabObj.deleteRow(l - 1);
+					}
+					for ( var i = 0; i < pmtSplDetailVOTransferorList.length; i++) {
+						cntr = parseInt(cntr);
+						var tabRow = tabObj
+						.insertRow(tabObj.rows.length);
+						tabRow.id = "transferorDetailTable" + cntr;
+						var tabCell = new Array();
+						for ( var j = 0; j < 5; j++) {
+							tabCell[j] = tabRow.insertCell(j);
+						}
+						var PmtSplDetailDTO = pmtSplDetailVOTransferorList[i];
+
+						tabCell[0].innerHTML = cntr + 1;
+						tabCell[0].style.textAlign = "center";
+						tabCell[0].style.fontSize = "11";
+
+						tabCell[1].innerHTML = PmtSplDetailDTO.taxPayerPin;
+						tabCell[1].style.textAlign = "center";
+						tabCell[1].style.fontSize = "11";
+
+						tabCell[2].innerHTML = PmtSplDetailDTO.taxPayerName;
+						tabCell[2].style.textAlign = "center";
+						tabCell[2].style.fontSize = "11";
+
+						tabCell[3].innerHTML = PmtSplDetailDTO.taxPayerNo;
+						tabCell[3].style.textAlign = "right";
+						tabCell[3].style.fontSize = "11";
+
+						var element = document.createElement('input');
+						element.type = 'hidden';
+						element.value = PmtSplDetailDTO.taxpayerId;
+						element.width = "0%";
+						tabCell[4].appendChild(element);
+						tabCell[4].style.display = "none";
+
+						cntr = cntr + 1;
+					}
+					document.getElementById("transferorDetailTable").style.display = "";
+				}
+
+				if (pmtSplDetailVOTransfereeList.length >= 1) {
+					var cntr = 0;
+					var tabObj = document
+					.getElementById("transfereeDetailTable");
+					for ( var l = tabObj.rows.length; l > 1; l--) {
+						tabObj.deleteRow(l - 1);
+					}
+					for ( var i = 0; i < pmtSplDetailVOTransfereeList.length; i++) {
+						cntr = parseInt(cntr);
+						var tabRow = tabObj
+						.insertRow(tabObj.rows.length);
+						tabRow.id = "transfereeDetailTable" + cntr;
+						var tabCell = new Array();
+						for ( var j = 0; j < 5; j++) {
+							tabCell[j] = tabRow.insertCell(j);
+						}
+						var PmtSplDetailDTO = pmtSplDetailVOTransfereeList[i];
+
+						tabCell[0].innerHTML = cntr + 1;
+						tabCell[0].style.textAlign = "center";
+						tabCell[0].style.fontSize = "11";
+
+						tabCell[1].innerHTML = PmtSplDetailDTO.taxPayerPin;
+						tabCell[1].style.textAlign = "center";
+						tabCell[1].style.fontSize = "11";
+
+						tabCell[2].innerHTML = PmtSplDetailDTO.taxPayerName;
+						tabCell[2].style.textAlign = "center";
+						tabCell[2].style.fontSize = "11";
+
+						tabCell[3].innerHTML = PmtSplDetailDTO.taxPayerNo;
+						tabCell[3].style.textAlign = "right";
+						tabCell[3].style.fontSize = "11";
+
+						var element = document.createElement('input');
+						element.type = 'hidden';
+						element.value = PmtSplDetailDTO.taxpayerId;
+						element.width = "0%";
+						tabCell[4].appendChild(element);
+						tabCell[4].style.display = "none";
+
+						cntr = cntr + 1;
+					}
+					document.getElementById("transfereeDetailTable").style.display = "";
+				}
+			});
+*/}
+function checkDuplicatePin(r) {
+	rows = r;
+	tabObj1 = document.getElementById('TranferorDetailTab');
+	tabObj2 = document.getElementById('TransfereeDetailTab');
+	var transfereePin = document.getElementById('in_TransfereeDetailTab_3').value;
+	var transferorPin = document.getElementById('in_TranferorDetailTab_3').value;
+	if (tabObj1.rows.length == 1) {
+	} else {
+		for ( var i = 1, n = tabObj1.rows.length; i < n; i++) {
+			if ((document.getElementById('id_temp_TranferorDetailTab_' + i
+					+ '_1').value) == "Delete"
+						&& (trim(tabObj1.rows[i].cells[3].innerHTML) == trim(transferorPin))) {
+				alert(detailsAdded);
+				document.getElementById('in_TranferorDetailTab_3').value = "";
+				document.getElementById('in_TranferorDetailTab_4').value = "";
+				document.getElementById('in_TranferorDetailTab_5').value = "";
+				document.getElementById("in_TranferorDetailTab_6").value = "";
+				return false;
+			}
+			if ((document.getElementById('id_temp_TranferorDetailTab_' + i
+					+ '_1').value) == "Delete"
+						&& (trim(tabObj1.rows[i].cells[3].innerHTML) == trim(transfereePin))) {
+				/*alert(detailsAddedInTransfer);
+				document.getElementById('in_TransfereeDetailTab_3').value = "";
+				document.getElementById('in_TransfereeDetailTab_4').value = "";
+				document.getElementById('in_TransfereeDetailTab_5').value = "";
+				document.getElementById("in_TransfereeDetailTab_6").value = "";
+				return false;*/
+			}
+		}
+	}
+	if (tabObj2.rows.length == 1) {
+	} else {
+		for ( var i = 1, n = tabObj2.rows.length; i < n; i++) {
+			if ((document.getElementById('id_temp_TransfereeDetailTab_' + i
+					+ '_1').value) == "Delete"
+						&& (trim(tabObj2.rows[i].cells[3].innerHTML) == trim(transfereePin))) {
+				alert(detailsAdded);
+				document.getElementById('in_TransfereeDetailTab_3').value = "";
+				document.getElementById('in_TransfereeDetailTab_4').value = "";
+				document.getElementById('in_TransfereeDetailTab_5').value = "";
+				document.getElementById("in_TransfereeDetailTab_6").value = "";
+				return false;
+			}
+			if ((document.getElementById('id_temp_TransfereeDetailTab_' + i
+					+ '_1').value) == "Delete"
+						&& (trim(tabObj2.rows[i].cells[3].innerHTML) == trim(transferorPin))) {
+//				alert(detailsAddedInTransferee);
+//				document.getElementById('in_TranferorDetailTab_3').value = "";
+//				document.getElementById('in_TranferorDetailTab_4').value = "";
+//				document.getElementById('in_TranferorDetailTab_5').value = "";
+//				document.getElementById("in_TranferorDetailTab_6").value = "";
+//				return false;
+			}
+		}
+	}
+	return true;
+}
+
+function onchangeTnstrumnetDate(obj) {
+	date = obj.value;
+	document.getElementById('hidObligationFromDate').value = date;
+	document.getElementById('hidObligationToDate').value = date;
+}
+function onchangeReferenceNumber(obj) {
+
+}
+
+function showStampDutyPartialTable(partialDetailArray) {
+	if (partialDetailArray.length >= 1) {
+		var cntr = 0;
+		var tabObj = document.getElementById("in_SplObligHdrTbl_2");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+		for ( var i = 0; i < partialDetailArray.length; i++) {
+			cntr = parseInt(cntr);
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			tabRow.id = "stampHdrRow_" + cntr;
+			var tabCell = new Array();
+			for ( var j = 0; j < 21; j++) {
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			var pmtSplDetailVO = partialDetailArray[i];
+
+			/*if (document.all) {
+				var element = document
+				.createElement("<input type = 'radio' onclick = 'onSelectStampHdrRadio(this);'>");
+				element.setAttribute("name", "stampRadio");
+				element.setAttribute("id", "stampRadio_" + cntr);
+				element.setAttribute("value", cntr);
+				tabCell[0].appendChild(element);
+			} else {
+				var element = document.createElement('input');
+				element.setAttribute('type', 'radio');
+				element.setAttribute('name', 'stampRadio');
+				element.setAttribute('id', 'stampRadio_' + cntr);
+				element.setAttribute('value', cntr);
+				element.setAttribute("onclick",
+				"javascript:onSelectStampHdrRadio(this);");
+				tabCell[0].appendChild(element);
+			}*/
+			var element = document.createElement('input');       
+			element.type ='radio';
+			element.onclick = function () {onSelectStampHdrRadio(this);};
+			element.value = cntr;
+			element.id = 'stampRadio_'+cntr;
+			element.name = "stampRadio";
+			element.className='bordercl';
+			tabCell[0].appendChild(element); 
+
+			tabCell[1].innerHTML = pmtSplDetailVO.natureOfTransactionValue;
+			// tabCell[1].innerHTML = pmtSplDetailVO.natureOfTransaction;
+			tabCell[1].style.textAlign = "center";
+			tabCell[1].style.fontSize = "11";
+
+			tabCell[2].innerHTML = pmtSplDetailVO.instrumentDt;
+			tabCell[2].style.textAlign = "center";
+			tabCell[2].style.fontSize = "11";
+
+			tabCell[3].innerHTML = convertToKenyanShillingFormatVal(Math
+					.ceil(pmtSplDetailVO.valueOfTaxPayable), true);
+			tabCell[3].style.textAlign = "right";
+			tabCell[3].style.fontSize = "11";
+
+			tabCell[4].innerHTML = convertToKenyanShillingFormatVal(Math
+					.ceil(pmtSplDetailVO.amountPaid), true);
+			tabCell[4].style.textAlign = "right";
+			tabCell[4].style.fontSize = "11";
+
+			tabCell[5].innerHTML = convertToKenyanShillingFormatVal(Math
+					.ceil(pmtSplDetailVO.amountPayable), true);
+			tabCell[5].style.textAlign = "right";
+			tabCell[5].style.fontSize = "11";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.bclSplObilgationHdrId;
+			element.width = "0%";
+			tabCell[6].appendChild(element);
+			tabCell[6].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.bclSplObilgationDtlId;
+			element.width = "0%";
+			tabCell[7].appendChild(element);
+			tabCell[7].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.obilgationHdrId;
+			element.width = "0%";
+			tabCell[8].appendChild(element);
+			tabCell[8].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.obilgationDtlId;
+			element.width = "0%";
+			tabCell[9].appendChild(element);
+			tabCell[9].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.isValuationReq;
+			element.width = "0%";
+			tabCell[10].appendChild(element);
+			tabCell[10].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.natureOfTransaction;
+			element.width = "0%";
+			tabCell[11].appendChild(element);
+			tabCell[11].style.display = "none";
+
+			// Start --> these 6 fields are set in hidden for type valuation
+			// required
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.titleNumber;
+			element.width = "0%";
+			tabCell[12].appendChild(element);
+			tabCell[12].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.lrNumber;
+			element.width = "0%";
+			tabCell[13].appendChild(element);
+			tabCell[13].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.locationOrTown;
+			element.width = "0%";
+			tabCell[14].appendChild(element);
+			tabCell[14].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.areaSize;
+			element.width = "0%";
+			tabCell[15].appendChild(element);
+			tabCell[15].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.landRegOffice;
+			element.width = "0%";
+			tabCell[16].appendChild(element);
+			tabCell[16].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.landRegOfficeValue;
+			element.width = "0%";
+			tabCell[17].appendChild(element);
+			tabCell[17].style.display = "none";
+			// End --> these 6 fields are set in hidden for type valuation
+			// required
+
+			// Start --> these 2 fields are set in hidden for type valuation not
+			// required
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.referenceNumber;
+			element.width = "0%";
+			tabCell[18].appendChild(element);
+			tabCell[18].style.display = "none";
+
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = pmtSplDetailVO.briefDescriptionOfTrnsctn;
+			element.width = "0%";
+			tabCell[19].appendChild(element);
+			tabCell[19].style.display = "none";
+			
+			var element = document.createElement('input');
+			element.type = 'hidden';
+			element.value = convertToKenyanShillingFormatVal(Math
+					.ceil( pmtSplDetailVO.declaredValue), true);
+			element.width = "0%";
+			tabCell[20].appendChild(element);
+			tabCell[20].style.display = "none";
+			// End --> these 2 fields are set in hidden for type valuation not
+			// required
+
+			cntr = cntr + 1;
+		}
+		document.getElementById("navigationTableSplHdr").style.display = '';
+		document.getElementById("navigationTableSpltbl").style.display = '';
+		document.getElementById("in_SplObligHdrTbl_2").style.display = "";
+	}
+}
+
+function onSelectStampHdrRadio(obj) {
+	selectedFlagPartial = 1;
+	allowAddingTransfereeTransferor = true;
+	document.getElementById("txtLRNumber").value = '';
+	document.getElementById("txtLRNumber").readonly=false;
+	document.getElementById("transferorHeaderDeleteStampDuty").style.display="";
+	document.getElementById("transfereeHeaderDeleteStampDuty").style.display="";
+	document.getElementById("tdAckNoForTwining").style.display = "none";
+	document.getElementById("lblAckNoForTwining").style.display = "none";
+	document.getElementById("transfereeId").value='';
+	document.getElementById("ackNoForTwining").value = "";
+	var taxPayerId = document.getElementById('hidTaxPayerId').value;
+	document.getElementById('hidIsPartial').value = "Y";
+	var rowNum = obj.value;
+	objValue = obj.value;
+	var rowRef = document.getElementById("stampHdrRow_" + rowNum);
+	bclPaymentHdrId = 0;// not of use
+	bclPaymentDtlId = 0;// not of use
+
+	bclSplObligHdrId = 0;
+	bclSplObliDtlId = 0;// not of use
+
+	obligationHdrId = 0;// of no use
+	obligationDtlId = 0;// used
+
+	fromDt = null;
+	toDt = null;
+
+	// var natureOfTransactionValue;
+	var instrumentDt;
+
+	var taxPayableValue;
+	// var amountToBePaid;
+	// var amountPayable;
+
+	var isValuationReq;
+	var natureOfTransaction;
+
+	// val required flds
+	var titleNumber;
+	var lrNumber;
+	var locationOrTown;
+	var areaSize;
+	var landRegOffice;
+	// var landRegOfficeValue;
+
+	// val not required flds
+	var referenceNumber;
+	var briefDescriptionOfTrnsctn;
+	var declareValue;
+
+	if (document.all) {
+		natureOfTransactionValue = (rowRef.getElementsByTagName("TD")[1].innerText);
+		instrumentDt = (rowRef.getElementsByTagName("TD")[2].innerText);
+
+		taxPayableValue = (rowRef.getElementsByTagName("TD")[3].innerText);
+		amountToBePaid = (rowRef.getElementsByTagName("TD")[4].innerText);
+		amountPayable = (rowRef.getElementsByTagName("TD")[5].innerText);
+
+		bclSplObligHdrId = (rowRef.getElementsByTagName("INPUT")[1].value);
+		bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[2].value);
+		obligationHdrId = (rowRef.getElementsByTagName("INPUT")[3].value);
+		obligationDtlId = (rowRef.getElementsByTagName("INPUT")[4].value);
+	
+		isValuationReq = (rowRef.getElementsByTagName("INPUT")[5].value);
+		natureOfTransaction = (rowRef.getElementsByTagName("INPUT")[6].value);
+
+		titleNumber = (rowRef.getElementsByTagName("INPUT")[7].value);
+		lrNumber = (rowRef.getElementsByTagName("INPUT")[8].value);
+		locationOrTown = (rowRef.getElementsByTagName("INPUT")[9].value);
+		areaSize = (rowRef.getElementsByTagName("INPUT")[10].value);
+		landRegOffice = (rowRef.getElementsByTagName("INPUT")[11].value);
+		landRegOfficeValue = (rowRef.getElementsByTagName("INPUT")[12].value);
+
+		referenceNumber = (rowRef.getElementsByTagName("INPUT")[13].value);
+		briefDescriptionOfTrnsctn = (rowRef.getElementsByTagName("INPUT")[14].value);
+		declareValue=(rowRef.getElementsByTagName("INPUT")[15].value);
+
+	} else {
+		natureOfTransactionValue = (rowRef.getElementsByTagName("TD")[1].textContent);
+		instrumentDt = (rowRef.getElementsByTagName("TD")[2].textContent);
+
+		taxPayableValue = (rowRef.getElementsByTagName("TD")[3].textContent);
+		amountToBePaid = (rowRef.getElementsByTagName("TD")[4].textContent);
+		amountPayable = (rowRef.getElementsByTagName("TD")[5].textContent);
+
+		bclSplObligHdrId = (rowRef.getElementsByTagName("INPUT")[1].value);
+		bclSplObliDtlId = (rowRef.getElementsByTagName("INPUT")[2].value);
+		obligationHdrId = (rowRef.getElementsByTagName("INPUT")[3].value);
+		obligationDtlId = (rowRef.getElementsByTagName("INPUT")[4].value);
+
+		isValuationReq = (rowRef.getElementsByTagName("INPUT")[5].value);
+		natureOfTransaction = (rowRef.getElementsByTagName("INPUT")[6].value);
+
+		titleNumber = (rowRef.getElementsByTagName("INPUT")[7].value);
+		lrNumber = (rowRef.getElementsByTagName("INPUT")[8].value);
+		locationOrTown = (rowRef.getElementsByTagName("INPUT")[9].value);
+		areaSize = (rowRef.getElementsByTagName("INPUT")[10].value);
+		landRegOffice = (rowRef.getElementsByTagName("INPUT")[11].value);
+		landRegOfficeValue = (rowRef.getElementsByTagName("INPUT")[12].value);
+
+		referenceNumber = (rowRef.getElementsByTagName("INPUT")[13].value);
+		briefDescriptionOfTrnsctn = (rowRef.getElementsByTagName("INPUT")[14].value);
+		declareValue=(rowRef.getElementsByTagName("INPUT")[15].value);
+	}
+	// document.getElementById('hidDtlId').value = obligationDtlId;
+	document.getElementById('hidDtlId').value = bclSplObliDtlId;
+	// hide table of transferor
+	document.getElementById("SDTranferorDetailTable").style.display = 'none';
+	document.getElementById("addTranferorDetailTbl").style.display = 'none';
+	document.getElementById("TranferorDetailTab").style.display = "none";
+	// hide table of tranfereep
+	document.getElementById("SDTransfereeDetailTable").style.display = 'none';
+	document.getElementById("addTransfereeDetailTbl").style.display = 'none';
+	document.getElementById("TransfereeDetailTab").style.display = "none";
+	var parentId=null;
+	/*
+	 * alert("natureOfTransactionValue-->"+natureOfTransactionValue);
+	 * alert("instrumentDt-->"+instrumentDt);
+	 * alert("taxPayableValue-->"+taxPayableValue);
+	 * alert("amountToBePaid-->"+amountToBePaid);
+	 * alert("amountPayable-->"+amountPayable);
+	 * alert("bclSplObligHdrId-->"+bclSplObligHdrId);
+	 * alert("bclSplObliDtlId-->"+bclSplObliDtlId);
+	 * alert("obligationHdrId-->"+obligationHdrId);
+	 * alert("obligationDtlId-->"+obligationDtlId);
+	 * alert("isValuationReq-->"+isValuationReq);
+	 * alert("natureOfTransaction-->"+natureOfTransaction);
+	 * alert("titleNumber-->"+titleNumber); alert("lrNumber-->"+lrNumber);
+	 * alert("locationOrTown-->"+locationOrTown); alert("areaSize-->"+areaSize);
+	 * alert("landRegOffice-->"+landRegOffice);
+	 * alert("landRegOfficeValue-->"+landRegOfficeValue);
+	 * alert("referenceNumber-->"+referenceNumber);
+	 * alert("briefDescriptionOfTrnsctn-->"+briefDescriptionOfTrnsctn);
+	 */
+	// alert("bclSplObligHdrId-->"+bclSplObligHdrId);
+	// alert("bclSplObliDtlId-->"+bclSplObliDtlId);
+	document.getElementById('btnInstrumnetDate').style.display = "none";
+	if (natureOfTransaction != null && natureOfTransaction != "") {
+		// document.getElementById('cmbTnstrumnetType').value =
+		// natureOfTransaction;
+		document.getElementById('cmbTnstrumnetType').value = natureOfTransaction;// this
+		// is
+		// set
+		// because
+		// in
+		// db
+		// till
+		// this
+		// date(24/8)
+		// its
+		// description
+		// was
+		// saved
+		// ,
+		// now
+		// it
+		// has
+		// been
+		// changed
+		// to
+		// value
+		document.getElementById('cmbTnstrumnetType').disabled = true;
+		onchangeCmbTnstrumnetTypeToBeChanged(natureOfTransaction);
+	}
+	if (instrumentDt != null && instrumentDt != "") {
+		document.getElementById('txtTnstrumnetDate').value = instrumentDt;
+		document.getElementById('txtTnstrumnetDate').readOnly = true;
+		document.getElementById('txtTnstrumnetDate').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+
+	}
+	if (taxPayableValue != null && taxPayableValue != "") {
+		document.getElementById('txtDeclaredValue').value = declareValue;
+		document.getElementById('txtDeclaredValue').readOnly = true;
+		document.getElementById('txtDeclaredValue').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+
+		document.getElementById('txtTotalAmountPayableOTR').value = taxPayableValue;
+		document.getElementById('txtTotalAmountPayableOTR').readOnly = true;
+		document.getElementById('txtTotalAmountPayableOTR').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+
+		document.getElementById('txtTotalAmountPaidOTR').value = taxPayableValue;
+	}
+
+	if (isValuationReq == "Y" || isValuationReq == "y" || isValuationReq == "n" || isValuationReq == "N") {
+		if (landRegOffice != null && landRegOffice != "") {
+			document.getElementById('cmbLROfficeData').value = landRegOffice;
+			// document.getElementById('cmbLROfficeData').value = "LR1";// this
+			// is set because in db till this date(24/8) it was not saved , now
+			// it has been changed to value
+			onChangeLROffice(landRegOffice);
+			document.getElementById('cmbLROfficeData').disabled = true;
+		}
+		if (titleNumber != null && titleNumber != "") {
+			document.getElementById('txtTitleNumber').value = titleNumber;
+			document.getElementById('txtTitleNumber').readOnly = true;
+			document.getElementById('txtTitleNumber').className = 'readonlyInput form101_textfcurr_width';
+		}
+		if (lrNumber != null && lrNumber != "") {
+			document.getElementById('txtLRNumber').value = lrNumber;
+			document.getElementById('txtLRNumber').readOnly = true;
+			document.getElementById('txtLRNumber').className = 'readonlyInput form101_textfcurr_width';
+		}
+		if (locationOrTown != null && locationOrTown != "") {
+			document.getElementById('txtLoaction').value = locationOrTown;
+			document.getElementById('txtLoaction').readOnly = true;
+			document.getElementById('txtLoaction').className = 'readonlyInput form101_textfcurr_width';
+		}
+		if (areaSize != null && areaSize != "") {
+			document.getElementById('txtAreaSize').value = areaSize;
+			document.getElementById('txtAreaSize').readOnly = true;
+			document.getElementById('txtAreaSize').className = 'readonlyInput form101_textfcurr_width';
+		}
+		 document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+		 document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+
+	} else {
+		if (referenceNumber != null && referenceNumber != "") {
+			document.getElementById('txtReferenceNumber').value = referenceNumber;
+			document.getElementById('txtReferenceNumber').readOnly = true;
+			document.getElementById('txtReferenceNumber').className = 'readonlyInput form101_textfcurr_width';
+		}
+		if (briefDescriptionOfTrnsctn != null
+				&& briefDescriptionOfTrnsctn != "") {
+			document.getElementById('txtDescOfTranaction').value = briefDescriptionOfTrnsctn;
+			document.getElementById('txtDescOfTranaction').readOnly = true;
+			document.getElementById('txtDescOfTranaction').className = 'readonlyInput form101_textfcurr_width';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+			document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+		}
+		document.getElementById('txtTotalAmountPaidOTR').readOnly=true;
+		document.getElementById('txtTotalAmountPaidOTR').className='readonlyInput form101_textfcurr_width textonlyRight';
+	}
+
+	clear_table_data("transferorDetailTable");
+	document.getElementById('transferorDetailTable').style.display = 'none';
+	clear_table_data("transfereeDetailTable");
+	document.getElementById('transfereeDetailTable').style.display = 'none';
+	fetchSDSellerDtlForPartial(bclSplObliDtlId, stampDutyObligationId,
+			taxPayerId);
+	fetchSDBuyerDtlForPartial(bclSplObliDtlId, stampDutyObligationId,
+			taxPayerId);
+}
+
+//medatory
+function fetchSDSellerDtlForPartial(bclSplObliDtlId, stampDutyObligationId,
+		taxPayerId) {
+	FetchSDSellerDtlForPartial
+	.fetchSDSellerDtlForPartial(
+			bclSplObliDtlId,
+			stampDutyObligationId,
+			taxPayerId,
+			{
+				async : false,
+				callback : function(data) {
+					if (data != null) {
+						var pmtSplDetailVOTransferorList = data;
+						if (pmtSplDetailVOTransferorList.length >= 1
+								&& pmtSplDetailVOTransferorList[0].isDataAvailable == "Y") {
+							var cntr = 0;
+							var tabObj = document
+							.getElementById("transferorDetailTable");
+							for ( var l = tabObj.rows.length; l > 1; l--) {
+								tabObj.deleteRow(l - 1);
+							}
+							for ( var i = 0; i < pmtSplDetailVOTransferorList.length; i++) {
+								cntr = parseInt(cntr);
+								var tabRow = tabObj
+								.insertRow(tabObj.rows.length);
+								tabRow.id = "transferorDetailTable"
+									+ cntr;
+								var tabCell = new Array();
+								for ( var j = 0; j < 4; j++) {
+									tabCell[j] = tabRow.insertCell(j);
+								}
+								var PmtSplDetailDTO = pmtSplDetailVOTransferorList[i];
+
+								tabCell[0].innerHTML = cntr + 1;
+								tabCell[0].style.textAlign = "center";
+								tabCell[0].style.fontSize = "11";
+
+								tabCell[1].innerHTML = PmtSplDetailDTO.taxPayerPin;
+								tabCell[1].style.textAlign = "center";
+								tabCell[1].style.fontSize = "11";
+
+								tabCell[2].innerHTML = PmtSplDetailDTO.taxPayerName;
+								tabCell[2].style.textAlign = "center";
+								tabCell[2].style.fontSize = "11";
+
+								/*tabCell[3].innerHTML = PmtSplDetailDTO.taxPayerNo;
+								tabCell[3].style.textAlign = "center";
+								tabCell[3].style.fontSize = "11";*/
+
+								var element = document
+								.createElement('input');
+								element.type = 'hidden';
+								element.value = PmtSplDetailDTO.taxpayerId;
+								element.width = "0%";
+								tabCell[3].appendChild(element);
+								tabCell[3].style.display = "none";
+
+								cntr = cntr + 1;
+							}
+							document
+							.getElementById("transferorDetailTable").style.display = "";
+						} else {
+							alert(sellerDetailsNotAvailable);
+						}
+					} else {
+						alert(errFetchingData);
+					}
+				}
+			});
+}
+
+//not mendatory
+function fetchSDBuyerDtlForPartial(bclSplObliDtlId, stampDutyObligationId,
+		taxPayerId) {
+	FetchSDBuyerDtlForPartial
+	.fetchSDBuyerDtlForPartial(
+			bclSplObliDtlId,
+			stampDutyObligationId,
+			taxPayerId,
+			{
+				async : false,
+				callback : function(data) {
+					if (data != null) {
+						var pmtSplDetailVOTransfereeList = data;
+						if (pmtSplDetailVOTransfereeList.length >= 1
+								&& pmtSplDetailVOTransfereeList[0].isDataAvailable == "Y") {
+							var cntr = 0;
+							var tabObj = document
+							.getElementById("transfereeDetailTable");
+							for ( var l = tabObj.rows.length; l > 1; l--) {
+								tabObj.deleteRow(l - 1);
+							}
+							for ( var i = 0; i < pmtSplDetailVOTransfereeList.length; i++) {
+								cntr = parseInt(cntr);
+								var tabRow = tabObj
+								.insertRow(tabObj.rows.length);
+								tabRow.id = "transfereeDetailTable"
+									+ cntr;
+								var tabCell = new Array();
+								for ( var j = 0; j < 4; j++) {
+									tabCell[j] = tabRow.insertCell(j);
+								}
+								var PmtSplDetailDTO = pmtSplDetailVOTransfereeList[i];
+
+								tabCell[0].innerHTML = cntr + 1;
+								tabCell[0].style.textAlign = "center";
+								tabCell[0].style.fontSize = "11";
+
+								tabCell[1].innerHTML = PmtSplDetailDTO.taxPayerPin;
+								tabCell[1].style.textAlign = "center";
+								tabCell[1].style.fontSize = "11";
+
+								tabCell[2].innerHTML = PmtSplDetailDTO.taxPayerName;
+								tabCell[2].style.textAlign = "center";
+								tabCell[2].style.fontSize = "11";
+
+								/*tabCell[3].innerHTML = PmtSplDetailDTO.taxPayerNo;
+								tabCell[3].style.textAlign = "center";
+								tabCell[3].style.fontSize = "11";*/
+
+								var element = document
+								.createElement('input');
+								element.type = 'hidden';
+								element.value = PmtSplDetailDTO.taxpayerId;
+								element.width = "0%";
+								tabCell[3].appendChild(element);
+								tabCell[3].style.display = "none";
+
+								cntr = cntr + 1;
+							}
+							document
+							.getElementById("transfereeDetailTable").style.display = "";
+						} else {
+							alert(noBuyerDetail);
+						}
+					} else {
+						alert(errFetchingData);
+					}
+				}
+			});
+	return true;
+}
+
+function validateTransferorDtls(id) {
+	var rtnFlag;
+	rtnFlag = validateFormFieldOnEvent(id, paymentRegOTRTranferorPinDetailsJson);
+	{
+		getErrTabToggle('TabView', '2');
+		if (!rtnFlag) {
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display = "none";
+		}
+		return rtnFlag;
+	}
+}
+function validateTransfereeDtls(id) {
+	var rtnFlag;
+	rtnFlag = validateFormFieldOnEvent(id,
+			paymentRegOTRTransfereePinDetailsJson);
+	{
+		getErrTabToggle('TabView', '2');
+		if (!rtnFlag) {
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display = "none";
+		}
+
+		return rtnFlag;
+	}
+}
+function validateStampDutyDtls(id) {
+	var rtnFlag;
+	rtnFlag = validateFormFieldOnEvent(id, paymentRegOTRStampDutyDetailsJson);
+	{
+		getErrTabToggle('TabView', '2');
+		if (!rtnFlag) {
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display = "none";
+		}
+		return rtnFlag;
+	}
+}
+function validateStampDutyRequiredDtls(id) {
+	var rtnFlag;
+	if (document.getElementById('tblStamDutyValuationRequired').style.display == "") {
+		rtnFlag = validateFormFieldOnEvent(id,
+				paymentRegOTRStampDutyRequiredDetailsJson);
+		{
+			getErrTabToggle('TabView', '2');
+			if (!rtnFlag) {
+				tabview_switch('TabView', '2');
+				hideAndShowTable("errorDiv");
+				document.getElementById('btnTbl').style.display = "none";
+				return rtnFlag;
+			}
+		}
+	}
+}
+function validateStampDutyNotRquiredDtls(id) {
+	if (document.getElementById('tblStamDutyValuationNotRequired').style.display == "") {
+		var rtnFlag;
+		rtnFlag = validateFormFieldOnEvent(id,
+				paymentRegOTRStampDutyNotRequiredDetailsJson);
+		{
+			getErrTabToggle('TabView', '2');
+			if (!rtnFlag) {
+				tabview_switch('TabView', '2');
+				hideAndShowTable("errorDiv");
+				document.getElementById('btnTbl').style.display = "none";
+			}
+			return rtnFlag;
+		}
+	}
+}
+
+function currentPaymentStampDuty() {
+	if ((selectedFlagPartial == 0)) {
+
+		document.getElementById('btnInstrumnetDate').style.display = "";
+		{
+			document.getElementById("SDTranferorDetailTable").style.display = '';
+			document.getElementById("addTranferorDetailTbl").style.display = '';
+			document.getElementById("TranferorDetailTab").style.display = "";
+			// hide table of tranferee
+			document.getElementById("SDTransfereeDetailTable").style.display = '';
+			document.getElementById("addTransfereeDetailTbl").style.display = '';
+			document.getElementById("TransfereeDetailTab").style.display = "";
+
+			document.getElementById('cmbTnstrumnetType').disabled = false;
+
+			document.getElementById('txtDeclaredValue').readOnly = false;
+			document.getElementById('txtDeclaredValue').className = 'form101_textfcurr form101_textfcurr_width textonlyRight';
+
+			document.getElementById('cmbLROfficeData').disabled = false;
+			document.getElementById('txtTitleNumber').readOnly = false;
+			document.getElementById('txtTitleNumber').className = 'form101_textfcurr form101_textfcurr_width';
+			document.getElementById('txtLRNumber').readOnly = false;
+			document.getElementById('txtLRNumber').className = 'form101_textfcurr form101_textfcurr_width';
+			document.getElementById('txtLoaction').readOnly = false;
+			document.getElementById('txtLoaction').className = 'form101_textfcurr form101_textfcurr_width';
+			document.getElementById('txtAreaSize').readOnly = false;
+			document.getElementById('txtAreaSize').className = 'form101_textfcurr form101_textfcurr_width';
+			document.getElementById('txtTotalAmountPaidOTR').readOnly = false;
+			document.getElementById('txtTotalAmountPaidOTR').className = 'form101_textfcurr form101_textfcurr_width textonlyRight';
+			document.getElementById('txtReferenceNumber').readOnly = false;
+			document.getElementById('txtReferenceNumber').className = 'form101_textfcurr form101_textfcurr_width';
+			document.getElementById('txtDescOfTranaction').readOnly = false;
+			document.getElementById('txtDescOfTranaction').className = 'form101_textfcurr form101_textfcurr_width';
+			document.getElementById("transfereeDetailTable").style.display = "none";
+			document.getElementById("transferorDetailTable").style.display = "none";
+
+		}
+
+		document.getElementById('hidIsPartial').value = "N";
+	}
+}
+
+function isStampDutyRegistered() {
+	var taxpayerId = document.getElementById('hidTaxPayerId').value;
+	var obligationId = stampDutyObligationId;
+	var BRN = document.getElementById('BRN').value;
+
+	var isValuationReq = document.getElementById('isValuationReq').value;
+	var natureOfTransaction = document.getElementById('cmbTnstrumnetType').value;
+	var instrumentDt = document.getElementById('txtTnstrumnetDate').value;
+	var titleNumber = document.getElementById('txtTitleNumber').value;
+	var lrNumber = document.getElementById('txtLRNumber').value;
+	var referenceNumber = document.getElementById('txtReferenceNumber').value;
+	var PmtSplDetailVO;
+	//Added to implement duplicacy check in stamp duty amendment
+	if(document.getElementById('specOblstampPmtTypeRadio2').checked==true){
+		
+	var prn=document.getElementById('stampDutyAckNo').value;
+		
+		PmtSplDetailVO = {
+				taxpayerId : taxpayerId,
+				obligationId : obligationId,
+				BRN : BRN,
+				isValuationReq : isValuationReq,
+				natureOfTransaction : natureOfTransaction,
+				instrumentDt : instrumentDt,
+				titleNumber : titleNumber,
+				lrNumber : lrNumber,
+				referenceNumber : referenceNumber,
+				prn: prn
+
+		};
+	}
+	else{
+		 PmtSplDetailVO = {
+				taxpayerId : taxpayerId,
+				obligationId : obligationId,
+				BRN : BRN,
+				isValuationReq : isValuationReq,
+				natureOfTransaction : natureOfTransaction,
+				instrumentDt : instrumentDt,
+				titleNumber : titleNumber,
+				lrNumber : lrNumber,
+				referenceNumber : referenceNumber
+
+		};
+	}
+	
+
+	if (isSplObligationRegisteredWeb(PmtSplDetailVO))
+		return true;
+	else
+		return false;
+
+}
+function onChangeLROffice(value)
+{	
+document.getElementById('stampDutylandRegOffice').value=value;
+}
+
+//Added on 06/12/2016
+
+/*function showLrNoPartialTable(partialDetailArray) {
+	if (partialDetailArray.length >= 1) {
+		var cntr = 0;
+		var tabObj = document.getElementById("in_SplObligHdrTbl_8");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+		for ( var i = 0; i < partialDetailArray.length; i++) {
+			cntr = parseInt(cntr);
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			tabRow.id = "stampHdrRow_" + cntr;
+			var tabCell = new Array();
+			for ( var j = 0; j < 5; j++) {
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			var pmtStampDutyTrnsfrDtlVO = partialDetailArray[i];
+
+			if (document.all) {
+				var element = document
+				.createElement("<input type = 'radio' onclick = 'onSelectStampHdrRadio(this);'>");
+				element.setAttribute("name", "stampRadio");
+				element.setAttribute("id", "stampRadio_" + cntr);
+				element.setAttribute("value", cntr);
+				tabCell[0].appendChild(element);
+			} else {
+				var element = document.createElement('input');
+				element.setAttribute('type', 'radio');
+				element.setAttribute('name', 'stampRadio');
+				element.setAttribute('id', 'stampRadio_' + cntr);
+				element.setAttribute('value', cntr);
+				element.setAttribute("onclick",
+				"javascript:onSelectStampHdrRadio(this);");
+				tabCell[0].appendChild(element);
+			}
+			var element = document.createElement('input');       
+			element.type ='radio';
+			element.onclick = function () {onSelectStampHdrRadio(this);};
+			element.value = cntr;
+			element.id = 'stampRadio_'+cntr;
+			element.name = "stampRadio";
+			element.className='bordercl';
+			tabCell[0].appendChild(element); 
+
+			tabCell[1].innerHTML = pmtStampDutyTrnsfrDtlVO.typeOfCGT;
+			tabCell[1].style.textAlign = "center";
+			tabCell[1].style.fontSize = "11";
+
+			tabCell[2].innerHTML = pmtStampDutyTrnsfrDtlVO.cgtAckNo;
+			tabCell[2].style.textAlign = "center";
+			tabCell[2].style.fontSize = "11";
+
+			tabCell[3].innerHTML = convertToKenyanShillingFormatVal(Math
+					.ceil(pmtStampDutyTrnsfrDtlVO.taxableAmt), true);
+			tabCell[3].style.textAlign = "right";
+			tabCell[3].style.fontSize = "11";
+
+			tabCell[4].innerHTML = convertToKenyanShillingFormatVal(Math
+					.ceil(pmtStampDutyTrnsfrDtlVO.cgtTaxAmt), true);
+			tabCell[4].style.textAlign = "right";
+			tabCell[4].style.fontSize = "11";
+			
+			tabCell[2].innerHTML = pmtStampDutyTrnsfrDtlVO.yearOfPurchase;
+			tabCell[2].style.textAlign = "center";
+			tabCell[2].style.fontSize = "11";
+
+			cntr = cntr + 1;
+		}
+		document.getElementById("navigationTableSplHdr").style.display = '';
+		document.getElementById("navigationTableSpltbl").style.display = '';
+		document.getElementById("in_SplObligHdrTbl_8").style.display = "";
+	}
+}
+*/
+function beforeshowLrNoPartialTable(id1,id2,id3)
+{
+	var a = [];
+	var b = [];
+
+	if (document.getElementById('txtLRNumber').value != null)
+	{
+		var lrNo= document.getElementById("txtLRNumber").value;	
+	}else
+	{
+		return false;
+	}
+
+	var table = document.getElementById("TranferorDetailTab");
+	var rows = table.getElementsByTagName("tr");
+
+	var table1 = document.getElementById("TransfereeDetailTab");
+	var rows1 = table1.getElementsByTagName("tr");
+
+	for(var i=1;i<=rows1.length - 1;i++)
+	{
+		if(table1.rows[i].cells[1].textContent=='Delete' || table1.rows[i].cells[1].innerText=='Delete'){
+		a.push($('#id_td_TransfereeDetailTab_'+i+'_3').text());
+		}
+	}
+
+	for(var i=1;i<=rows.length - 1;i++)
+	{
+		if(table.rows[i].cells[1].textContent=='Delete' || table.rows[i].cells[1].innerText=='Delete'){
+		b.push($('#id_td_TranferorDetailTab_'+i+'_3').text());
+		}
+	}
+
+	fetchPaymentStampTranferDtls(a,b,lrNo);
+}
+
+
+function fetchPaymentStampTranferDtls(transfereeId,transferorId,lrNumber)
+{
+	for(var j=0;j<stampDutyLookupCode.length;j++)
+	{
+		var codes =  stampDutyLookupCode[j].value;
+
+		var selectedValueofCodeValue =  document.getElementById('cmbTnstrumnetType').value;
+
+		if(codes == selectedValueofCodeValue)
+		{
+
+			if(checkIfTableDataIsDeleted())
+			{
+				FetchPaymentStampTranferDtls.fetchPaymentStampTranferDtls(transfereeId,transferorId,lrNumber,{async:false,callback: function(data) {
+
+					if(data.length<=0)
+					{
+						alert('No CGT Details found for selected Transferee, Transferor and LR Number.');
+						document.getElementById("cgtStampDutyAddrowTable").style.display="none";
+						//document.getElementById('cmdSaveOblig').disabled = true;
+						return;
+					}
+
+					pmtSplDetailVOListForPartial =  data;
+					createTableForTransferDetails(data);
+
+				}
+				}
+				);
+				break;
+			}
+		}
+		else
+		{
+			clear_table_data('cgtStampDutyAddrowTable'); 
+			document.getElementById("cgtStampDutyAddrowTable").style.display='none';
+		}
+	}
+}
+
+function checkIfRadioButtonIsCheckedInTableTransferDetails()
+{
+	for(var j=0;j<stampDutyLookupCode.length;j++)
+	{
+		var codes =  stampDutyLookupCode[j].value;
+
+		var selectedValueofCodeValue =  document.getElementById('cmbTnstrumnetType').value;
+
+		if(codes == selectedValueofCodeValue)
+		{
+			return $('#cgtStampDutyAddrowTable tbody input:checked').length > 0;
+		}
+	}
+	return true;
+}
+	
+	
+
+
+function getValueOfCheckedRadioButton()
+{
+		return $('#cgtStampDutyAddrowTable tbody input:checked')[0].value;
+}
+
+function createTableForTransferDetails(listJson)
+{
+	var parentNode = document.getElementById('cgtStampDutyAddrowTable');//$('#in_SplObligHdrTbl_8 tbody');
+	if(document.getElementById('cgtStampDutyAddrowTable').getElementsByTagName("tbody").length > 0)
+	{
+		parentNode.removeChild(document.getElementById('cgtStampDutyAddrowTable').getElementsByTagName("tbody")[0]);
+	}
+	var tBodyE = document.createElement("tbody");
+	for(var t = 0;t < listJson.length; t++)
+	{
+		var detail = listJson[t];
+		var tRow = document.createElement("tr");
+		var cntr = 0;
+		var radioCell = document.createElement("td");
+		var radioButton = document.createElement("input");
+		radioButton.type= 'radio';
+		//radioButton.onclick = function () {OnClickRadioLRNo(this);};
+		radioButton.value = detail.transfereeId;
+		radioButton.id = 'lrRadio_'+t;
+		radioButton.name = "lrRadio";
+		radioButton.className='bordercl';
+		radioCell.appendChild(radioButton);
+		tRow.appendChild(radioCell);
+		
+		var typeOfCGT = document.createElement("td");
+		typeOfCGT.innerHTML = detail.typeOfCGT;
+		tRow.style.textAlign = "center";
+		tRow.appendChild(typeOfCGT);
+		
+		var cgtAckNo = document.createElement("td");
+		cgtAckNo.innerHTML = detail.cgtAckNo;
+		tRow.style.textAlign = "center";
+		tRow.appendChild(cgtAckNo);
+		
+		var taxableAmt = document.createElement("td");
+		taxableAmt.innerHTML = convertToKenyanShillingFormatVal(Math
+				.ceil(detail.taxableAmt), true); 
+		tRow.style.textAlign = "right";
+		tRow.appendChild(taxableAmt);
+		
+		var cgtTaxAmt = document.createElement("td");
+		cgtTaxAmt.innerHTML = convertToKenyanShillingFormatVal(Math
+				.ceil(detail.cgtTaxAmt), true); 
+		tRow.style.textAlign = "right";
+		tRow.appendChild(cgtTaxAmt);
+		
+		var yearOfPurchase = document.createElement("td");
+		yearOfPurchase.innerHTML = detail.yearOfPurchase;
+		tRow.style.textAlign = "center";
+		tRow.appendChild(yearOfPurchase);
+		
+		var transfereeId = document.createElement("td");
+		transfereeId.type = 'hidden';
+		transfereeId.innerHTML = detail.transfereeId;
+		transfereeId.style.display = "none";
+		tRow.appendChild(transfereeId);
+		
+		tBodyE.appendChild(tRow);
+	}
+	parentNode.appendChild(tBodyE);
+	document.getElementById("cgtStampDutyAddrowTable").style.display = '';
+}
+
+function afterAddStampTrnsfrDtls()
+{
+	clear_table_data('cgtStampDutyAddrowTable'); 
+	document.getElementById("cgtStampDutyAddrowTable").style.display='none';
+}
+function checkIfTableDataIsDeleted()
+{
+	var tableObj1 = document.getElementById('TranferorDetailTab');
+	var tableObj2 = document.getElementById('TransfereeDetailTab');
+	var flag= false;
+	var flag1= false;
+
+	var rowCount1=tableObj1.rows.length;
+	var rowCount2=tableObj2.rows.length;
+
+	if(rowCount1>1)
+	{
+		for(var i = 1, n = tableObj1.rows.length; i <n; i++) 
+		{
+			if(tableObj1.rows[i].cells[1].textContent=='Delete' || tableObj1.rows[i].cells[1].innerText=='Delete'){
+				flag= true;
+			}
+		}
+	}
+
+	if(rowCount2>1)
+	{
+		for(var i = 1, n = tableObj2.rows.length; i <n; i++) 
+		{
+			if(tableObj2.rows[i].cells[1].textContent=='Delete' || tableObj2.rows[i].cells[1].innerText=='Delete'){
+				flag1= true;
+			}
+		}
+	}
+	if(flag && flag1)
+	{
+		return true;
+	}
+	else{
+		return false;
+	}
+
+} 
+
+
+function checkNFetchTwiningData(id)
+{	
+	var BRN = document.getElementById("isBRNPayment").value;
+	if(isValAckNo(id))
+	{
+		if (BRN == 'N' | BRN== 'n' )
+		{
+		clear_table_data("transferorDetailTable");
+		document.getElementById('transferorDetailTable').style.display = 'none';
+		clear_table_data("transfereeDetailTable");
+		document.getElementById('transfereeDetailTable').style.display = 'none';
+		}
+		var ackNo=null;
+		if(document.getElementById('isStampDutyAmended').value=='true'){
+			ackNo=document.getElementById('stampDutyAckNo').value;
+		}
+		else{
+			ackNo = document.getElementById('ackNoForTwining').value;
+			document.getElementById('isStampDutyAmended').value=false;
+		}
+		var transfereeId = document.getElementById('hidTaxPayerId').value ;
+		
+		FetchCgtTwiningDataForStampDuty.fetchCgtTwiningDataForStampDuty(transfereeId,ackNo,{async:false,callback: function(data)
+			{if (data != null) {
+				if (data.errorMsg != null && data.errorMsg != '') {
+					alert(data.errorMsg);
+					document.getElementById('ackNoForTwining').value= '';
+					if (BRN == 'N' | BRN =='n' )
+					{
+						clear_table_data("TranferorDetailTab");
+						clear_table_data("TransfereeDetailTab");
+						document.getElementById("txtLRNumber").value = '';
+						if(document.getElementById('isStampDutyAmended').value==true)
+						{
+							document.getElementById("txtLRNumber").readOnly=false;
+						}
+						else
+						{
+							document.getElementById("txtLRNumber").readOnly=true;
+						}
+						document.getElementById("transfereeId").value='';
+					}
+					return false;
+				}
+				else
+				{
+					if(document.getElementById("isBRNPayment").value!='N' &&  document.getElementById("BRN").value!='n')
+					{
+						var lrNoLims = document.getElementById('txtLRNumber').value;
+						if(null!=data.pmtCgtTransferorDtls.lrNo && data.pmtCgtTransferorDtls.lrNo!="")
+						{
+							var lrNoAck= data.pmtCgtTransferorDtls.lrNo;
+							if(lrNoAck != null && lrNoAck!="")
+							{
+								if(lrNoLims != lrNoAck)
+								{
+									alert('Please Enter Valid Acknowledgement Number');
+									document.getElementById('ackNoForTwining').value= '';
+									return false;	
+								}
+							}
+						}
+					}
+					// 1. populate transferor table
+					//  populate lr no
+					// set transfereeId in hideen field for twining
+					else
+					{
+					populateTransferorTableForTwining(data.pmtCgtTransferorDtls);
+					
+					// 2. populate transferee table
+					populateTransfereeTableForTwining(data.pmtCgtTransfereeDtlsList,data.pmtCgtTransferorDtls.cgtType);
+					}
+					
+				}
+				
+			} else {
+				alert(errFetchingData);
+				document.getElementById('ackNoForTwining').value= '';
+				if (BRN == 'N' | BRN == 'n' )
+				{
+					document.getElementById("txtLRNumber").value = '';
+					document.getElementById("txtLRNumber").readOnly=false;
+					document.getElementById("transfereeId").value='';
+					clear_table_data("TranferorDetailTab");
+					clear_table_data("TransfereeDetailTab");
+				}
+				return false;
+			}
+			}});
+	}
+	else{
+		alert("Please enter valid Acknowledgement Number.");
+		if (BRN == 'N' |  BRN == 'n' )
+		{
+			clear_table_data("TranferorDetailTab");
+			clear_table_data("TransfereeDetailTab");
+			document.getElementById("txtLRNumber").value = '';
+			document.getElementById("txtLRNumber").readOnly=false;
+			document.getElementById("transfereeId").value='';
+			document.getElementById('ackNoForTwining').value= '';
+		}
+	}
+
+}
+
+
+function populateTransferorTableForTwining(transferorDtls)
+{
+	clear_table_data("TranferorDetailTab");
+	var cntr = 0;
+	var tabObj = document.getElementById("TranferorDetailTab");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(transferorDtls!=null)
+	{
+		document.getElementById("in_TranferorDetailTab_3").value = transferorDtls.pin;
+		document.getElementById("in_TranferorDetailTab_4").value = transferorDtls.name;
+		document.getElementById("in_TranferorDetailTab_5").value  = transferorDtls.taxPayerId;
+		document.getElementById("in_TranferorDetailTab_7").value  = transferorDtls.taxPayerId;
+		document.getElementById("transferorHeaderDeleteStampDuty").style.display="none";
+		addrow('TranferorDetailTab', '2', '5', '4', '', '', 'Y','Y');
+		
+		if(null!=transferorDtls.lrNo && transferorDtls.lrNo!="")
+		{
+			document.getElementById("txtLRNumber").value = transferorDtls.lrNo;
+			document.getElementById("txtLRNumber").readOnly=true;
+		}
+		document.getElementById("transfereeId").value = transferorDtls.transfereeDtlIdForTwining;
+		document.getElementById("cgtTypeForStampDutyTwining").value = transferorDtls.cgtType;
+		
+		if(transferorDtls.cgtType!=null)
+			allowAddingTransfereeTransferor = true;
+		
+
+	}else{
+		alert(sellerDetailsNotAvailable);
+	}
+
+
+}
+
+function populateTransfereeTableForTwining(transfereeDtlsList,cgtType)
+{
+	clear_table_data("TransfereeDetailTab");
+	var cntr = 0;
+	var tabObj = document.getElementById("TransfereeDetailTab");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(transfereeDtlsList!=null)
+	{
+		document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+		for ( var i = 0; i < transfereeDtlsList.length; i++)
+		{
+			document.getElementById("in_TransfereeDetailTab_3").value = transfereeDtlsList[i].pin;
+			document.getElementById("in_TransfereeDetailTab_4").value = transfereeDtlsList[i].name;
+			document.getElementById("in_TransfereeDetailTab_5").value  = transfereeDtlsList[i].taxPayerId;
+			document.getElementById("in_TransfereeDetailTab_7").value  = transfereeDtlsList[i].taxPayerId;
+			
+			if(cgtType!=null && (cgtType=='CGT_2' || cgtType=='CGT_2P'))
+			{
+				document.getElementById("transfereeHeaderDeleteStampDuty").style.display="";
+				addrow('TransfereeDetailTab', '2', '5', '4', 'validateDeleteRowTransfereeInfoDtls', '', 'Y','Y');
+			}
+			else
+				addrow('TransfereeDetailTab', '2', '5', '4', '', '', 'Y','Y');
+			
+			cntr = cntr + 1;
+		}
+	} else {
+		alert(noBuyerDetail);
+	}
+	
+}
+//ack no
+function isValAckNo(id)
+{
+	var rtnVal=false;
+	var testReg=new RegExp('(KRA)[0-9]{12}'); 
+	rtnVal= testReg.test(document.getElementById(id).value);
+	return rtnVal;
+}
+
+//added by kruti for stamp duty amendment
+
+function onSelectionOfRadioForStampDuty(value){
+	
+ if(value=='e'){
+	 clearStampDutyDtls();
+	 document.getElementById('isStampDutyAmended').value=false;
+	 document.getElementById('txtTotalAmountPaidOTR').value='';
+	 document.getElementById('stampDutyDiv').style.display='';
+	 document.getElementById('stampDutyAckNoDiv').style.display='none';
+	 document.getElementById("stampDutyFieldlset").style.display='none';
+	 fetchSplOblHdrWebByObligation("N");
+	 
+	 
+ }
+ else if (value=='n'){
+	 document.getElementById('txtTotalAmountPaidOTR').value='';
+	 document.getElementById('stampDutyAckNo').value='';
+	 document.getElementById('navigationTableSplHdr').style.display='none';
+	 document.getElementById('isStampDutyAmended').value=true;
+	 document.getElementById('stampDutyAckNoDiv').style.display='';
+	 document.getElementById('stampDutyDiv').style.display='none';
+	 
+ }
+ 
+}
+
+function onChangeStampDutyAcknowlegementNo(){
+	
+	document.getElementById('stampDutyDiv').style.display='';
+	fetchStampDutyDtlsForAmendment('stampDutyAckNo');
+}
+
+
+
+function isValidAckNo(id)
+{
+	var rtnVal=false;
+	var testReg=new RegExp('(KRA)[0-9]{12}'); 
+	rtnVal= testReg.test(document.getElementById(id).value);
+	return rtnVal;
+}
+
+
+function fetchStampDutyDtlsForAmendment(){
+	
+	var ackNo=document.getElementById('stampDutyAckNo').value;
+	var transfereeId = document.getElementById('hidTaxPayerId').value ;
+	
+	FetchStampDutyDtlsForAmendment.fetchStampDutyDtlsForAmendment(transfereeId,ackNo,{async:false,callback: function(data){
+		if(data!=null){
+
+			if(data.errorMsg != null && data.errorMsg != ''){
+				alert(data.errorMsg);
+				document.getElementById('stampDutyAckNo').value= '';
+				document.getElementById('stampDutyDiv').style.display='none';
+
+				
+			}
+			else{
+				document.getElementById('stampDutyFieldlset').style.display='';
+				setNatureOfTransaction(data.natureOfTransaction);
+				if(data.BRN==null || data.BRN=="")
+				{
+					document.getElementById('BRN').value="";
+					document.getElementById("lblBRNumber").style.display='none';
+					document.getElementById("BRN").style.display='none';
+					document.getElementById('brnAsterisk').style.display='none';
+					
+				}
+				else
+				{
+					document.getElementById('BRN').value=data.BRN;
+					document.getElementById('BRN').readOnly=true;
+					//document.getElementById('BRN').disabled=true;
+					document.getElementById("lblBRNumber").style.display='';
+					document.getElementById("BRN").style.display='';
+					document.getElementById('brnAsterisk').style.display='';
+				}
+				
+				onchangeCmbTnstrumnetType(document.getElementById("cmbTnstrumnetType"));
+				setInstrumentDate(data.instrumentDt);
+				setLandRegistrarOfc(data.landRegistrarOfc);
+				if(data.cgtAckNo!=null){
+					document.getElementById('lblAckNoForTwining').style.display='';
+					document.getElementById('ackNoForTwining').style.display='';
+					document.getElementById('ackNoForTwining').value=data.cgtAckNo;
+					populateTransferorTableForAmendment(data.pmtCgtTransferorDtls);
+					populateTransfereeTableForAmendment(data.pmtCgtTransfereeDtlsList,data.pmtCgtTransferorDtls.cgtType);
+				}
+			else{
+				populateTransferorTableForAmndNonCGT(data.pmtSplDetailVOTransferorList);
+				populateTransfereeTableForAmndNonCGT(data.pmtSplDetailVOTransfereeList);
+				
+			}
+				document.getElementById('txtDeclaredValue').value=data.declaredValue;
+				document.getElementById('txtTitleNumber').value=data.titleNumber;
+				document.getElementById('txtLoaction').value=data.locationOrTown;
+				document.getElementById('txtAreaSize').value=data.areaSizeStampDuty;
+				document.getElementById('stmpDutyObligationId').value=data.stmpDutyObligationId;
+				
+				document.getElementById('txtLRNumber').value=data.lrNumber;
+				document.getElementById('txtStampDutyRate').value=data.stampDutyRate;
+				//document.getElementById('txtTotalAmountPaidOTR').value=data.declaredValue;
+				//document.getElementById('txtTotalAmountPayableOTR').value=data.declaredValue;
+				
+				
+				//document.getElementById('txtLRNumber').value=data.lrNumber;
+				calculateTotalAmountPaidOTR();
+
+				
+
+
+			}
+		}
+		
+	}});
+	
+}
+	
+
+
+function setNatureOfTransaction(data){
+	var select=document.getElementById("cmbTnstrumnetType");
+		 
+		for (var i = 0; i < select.options.length; i++) {
+	    if (select.options[i].text === data.replace(/^\s+/g, '')) {
+	        select.selectedIndex = i;
+	        break;
+	    }
+	
+	}
+
+	
+	
+}
+
+
+function setLandRegistrarOfc(data){
+	var select=document.getElementById("cmbLROfficeData");
+	 
+	for (var i = 0; i < select.options.length; i++) {
+    if (select.options[i].text === data) {
+        select.selectedIndex = i;
+        break;
+    }
+
+}
+}
+	
+	function setInstrumentDate(data){
+		var instrumentDat=data;
+		
+		var date=instrumentDat.getDate();
+		var month=instrumentDat.getMonth()+1;
+		if(date<10){
+			
+			date="0"+instrumentDat.getDate();
+		}
+		if(month<10){
+			month="0"+(instrumentDat.getMonth()+1);
+		}
+		
+		var formattedDate=date+"/"+month+"/"+instrumentDat.getFullYear();
+		
+		document.getElementById("txtTnstrumnetDate").value=formattedDate;
+		
+	}
+	
+	function populateTransferorTableForAmendment(transferorDtls)
+	{
+		clear_table_data("TranferorDetailTab");
+		var cntr = 0;
+		var tabObj = document.getElementById("TranferorDetailTab");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(transferorDtls!=null)
+		{
+			document.getElementById("in_TranferorDetailTab_3").value = transferorDtls.pin;
+			document.getElementById("in_TranferorDetailTab_4").value = transferorDtls.name;
+			document.getElementById("in_TranferorDetailTab_5").value  = transferorDtls.taxPayerId;
+			document.getElementById("in_TranferorDetailTab_7").value  = transferorDtls.taxPayerId;
+			document.getElementById("transferorHeaderDeleteStampDuty").style.display="none";
+
+			addrow('TranferorDetailTab', '2', '5', '4', 'validateDeleteRowTransferorInfoDtls', '', 'Y','Y');
+			
+			if(null!=transferorDtls.lrNo && transferorDtls.lrNo!="")
+			{
+				document.getElementById("txtLRNumber").value = transferorDtls.lrNo;
+				
+			}
+			document.getElementById("transfereeId").value = transferorDtls.transfereeDtlIdForTwining;
+			document.getElementById("cgtTypeForStampDutyTwining").value = transferorDtls.cgtType;
+		
+				allowAddingTransfereeTransferor = false;
+		
+
+		}else{
+			alert(sellerDetailsNotAvailable);
+		}
+
+
+	}
+
+	function populateTransfereeTableForAmendment(transfereeDtlsList,cgtType)
+	{
+		clear_table_data("TransfereeDetailTab");
+		var cntr = 0;
+		var tabObj = document.getElementById("TransfereeDetailTab");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(transfereeDtlsList!=null)
+		{
+			document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+
+			for ( var i = 0; i < transfereeDtlsList.length; i++)
+			{
+				document.getElementById("in_TransfereeDetailTab_3").value = transfereeDtlsList[i].pin;
+				document.getElementById("in_TransfereeDetailTab_4").value = transfereeDtlsList[i].name;
+				document.getElementById("in_TransfereeDetailTab_5").value  = transfereeDtlsList[i].taxPayerId;
+				document.getElementById("in_TransfereeDetailTab_7").value  = transfereeDtlsList[i].taxPayerId;
+				document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+				if(cgtType!=null && (cgtType=='CGT_2' || cgtType=='CGT_2P'))
+				{
+				
+					addrow('TransfereeDetailTab', '2', '5', '4', 'validateDeleteRowTransfereeInfoDtls', '', 'Y','Y');
+				}
+				else
+					addrow('TransfereeDetailTab', '2', '5', '4', '', '', 'Y','Y');
+				
+				cntr = cntr + 1;
+			}
+		} else {
+			alert(noBuyerDetail);
+		}
+		
+	}
+	
+	function clearStampDutyDtls(){
+		document.getElementById("txtLRNumber").value = '';
+		document.getElementById("txtLRNumber").readonly=false;
+		document.getElementById("transferorHeaderDeleteStampDuty").style.display="none";
+		document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+		document.getElementById("transfereeId").value='';
+		document.getElementById('ackNoForTwining').value= '';
+		document.getElementById('lblAckNoForTwining').style.display='none';
+		document.getElementById('ackNoForTwining').style.display='none';
+		
+		
+		
+		document.getElementById('txtDeclaredValue').value="";
+		document.getElementById("txtTnstrumnetDate").value="";
+		document.getElementById('txtTitleNumber').value='';
+		document.getElementById('txtLoaction').value='';
+		document.getElementById('txtAreaSize').value='';
+		document.getElementById('txtTotalAmountPaidOTR').value='';
+		
+
+		clear_table_data("transferorDetailTable");
+		clear_table_data("transfereeDetailTable");
+		clear_table_data("TranferorDetailTab");
+		clear_table_data("TransfereeDetailTab");
+		var select=document.getElementById("cmbTnstrumnetType");
+		select.selectedIndex=-1;
+		
+	}
+	//Three function are added for BRN fetching details from LIMS web web service :: start
+	function setLandRegistrarOfcLims(data)
+	{
+		var select=document.getElementById("cmbLROfficeData");
+		for (var i = 0; i < select.options.length; i++)
+		{
+			if (select.options[i].value === data)
+			{
+				select.selectedIndex = i;
+				break;
+			}
+		}
+		document.getElementById('cmbLROfficeData').readOnly = true;
+		document.getElementById('cmbLROfficeData').disabled = true;
+		document.getElementById('cmbLROfficeData').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+	}
+	function setNatureOfTranLims(data)
+	{
+		var select=document.getElementById("cmbTnstrumnetType");
+		for (var i = 0; i < select.options.length; i++)
+		{
+			if (select.options[i].value === data)
+			{
+				select.selectedIndex = i;
+				break;
+			}
+		}
+		document.getElementById('cmbTnstrumnetType').readOnly = true;
+		document.getElementById('cmbTnstrumnetType').disabled = true;
+		document.getElementById('cmbTnstrumnetType').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+	}
+
+	function populateTransferorTableForLims(pmtSplDetailVOTransferorList)
+	{
+		clear_table_data("TranferorDetailTab");
+		var cntr = 0;
+		var tabObj = document.getElementById("TranferorDetailTab");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(pmtSplDetailVOTransferorList!=null)
+		{
+		
+			for(var j=0 ; j<pmtSplDetailVOTransferorList.length;j++)
+			{
+			document.getElementById("in_TranferorDetailTab_3").value = pmtSplDetailVOTransferorList[j].taxPayerPin;
+			document.getElementById("in_TranferorDetailTab_4").value = pmtSplDetailVOTransferorList[j].taxPayerName;
+			document.getElementById("in_TranferorDetailTab_5").value = pmtSplDetailVOTransferorList[j].taxPayerNo;
+			document.getElementById("in_TranferorDetailTab_7").value = pmtSplDetailVOTransferorList[j].taxpayerId;
+			document.getElementById("transferorHeaderDeleteStampDuty").style.display="none";
+			addrow('TranferorDetailTab', '2', '5', '4', 'validateDeleteRowTransferorInfoDtls', '', 'Y','Y');
+			}
+			
+			document.getElementById("a_TranferorDetailTab").disabled = true;
+			document.getElementById('in_TranferorDetailTab_3').readOnly=true;
+			document.getElementById('in_TranferorDetailTab_3').disabled=true;
+		}
+			
+		else
+		{
+			alert(sellerDetailsNotAvailable);
+		}
+	}
+	function populateTransfereeTableForLims(pmtSplDetailVOTransfereeList)
+	{
+		clear_table_data("TransfereeDetailTab");
+		var cntr = 0;
+		var tabObj = document.getElementById("TransfereeDetailTab");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(pmtSplDetailVOTransfereeList!=null)
+		{
+			for(var j=0 ; j<pmtSplDetailVOTransfereeList.length;j++)
+			{
+			document.getElementById("in_TransfereeDetailTab_3").value = pmtSplDetailVOTransfereeList[j].taxPayerPin;
+			document.getElementById("in_TransfereeDetailTab_4").value = pmtSplDetailVOTransfereeList[j].taxPayerName;
+			document.getElementById("in_TransfereeDetailTab_5").value = pmtSplDetailVOTransfereeList[j].taxPayerNo;
+			document.getElementById("in_TransfereeDetailTab_7").value = pmtSplDetailVOTransfereeList[j].taxpayerId;
+			document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+			addrow('TransfereeDetailTab', '2', '5', '4', 'validateDeleteRowTransfereeInfoDtls', '', 'Y','Y');
+			}
+			
+			document.getElementById("a_TranferorDetailTab").disabled = true;
+			document.getElementById('in_TransfereeDetailTab_3').readOnly=true;
+			document.getElementById('in_TransfereeDetailTab_3').disabled=true;
+		}
+			
+		else
+		{
+			alert(buyerDetailsNotAvailable);
+		}
+	}
+	function clearStampDutyLimsDtls()
+	{
+		document.getElementById('cmbTnstrumnetType').readOnly = false;
+		document.getElementById('cmbTnstrumnetType').disabled = false;
+		document.getElementById('cmbTnstrumnetType').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('cmbLROfficeData').readOnly = false;
+		document.getElementById('cmbLROfficeData').disabled = false;
+		document.getElementById('cmbLROfficeData').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('txtLRNumber').value ='';
+		document.getElementById("txtLRNumber").readonly=false;
+		document.getElementById('txtLRNumber').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		
+		document.getElementById('isValuationReq').value = '';
+		document.getElementById("isValuationReq").readonly=false;
+		document.getElementById('isValuationReq').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		
+		document.getElementById('txtReferenceNumber').value = '';
+		document.getElementById('txtReferenceNumber').readonly=false;
+		document.getElementById('txtReferenceNumber').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('txtStampDutyRate').value = '';
+		document.getElementById('txtStampDutyRate').readonly=false;
+		document.getElementById('txtStampDutyRate').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('txtDescOfTranaction').value ='';
+		document.getElementById('txtDescOfTranaction').readonly=false;
+		document.getElementById('txtDescOfTranaction').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		
+		document.getElementById('txtTitleNumber').value ='';
+		document.getElementById('txtTitleNumber').readonly=false;
+		document.getElementById('txtTitleNumber').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('txtLoaction').value ='';
+		document.getElementById('txtLoaction').readonly=false;
+		document.getElementById('txtLoaction').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('txtAreaSize').value = '';
+		document.getElementById('txtAreaSize').readonly=false;
+		document.getElementById('txtAreaSize').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('txtDeclaredValue').value =0;
+		document.getElementById('txtDeclaredValue').readonly=false;
+		document.getElementById('txtDeclaredValue').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('txtTotalAmountPaidOTR').value=0;
+		document.getElementById('txtTotalAmountPaidOTR').readonly=false;
+		document.getElementById('txtTotalAmountPaidOTR').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById('txtTotalAmountPayableOTR').value=0;
+		document.getElementById('txtTotalAmountPayableOTR').readonly=false;
+		document.getElementById('txtTotalAmountPayableOTR').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById("txtTnstrumnetDate").value="";
+		document.getElementById('txtTnstrumnetDate').readonly=false;
+		document.getElementById('txtTnstrumnetDate').className = 'form101_textfcurr form101_textfcurr_width';
+		
+		document.getElementById("btnInstrumnetDate").disabled = false;
+		document.getElementById('btnInstrumnetDate').style.display = "";
+		
+				
+		document.getElementById("transferorHeaderDeleteStampDuty").style.display="none";
+		document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+		
+		clear_table_data("transferorDetailTable");
+		clear_table_data("transfereeDetailTable");
+		clear_table_data("TranferorDetailTab");
+		clear_table_data("TransfereeDetailTab");
+				
+		var select=document.getElementById("cmbTnstrumnetType");
+		select.selectedIndex=-1;
+				
+		var select1=document.getElementById("cmbLROfficeData");
+		select1.selectedIndex=-1;
+				
+		var select2=document.getElementById("cmbPaymentMode");
+		select2.selectedIndex=-1;
+
+	}
+	
+	//Added by h zora to calculate total amount to be paid by tax payer based on tax rate :: start 
+	function calculateTotalAmountPaidOTR()
+	{
+		var rate = document.getElementById('txtStampDutyRate').value;
+		document.getElementById('paymentdetailDTO.stampDutyRate').value=rate;
+		if(isNaN(rate))
+		{
+			alert('It is not a number please enter value between 0 to 100');
+			document.getElementById('txtStampDutyRate').value='';
+			return false;
+		}
+		else
+		{
+			if(rate < 0 || rate > 100)
+			{
+				alert('please enter value between 0 to 100');
+				document.getElementById('txtStampDutyRate').value = '';
+				return false;
+			}
+		}
+		var amount = removeCommaFrmInput(document.getElementById('txtDeclaredValue').value) ;
+		var TotalAmountPaidOTR = Math.trunc((amount * rate)/100); 
+		
+		document.getElementById('txtTotalAmountPaidOTR').value= TotalAmountPaidOTR;
+		document.getElementById('txtTotalAmountPaidOTR').readOnly = true;
+		document.getElementById('txtTotalAmountPaidOTR').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('txtTotalAmountPayableOTR').value=TotalAmountPaidOTR;
+	}
+	
+	function onChaneOfDecValcalculateTotalAmountPaidOTR()
+	{
+		var amount = removeCommaFrmInput(document.getElementById('txtDeclaredValue').value) ;
+		var rate = document.getElementById('txtStampDutyRate').value;
+		if(rate>0)
+		{
+			var TotalAmountPaidOTR = Math.trunc((amount * rate)/100);
+			document.getElementById('txtTotalAmountPaidOTR').value= TotalAmountPaidOTR;
+			document.getElementById('txtTotalAmountPaidOTR').readOnly = true;
+			document.getElementById('txtTotalAmountPaidOTR').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value=TotalAmountPaidOTR;
+		}
+	}
+	
+	
+	
+	
+	//Added by h zora to calculate total amount to be paid by tax payer based on tax rate :: end
+	
+function validateBRNDtls()
+{ 
+	var instrumentValue= document.getElementById('cmbTnstrumnetType').value;
+	document.getElementById("isBRNPayment").value="";
+	if (instrumentValue == 'R1' || instrumentValue == 'R2' || instrumentValue == 'r1' || instrumentValue == 'r2') 
+	{
+		var ackgNo = document.getElementById('ackNoForTwining').value;
+		if (ackgNo == '' | ackgNo == null | ackgNo == ' ' )
+		{
+			alert('Please Enter Acknowledgment Number');
+			clearStampDutyLimsDtls();
+		}
+		
+	else
+	{
+		var BRN = document.getElementById('BRN').value;
+		if (BRN == '' | BRN == null | BRN == ' ' )
+		{
+			alert('Please enter BRN');
+			clearStampDutyLimsDtls();
+		}
+		FetchBRNDtlsFromLIMS.fetchBRNDtlsFromLIMS(BRN,function(data)
+		{
+			if(data.pmtSplStampDutyDtlLimsDTO.BRN==null)
+			{
+				//alert('Please Enter Valid BRN');
+				alert('The entered Bill Reference Number is invalid kindly fill the payment registration form');
+				document.getElementById("isBRNPayment").value = 'N';
+				clearStampDutyLimsDtls();
+				document.getElementById("stampDutyFieldlset").style.display='';
+			}
+			//Added by Mingu for Ticket 67067 :: START
+			else if(data.pmtSplStampDutyDtlLimsDTO.BRN == 'UTILBRNPRN'){
+				alert('The BRN you have entered is already utilized and paid for');
+				document.getElementById('BRN').value="";
+				document.getElementById("stampDutyFieldlset").style.display='none';
+				return false;
+			}
+			//Added by Mingu for Ticket 67067 :: END
+			else
+			{
+				var LRNumber = document.getElementById('txtLRNumber').value;
+				var LRNumberLims= data.pmtSplStampDutyDtlLimsDTO.lrNumber;
+				if(LRNumber != LRNumberLims)
+				{
+					alert('Please Enter Valid Data');
+				}
+				else
+				{
+					setNatureOfTranLims(data.pmtSplStampDutyDtlLimsDTO.natureOfTransaction);
+					onchangeCmbTnstrumnetType(document.getElementById("cmbTnstrumnetType"));
+					setLandRegistrarOfcLims(data.pmtSplStampDutyDtlLimsDTO.landRegistrarOfc);
+					populateTransferorTableForLims(data.pmtSplDetailVOTransferorList);
+					populateTransfereeTableForLims(data.pmtSplDetailVOTransfereeList);
+					document.getElementById('txtLRNumber').value = data.pmtSplStampDutyDtlLimsDTO.lrNumber;
+					document.getElementById('txtLRNumber').readOnly = true;
+					document.getElementById('txtLRNumber').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+					
+					document.getElementById('txtStampDutyRate').value = data.pmtSplStampDutyDtlLimsDTO.stampDutyRate;
+					document.getElementById('txtStampDutyRate').readOnly = true;
+					document.getElementById('txtStampDutyRate').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+					
+					document.getElementById('txtDeclaredValue').value =data.pmtSplStampDutyDtlLimsDTO.declaredValue;
+					document.getElementById('txtDeclaredValue').readOnly = true;
+					document.getElementById('txtDeclaredValue').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+					
+					//calculateTotalAmountPaidOTR();--commented by Mingu for Ticket 67067
+					//Added by Mingu for Ticket 67067 :: START
+					document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(data.pmtSplStampDutyDtlLimsDTO.stampDutyPayment);
+					document.getElementById('txtTotalAmountPaidOTR').readOnly = true;
+					document.getElementById('txtTotalAmountPaidOTR').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+					document.getElementById('txtTotalAmountPayableOTR').value=convertToKenyanShillingFormatVal(data.pmtSplStampDutyDtlLimsDTO.stampDutyPayment);
+					//Added by Mingu for Ticket 67067 :: END
+					
+					document.getElementById('isValuationReq').value = data.pmtSplStampDutyDtlLimsDTO.isValuationReq;
+					document.getElementById('isValuationReq').readOnly = true;
+					document.getElementById('isValuationReq').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+					
+					document.getElementById('txtReferenceNumber').value = data.pmtSplStampDutyDtlLimsDTO.referenceNumber;
+					document.getElementById('txtReferenceNumber').readOnly = true;
+					document.getElementById('txtReferenceNumber').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+						
+					document.getElementById('txtDescOfTranaction').value = data.pmtSplStampDutyDtlLimsDTO.briefDescriptionOfTrnsctn;
+					document.getElementById('txtDescOfTranaction').readOnly = true;
+					document.getElementById('txtDescOfTranaction').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+						
+					document.getElementById('txtTitleNumber').value = data.pmtSplStampDutyDtlLimsDTO.titleNumber;
+					document.getElementById('txtTitleNumber').readOnly = true;
+					document.getElementById('txtTitleNumber').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+						
+					document.getElementById('txtLoaction').value = data.pmtSplStampDutyDtlLimsDTO.locationOrTown;
+					document.getElementById('txtLoaction').readOnly = true;
+					document.getElementById('txtLoaction').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+						
+					document.getElementById('txtAreaSize').value = data.pmtSplStampDutyDtlLimsDTO.areaSize;
+					document.getElementById('txtAreaSize').readOnly = true;
+					document.getElementById('txtAreaSize').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+						
+					document.getElementById('txtTnstrumnetDate').value = data.pmtSplStampDutyDtlLimsDTO.instrumentDt;
+					document.getElementById('txtTnstrumnetDate').readOnly = true;
+					document.getElementById("btnInstrumnetDate").disabled  = true;
+					document.getElementById('btnInstrumnetDate').style.display = "none";
+					document.getElementById('txtTnstrumnetDate').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+						
+					document.getElementById('txtDescOfTranaction').value = data.pmtSplStampDutyDtlLimsDTO.briefDescriptionOfTrnsctn;
+					document.getElementById('txtDescOfTranaction').readOnly = true;
+					document.getElementById('txtDescOfTranaction').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+					
+					/*document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(data.pmtSplStampDutyDtlLimsDTO.declaredValue);
+					document.getElementById('txtTotalAmountPaidOTR').readOnly = true;
+					document.getElementById('txtTotalAmountPaidOTR').className = 'readonlyInput form101_textfcurr_width textonlyRight';*/
+						
+					document.getElementById('txtTotalAmountPayableOTR').value=convertToKenyanShillingFormatVal(data.pmtSplStampDutyDtlLimsDTO.declaredValue);
+					document.getElementById('txtTotalAmountPayableOTR').readOnly = true;
+					document.getElementById('txtTotalAmountPayableOTR').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+					
+					document.getElementById("stampDutyFieldlset").style.display='';
+				}
+			}
+		});
+	}
+}
+	else
+	{
+		var BRN = document.getElementById('BRN').value;
+	if (BRN == '' | BRN == null | BRN == ' ' )
+	{
+		alert('Please enter BRN');
+		clearStampDutyLimsDtls();
+		
+	}
+	else
+	{
+		FetchBRNDtlsFromLIMS.fetchBRNDtlsFromLIMS(BRN,function(data)
+		{
+			if(data.pmtSplStampDutyDtlLimsDTO.BRN==null)
+			{
+				//alert('Please Enter Valid BRN');
+				alert('The entered Bill Reference Number is invalid kindly fill the payment registration form');
+				document.getElementById("isBRNPayment").value = 'N';
+				clearStampDutyLimsDtls();
+				document.getElementById("stampDutyFieldlset").style.display='';
+			}
+			//Added by Mingu for Ticket 67067 :: START
+			else if(data.pmtSplStampDutyDtlLimsDTO.BRN == 'UTILBRNPRN'){
+				alert('The BRN you have entered is already utilized and paid for');
+				document.getElementById('BRN').value="";
+				document.getElementById("stampDutyFieldlset").style.display='none';
+				return false;
+			}
+			//Added by Mingu for Ticket 67067 :: END
+			else
+			{
+			setNatureOfTranLims(data.pmtSplStampDutyDtlLimsDTO.natureOfTransaction);
+			onchangeCmbTnstrumnetType(document.getElementById("cmbTnstrumnetType"));
+			setLandRegistrarOfcLims(data.pmtSplStampDutyDtlLimsDTO.landRegistrarOfc);
+			populateTransferorTableForLims(data.pmtSplDetailVOTransferorList);
+			populateTransfereeTableForLims(data.pmtSplDetailVOTransfereeList);
+			document.getElementById('txtLRNumber').value = data.pmtSplStampDutyDtlLimsDTO.lrNumber;
+			document.getElementById('txtLRNumber').readOnly = true;
+			document.getElementById('txtLRNumber').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			
+			document.getElementById('txtDeclaredValue').value =data.pmtSplStampDutyDtlLimsDTO.declaredValue;
+			document.getElementById('txtDeclaredValue').readOnly = true;
+			document.getElementById('txtDeclaredValue').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			
+			document.getElementById('txtStampDutyRate').value = data.pmtSplStampDutyDtlLimsDTO.stampDutyRate;
+			document.getElementById('txtStampDutyRate').readOnly = true;
+			document.getElementById('txtStampDutyRate').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			//calculateTotalAmountPaidOTR(); --commented by Mingu for Ticket 67067
+			//Added by Mingu for Ticket 67067 :: START
+			document.getElementById('txtTotalAmountPaidOTR').value=convertToKenyanShillingFormatVal(data.pmtSplStampDutyDtlLimsDTO.stampDutyPayment);
+			document.getElementById('txtTotalAmountPaidOTR').readOnly = true;
+			document.getElementById('txtTotalAmountPaidOTR').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			document.getElementById('txtTotalAmountPayableOTR').value=convertToKenyanShillingFormatVal(data.pmtSplStampDutyDtlLimsDTO.stampDutyPayment);
+			//Added by Mingu for Ticket 67067 :: END
+			
+			document.getElementById('isValuationReq').value = data.pmtSplStampDutyDtlLimsDTO.isValuationReq;
+			document.getElementById('isValuationReq').readOnly = true;
+			document.getElementById('isValuationReq').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			
+			document.getElementById('txtReferenceNumber').value = data.pmtSplStampDutyDtlLimsDTO.referenceNumber;
+			document.getElementById('txtReferenceNumber').readOnly = true;
+			document.getElementById('txtReferenceNumber').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			
+			document.getElementById('txtDescOfTranaction').value = data.pmtSplStampDutyDtlLimsDTO.briefDescriptionOfTrnsctn;
+			document.getElementById('txtDescOfTranaction').readOnly = true;
+			document.getElementById('txtDescOfTranaction').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			
+			document.getElementById('txtTitleNumber').value = data.pmtSplStampDutyDtlLimsDTO.titleNumber;
+			document.getElementById('txtTitleNumber').readOnly = true;
+			document.getElementById('txtTitleNumber').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			
+			document.getElementById('txtLoaction').value = data.pmtSplStampDutyDtlLimsDTO.locationOrTown;
+			document.getElementById('txtLoaction').readOnly = true;
+			document.getElementById('txtLoaction').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			
+			document.getElementById('txtAreaSize').value = data.pmtSplStampDutyDtlLimsDTO.areaSize;
+			document.getElementById('txtAreaSize').readOnly = true;
+			document.getElementById('txtAreaSize').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+			
+			document.getElementById('txtTnstrumnetDate').value = data.pmtSplStampDutyDtlLimsDTO.instrumentDt;
+			document.getElementById('txtTnstrumnetDate').readOnly = true;
+			document.getElementById("btnInstrumnetDate").disabled  = true;
+			document.getElementById('btnInstrumnetDate').style.display = "none";
+			document.getElementById('txtTnstrumnetDate').className = 'readonlyInput form101_textfcurr_width textonlyRight';
+							
+			/*document.getElementById('txtTotalAmountPayableOTR').value=convertToKenyanShillingFormatVal(data.pmtSplStampDutyDtlLimsDTO.declaredValue);
+			document.getElementById('txtTotalAmountPayableOTR').readOnly = true;
+			document.getElementById('txtTotalAmountPayableOTR').className = 'readonlyInput form101_textfcurr_width textonlyRight';*/
+			document.getElementById("stampDutyFieldlset").style.display='';
+			}	
+		});
+	}
+}
+}
+	//Added by Jaimin for Additional Assessment / Penalty functionality in stamp Duty tax sub head
+	function fetchPreviousPaidPrnDetails(obj)
+	{
+		var prnNo = document.getElementById('prnNo').value;
+		var taxPayerId= document.getElementById('hidTaxPayerId').value;
+		FetchPreviousPaidPrnDetails.fetchPreviousPaidPrnDetails(prnNo,taxPayerId,{async:false,callback: function(data){
+			if(data!=null){
+				if(data.errorMsg != null && data.errorMsg != ''){
+					alert(data.errorMsg);
+					document.getElementById("prnNo").value='';
+					document.getElementById("paidAmount").value='';
+					document.getElementById("changeAmount").value='';
+				}else{
+					document.getElementById("paidAmount").value=data.amountPayable;
+					document.getElementById("changeAmountForAAPT").value=data.amountPayable;
+					document.getElementById("hidObligationFromDate").value=data.fromDate;
+					document.getElementById("hidObligationToDate").value=data.toDate;
+					document.getElementById("obligationId").value=data.obligationId;
+					document.getElementById("bclSplObligationDtlIdForAAPT").value=data.ackId;
+					document.getElementById("isAdditionalAssessment").value=data.approvalFlag;
+				}
+			}
+		}});
+	}
+	
+	//Ended by Jaimin for Additional Assessment / Penalty functionality in stamp Duty tax sub head
+	
+	function populateTransferorTableForAmndNonCGT(pmtSplDetailVOTransferorList)
+	{
+		clear_table_data("TranferorDetailTab");
+		var cntr = 0;
+		var tabObj = document.getElementById("TranferorDetailTab");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(pmtSplDetailVOTransferorList!=null)
+		{
+		
+			for(var j=0 ; j<pmtSplDetailVOTransferorList.length;j++)
+			{
+			document.getElementById("in_TranferorDetailTab_3").value = pmtSplDetailVOTransferorList[j].taxPayerPin;
+			document.getElementById("in_TranferorDetailTab_4").value = pmtSplDetailVOTransferorList[j].taxPayerName;
+			document.getElementById("in_TranferorDetailTab_5").value = pmtSplDetailVOTransferorList[j].taxPayerNo;
+			document.getElementById("in_TranferorDetailTab_7").value = pmtSplDetailVOTransferorList[j].taxpayerId;
+			document.getElementById("transferorHeaderDeleteStampDuty").style.display="none";
+			addrow('TranferorDetailTab', '2', '5', '4', 'validateDeleteRowTransferorInfoDtls', '', 'Y','Y');
+			}
+			
+			document.getElementById("a_TranferorDetailTab").disabled = true;
+			document.getElementById('in_TranferorDetailTab_3').readOnly=true;
+			document.getElementById('in_TranferorDetailTab_3').disabled=true;
+		}
+			
+		else
+		{
+			alert(sellerDetailsNotAvailable);
+		}
+	}
+	function populateTransfereeTableForAmndNonCGT(pmtSplDetailVOTransfereeList)
+	{
+		clear_table_data("TransfereeDetailTab");
+		var cntr = 0;
+		var tabObj = document.getElementById("TransfereeDetailTab");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(pmtSplDetailVOTransfereeList!=null)
+		{
+			for(var j=0 ; j<pmtSplDetailVOTransfereeList.length;j++)
+			{
+			document.getElementById("in_TransfereeDetailTab_3").value = pmtSplDetailVOTransfereeList[j].taxPayerPin;
+			document.getElementById("in_TransfereeDetailTab_4").value = pmtSplDetailVOTransfereeList[j].taxPayerName;
+			document.getElementById("in_TransfereeDetailTab_5").value = pmtSplDetailVOTransfereeList[j].taxPayerNo;
+			document.getElementById("in_TransfereeDetailTab_7").value = pmtSplDetailVOTransfereeList[j].taxpayerId;
+			document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+			addrow('TransfereeDetailTab', '2', '5', '4', 'validateDeleteRowTransfereeInfoDtls', '', 'Y','Y');
+			}
+			
+			document.getElementById("a_TranferorDetailTab").disabled = true;
+			document.getElementById('in_TransfereeDetailTab_3').readOnly=true;
+			document.getElementById('in_TransfereeDetailTab_3').disabled=true;
+		}
+			
+		else
+		{
+			alert(buyerDetailsNotAvailable);
+		}
+	}

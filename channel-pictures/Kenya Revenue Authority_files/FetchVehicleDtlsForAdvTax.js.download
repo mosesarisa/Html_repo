@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchVehicleDtlsForAdvTax'] == 'undefined') this.FetchVehicleDtlsForAdvTax = {};
+
+FetchVehicleDtlsForAdvTax._path = '/KRA-Portal/dwr';
+
+FetchVehicleDtlsForAdvTax.fetchVehicleDtlsForAdvTax = function(p0, p1, callback) {
+  dwr.engine._execute(FetchVehicleDtlsForAdvTax._path, 'FetchVehicleDtlsForAdvTax', 'fetchVehicleDtlsForAdvTax', p0, p1, callback);
+};
+
+

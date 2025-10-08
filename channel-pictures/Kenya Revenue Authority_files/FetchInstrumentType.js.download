@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchInstrumentType'] == 'undefined') this.FetchInstrumentType = {};
+
+FetchInstrumentType._path = '/KRA-Portal/dwr';
+
+FetchInstrumentType.fetchInstrumentType = function(callback) {
+  dwr.engine._execute(FetchInstrumentType._path, 'FetchInstrumentType', 'fetchInstrumentType', callback);
+};
+
+

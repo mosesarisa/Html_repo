@@ -1,0 +1,3455 @@
+var pinCheckFlag = true;
+var CGT2SecBIncidentalCostOnTransferJSON={"field":[{"name":"in_CGTSecBpaymentsTbl_3","rule":[{"required":"y","dispName":"Description","type":""}]},
+                                                   {"name":"in_CGTSecBpaymentsTbl_4","rule":[{"required":"y","dispName":"Value","type":"isValNumeric"}]}
+]};
+
+var CGT2SecCIncidentalCostOnAcquisitionJSON={"field":[{"name":"in_CGTSecCpaymentsTbl_3","rule":[{"required":"y","dispName":"Description","type":""}]},
+                                                      {"name":"in_CGTSecCpaymentsTbl_4","rule":[{"required":"y","dispName":"Value","type":"isValNumeric"}]}
+]};
+
+var CGT2PSecBPartnerTransferDtlsJSON={"field":[{"name":"in_CGT2PSecBpaymentsTbl_3","rule":[{"required":"y","dispName":"PIN of the Partner","type":"isValAlphaNumericWithoutSpace","minLength":"11","maxLength":"11"}]},
+                                               {"name":"in_CGT2PSecBpaymentsTbl_4","rule":[{"required":"y","dispName":"Partner Name","type":"bussnamewithspecialchrs"}]},
+                                               {"name":"in_CGT2PSecBpaymentsTbl_5","rule":[{"required":"y","dispName":"Profit/Loss Sharing Ratio","type":"isValNumeric"}]}
+                                               ]};
+
+/*var CGT1JSON={"field":[{"name":"cgtTransferorPin","rule":[{"required":"y","dispName":"PIN of the Transferor","type":"isValAlphaNumericWithoutSpace","minLength":"11","maxLength":"11"}]},
+					   {"name":"cgtLrNo","rule":[{"required":"y","dispName":"L R Number"}]},
+					   {"name":"cgtYearOfPurchase","rule":[{"required":"y","dispName":"Year of Purchase","type":"isValNumeric","minLength":"4","maxLength":"4"}]},
+}];*/
+
+function onSelectCGTType() {
+	var paymentType=document.getElementById("cmbPaymentType").value;
+	clearCgtPenaltyForm();
+	if(paymentType=='EAT' || paymentType=='AAT'){
+		document.getElementById("paymentRegCGTRadioForm").style.display="none";	
+		document.getElementById("in_CGTAdditionalAssmntTable_3").value='';
+		document.getElementById("in_CGTAdditionalAssmntTable_4").value='';
+		document.getElementById('totalCGTAddAssAmountid').value='';
+	}
+	else{
+		document.getElementById("paymentRegCGTRadioForm").style.display="block";
+	
+	}
+	//added by prakash for  interest payment registration	
+		//document.getElementById("interstPayment").style.display="block";
+	    //document.getElementById("cgtTabViewSet").style.display="block";
+		document.getElementById("amountToBePaidTr").style.display="none";
+		document.getElementById("cgtTabViewSet").style.display="none";
+		document.getElementById("specOblCGTPmtTypeRadio1").checked=false;
+		document.getElementById("specOblCGTPmtTypeRadio2").checked=false;
+		document.getElementById("paymentRegAcknowledgmentForm").style.display="none";
+		//ADDED by Mingu for Ticket 64973 :: START
+		document.getElementById('isAllowedSplRate').value = "";
+		document.getElementById('cgtSpecialRate').value = "";
+		//ADDED by Mingu for Ticket 64973 :: END
+	}
+function showCGTTabs(){
+		clearDetailsOfCGT();
+	 document.getElementById('paymentRegCGTRadioForm').style.display ='';
+	 //showCgtTabs();
+	//added by prakash for radio button
+	//document.getElementById("interstPayment").style.display="block";
+	document.getElementById("cgtTabViewSet").style.display="block";
+	//check if eligible for CGT Type
+	var eligible = checkEligibilityForCGTType();
+	if(eligible) {
+
+	var cgtType = document.getElementById('cmbCGTType').value;
+	document.getElementById('paymentTaxObligForm').style.display="none";
+	if(cgtType=='CGT_2') {
+		//document.getElementById('cgt2TabViewSet').style.display="";
+		//document.getElementById('cgt2PTabViewSet').style.display="none";
+		//document.getElementById('cgt1PTabViewSet').style.display="none";
+		//document.getElementById('cgt1TabViewSet').style.display="none";
+		$("#cgtTabViewSet").show();
+		showCgtRelevantSections(cgtType);
+		document.getElementById('transferorPIN').value = document.getElementById('txtPin').value;
+		document.getElementById('transferorName').value = document.getElementById('txtFirstName').value;
+		document.getElementById('transferorAddress').value = document.getElementById('taxPayerFullAddr').value;
+		document.getElementById('transferorEmail').value = document.getElementById('email').value;
+		
+		
+	}
+	//Added by Mingu for Ticket 64973 :: START
+	else if(cgtType=='CGT_2N') {
+		$("#cgtTabViewSet").show();
+		document.getElementById("capitalGainTaxLbl").style.display ="none";
+		document.getElementById("capitalGainTaxLbl5").style.display ="";
+		document.getElementById('transferorPIN').value = document.getElementById('txtPin').value;
+		document.getElementById('transferorName').value = document.getElementById('txtFirstName').value;
+		document.getElementById('transferorAddress').value = document.getElementById('taxPayerFullAddr').value;
+		document.getElementById('transferorEmail').value = document.getElementById('email').value;
+		showCgtRelevantSections(cgtType);
+	}
+	//Added by Mingu for Ticket 64973 :: END
+
+	else if(cgtType=='CGT_2P') {
+		$("#cgtTabViewSet").show();
+		document.getElementById('transferorPIN').value = document.getElementById('txtPin').value;
+		document.getElementById('transferorName').value = document.getElementById('txtFirstName').value;
+		document.getElementById('transferorAddress').value = document.getElementById('taxPayerFullAddr').value;
+		document.getElementById('transferorEmail').value = document.getElementById('email').value;
+		showCgtRelevantSections(cgtType);
+	}
+	
+	if(cgtType=='CGT_1') {
+		$("#cgtTabViewSet").show();
+		document.getElementById('cgtTransferorPin').value = document.getElementById('txtPin').value;
+		document.getElementById('cgtTransferorName').value = document.getElementById('txtFirstName').value;
+		document.getElementById('cgtTransferorAddr').value = document.getElementById('taxPayerFullAddr').value;
+		document.getElementById('cgtTransferorEmail').value = document.getElementById('email').value;
+		showCgtRelevantSections(cgtType);
+		document.getElementById('cgtTransferorPin').value = document.getElementById('txtPin').value;
+		document.getElementById('cgtTransferorName').value = document.getElementById('txtFirstName').value ;
+		document.getElementById('cgtTransferorAddr').value = document.getElementById('taxPayerFullAddr').value;
+		document.getElementById('cgtTransferorEmail').value = document.getElementById('email').value;
+		document.getElementById('cgtTransferorTaxPayerId').value = document.getElementById('hidTaxPayerId').value;
+		
+		
+	}
+
+	else if(cgtType=='CGT_1P') {
+		$("#cgtTabViewSet").show();
+		document.getElementById('cgtTransferorPin').value = document.getElementById('txtPin').value;
+		document.getElementById('cgtTransferorName').value = document.getElementById('txtFirstName').value;
+		document.getElementById('cgtTransferorAddr').value = document.getElementById('taxPayerFullAddr').value;
+		document.getElementById('cgtTransferorEmail').value = document.getElementById('email').value;
+		showCgtRelevantSections(cgtType);
+		document.getElementById('cgtTransferorPin').value = document.getElementById('txtPin').value;
+		document.getElementById('cgtTransferorName').value = document.getElementById('txtFirstName').value ;
+		document.getElementById('cgtTransferorAddr').value = document.getElementById('taxPayerFullAddr').value;
+		document.getElementById('cgtTransferorEmail').value = document.getElementById('email').value;
+		document.getElementById('cgtTransferorTaxPayerId').value = document.getElementById('hidTaxPayerId').value;
+	}
+	
+	if (cgtType=='CGT_3'){
+		$("#cgtTabViewSet").show();
+		showCgtRelevantSections(cgtType);
+		document.getElementById('cgt3TransferorPin').value = document.getElementById('txtPin').value;
+		document.getElementById('cgt3TransferorName').value = document.getElementById('txtFirstName').value ;
+		document.getElementById('cgt3TransferorAddr').value = document.getElementById('taxPayerFullAddr').value;
+		document.getElementById('cgt3TransferorEmail').value = document.getElementById('email').value;
+		document.getElementById('cgt3TransferorTaxPayerId').value = document.getElementById('hidTaxPayerId').value;
+		
+		
+		}
+		if(cgtType!='CGT_3'){
+			if(document.getElementById("isAmended").value=='true'){
+				if(cgtType!='CGT_1'){
+					fetchCapitalLossBroughtForwardAndSetOff();
+				}
+		
+			}
+			else{
+				fetchCapitalLossBroughtForward();
+			}
+			
+		}
+	}
+	else {
+		document.getElementById("cgtTabViewSet").style.display="none";
+		alert('You are not allowed to perform this opertaion');
+		document.getElementById("specOblCGTPmtTypeRadio1").checked=false;
+		document.getElementById("specOblCGTPmtTypeRadio2").checked=false;
+		//document.getElementById('cmbCGTType').selectedIndex=0;
+		hidCGTDtls();
+		document.getElementById("tdCGTTypeLbl").style.display="";
+		document.getElementById("tdCGTType").style.display="";
+		return false;
+	}
+}
+
+function calcValueOfConsSecB() {
+
+	var numberOfSecurities = document.getElementById('numberOfSecurities').value;
+	var pricePerShare = document.getElementById('pricePerShare').value;
+
+	if((numberOfSecurities!=null && numberOfSecurities!='') && (pricePerShare!=null && pricePerShare!='')) {
+		numberOfSecurities = removeCommaFrmInput(numberOfSecurities);
+		pricePerShare = removeCommaFrmInput(pricePerShare);
+
+		var valueOfConsd = Math.ceil(numberOfSecurities*pricePerShare);
+		document.getElementById('valueOfConsideration').value = convertToKenyanShillingFormatVal(valueOfConsd,true);
+		calcNetTransferValueSecB();
+	}
+}
+
+function onChangePricePerShareSecB(obj) {
+	obj.value=removeCommaFrmInput(obj.value);
+	if(!onlyNumeric(obj))
+	{
+		alert("Please enter valid Number for Price per Share.");
+		document.getElementById('pricePerShare').value='';
+		return false;
+	}
+
+	var price= obj.value;
+	price = parseFloat(price,10).toFixed(2);
+	if(price<=0 || price==null)
+	{
+		alert("Please enter valid Number for Price per Share.");
+		obj.value='';
+		document.getElementById('pricePerShare').value='';
+		return false;
+	}
+	document.getElementById('pricePerShare').value=convertToKenyanShillingFormatValWithDecimal(price,true);
+	return true;
+}
+//Added for Ticket 64973 :: START
+function onChangeCostOfInitialInvestment(obj){
+	obj.value=removeCommaFrmInput(obj.value);
+	if(onlyNumeric(obj))
+	{
+		var value= obj.value;
+		value = parseInt(value,10);
+		/* 
+		 * Amended for Ticket 81164 on 07/01/25 :: Start
+		if(value<5000000000){
+		* Amended for Ticket 81164 on 07/01/25 :: End
+		*/
+			if(value<3000000000){
+			alert("You do not qualify for this CGT type hence kindly use CGT 2(Shares) or CGT 2P (Shares and Partnership)");
+			document.getElementById('totalInitialInvestmentCostNifca').value="";
+			return false;
+		}
+	}
+	else{
+		document.getElementById('totalInitialInvestmentCostNifca').value="";
+		return false;
+	}
+}
+function onchangeCgt2TransfreePinNumberNifca(obj) {
+	
+	var pin = trim(obj.value);
+	pin=pin.toUpperCase();
+	obj.value=pin;
+	
+	/*if(pin==document.getElementById('txtPin').value) {
+		alert('The Transferee PIN and the Transferor PIN cannot be the same');
+		obj.value='';
+		return false;
+	}*/
+	if(validPIN(obj)){
+		document.getElementById('transfereeTaxPayerIdNifca').value="";
+		document.getElementById('transfereeNameNifca').value="";
+		FetchTaxPayerNameFromPINCGT.fetchTaxPayerNameFromPINCGT(pin,{async:false,callback: function(data){
+			if(data != NULL &&  data != null){
+				if(data.isDataAvailable == N_FLAG){
+					if(data.isAgent == ERROR ||data.isAgent == NO_CALL_MADE){ // Handled Scenario : 1) if no call made from Controller to impl 2) impl to facade
+						alert(errorFetchingData);
+					}
+					else if(data.isAgent == NO_DETAILS_FOUND){// Handled Scenario : 1) call made to facade with invalid PIN
+						alert(validPin);
+					}
+					else if(data.isAgent == "NO_IPAGE") {
+						alert('The entered Transferee PIN is not iPage processed');
+						document.getElementById('transfereePinNifca').value="";
+					}
+					return false;
+				}
+				if(data.taxPayerFirstName != null || (data.taxPayerId != null && data.taxPayerId != 0)){
+					
+					document.getElementById('transfereeTaxPayerIdNifca').value = data.taxPayerId;
+					
+					if(data.taxPayerFirstName != null && data.taxPayerFirstName!="")
+					{
+						document.getElementById('transfereeNameNifca').value=data.taxPayerFirstName;
+					}
+					if(data.emailId != null && data.emailId!="")
+					{
+						document.getElementById('transfereeEmailIdNifca').value=data.emailId;
+					}
+					
+					if(data.taxPayerFullAddr != null && data.taxPayerFullAddr!="")
+					{
+						document.getElementById('transfereeAddressNifca').value=data.taxPayerFullAddr;
+					}
+				}
+				else{
+					alert("Entered PIN does not exist.");
+					document.getElementById('transfereePinNifca').value="";
+					return false;
+				}
+			}
+			else{
+				alert(errorFetchingData);
+				document.getElementById('transfereePinNifca').value="";
+				document.getElementById('transfereeTaxPayerIdNifca').value="";
+				document.getElementById('transfereeNameNifca').value="";
+				return false;
+			}
+
+		}});
+		return true;
+	}
+	else{
+		document.getElementById('transfereeTaxPayerIdNifca').value="";
+		document.getElementById('transfereeNameNifca').value="";
+		return false;
+	}
+}
+function validateDateOfAcquisitionNifca(){
+	var dateOfTransfer = document.getElementById('dateOfTransfer').value;
+	if(dateOfTransfer == ""){
+		alert("Please Enter the date of Transfer");
+		document.getElementById('dateOfAcquisitionNifca').value= "";
+		return false;
+	}
+	else{
+		var dateTransferArr = dateOfTransfer.split("/");
+		var dayTransfer = dateTransferArr[0];
+		var monthTransfer = dateTransferArr[1];
+		var yearTransfer = dateTransferArr[2];
+		var yearTransferInt = parseInt(yearTransfer);
+		
+		var dateOfAquisition = document.getElementById('dateOfAcquisitionNifca').value;
+		var dateAquisitionArr = dateOfAquisition.split("/");
+		var dayAquisitionArr = dateAquisitionArr[0];
+		var monthAquisition = dateAquisitionArr[1];
+		var yearAquisition = dateAquisitionArr[2];
+		var yearAquisitionInt = parseInt(yearAquisition);
+		var difference = yearTransferInt - yearAquisitionInt;
+		if(difference<5){
+			alert("You do not qualify for this CGT type hence kindly use CGT 2(Shares) or CGT 2P (Shares and Partnership)");
+			document.getElementById('dateOfAcquisitionNifca').value= "";
+			return false;
+		}
+		
+		
+	}
+	
+}
+//Added for Ticket 64973 :: END
+
+function onChangeNumberOfSecuritiesSecB(obj) {
+	obj.value=removeCommaFrmInput(obj.value);
+	if(!onlyNumeric(obj))
+	{
+		alert("Please enter valid Number for Number of Securities.");
+		document.getElementById('numberOfSecurities').value='';
+		return false;
+	}
+
+	var value= obj.value;
+	value = parseInt(value,10);
+	if(value<=0 || value==null)
+	{
+		alert("Please enter valid Number for Number of Securities");
+		obj.value='';
+		document.getElementById('numberOfSecurities').value='';
+		return false;
+	}
+	document.getElementById('numberOfSecurities').value=convertToKenyanShillingFormatVal(value,true);
+	return true;
+}
+
+function resetSecBIncidentalCostOnTransfer() {
+	if(clear_table('CGTSecBpaymentsTbl','2')){
+	document.getElementById('in_CGTSecBpaymentsTbl_3').value="";
+	document.getElementById('in_CGTSecBpaymentsTbl_4').value="";
+	}
+	
+}
+
+function addSecBIncidentalCostOnTransfer() {
+
+	var tabObj1 = document.getElementById("CGTSecBpaymentsTbl");
+	//var totalRows = tabObj1.rows.length;
+	var count=0;
+
+	for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+	{ 
+		var modify;
+		modify=trim(tabObj1.rows[i].cells[2].innerText);
+		if((trim(document.getElementById('id_temp_'+'CGTSecBpaymentsTbl'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+			count++;
+		}
+	}
+	if(count==5) {
+		alert("You cannot add more than 5 rows.");
+		return false;
+	}
+	else {
+		var errorString="";
+		var i=1;
+		/*if(document.getElementById('numberOfSecurities').value==""){
+			errorString=errorString+i+") Please enter Number Of Securities \n";
+			i++;
+		}
+		if(document.getElementById('pricePerShare').value==""){
+			errorString=errorString+i+") Please enter Price per Share/Unit \n";
+			i++;
+		}*/
+		if(document.getElementById('in_CGTSecBpaymentsTbl_3').value==""){
+			errorString=errorString+i+") Please enter Description \n";
+			i++;
+		}
+		if(document.getElementById('in_CGTSecBpaymentsTbl_4').value==""){
+			errorString=errorString+i+") Please enter Value \n";
+			i++;
+		}
+		if(errorString!=""){
+			alert(errorString);
+		}
+		else{
+			if(removeCommaFrmInput(document.getElementById('in_CGTSecBpaymentsTbl_4').value)>0  &&  removeCommaFrmInput(document.getElementById('in_CGTSecBpaymentsTbl_4').value)>0 )
+			{
+
+				if(addConfirm('a_CGTSecBpaymentsTbl'))
+				{
+					if(document.getElementById('a_CGTSecBpaymentsTbl').innerHTML!="Modify")
+					{
+						addrow('CGTSecBpaymentsTbl', '2', '2','3','validateDeleteRowIncidentalCostOnTransferTable','validateModifyIncidentalCostOnTransferTable','N','N');
+						//calcTotalIncidentalCostSecB();
+					}
+					else
+					{
+						return true;
+					}
+				}
+				else{
+					isFalse=1;
+				}
+			}
+		}
+		/*if(validateFormFields(CGT2SecBIncidentalCostOnTransferJSON)) {
+			hideTab('TabView',2);
+			resetErrorList();
+			incError=0;
+
+			if(removeCommaFrmInput(document.getElementById('in_CGTSecBpaymentsTbl_4').value)>0  &&  removeCommaFrmInput(document.getElementById('in_CGTSecBpaymentsTbl_4').value)>0 )
+			{
+
+				if(addConfirm('a_CGTSecBpaymentsTbl'))
+				{
+					if(document.getElementById('a_CGTSecBpaymentsTbl').innerHTML!="Modify")
+					{
+						addrow('CGTSecBpaymentsTbl', '2', '2','3','validateDeleteRowIncidentalCostOnTransferTable','validateModifyIncidentalCostOnTransferTable','N','N');
+						//calcTotalIncidentalCostSecB();
+					}
+					else
+					{
+						return true;
+					}
+				}
+				else{
+					isFalse=1;
+				}
+			}
+		}
+		else
+		{
+			getErrTabToggle('TabView','2');	
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}*/
+		}
+}
+
+function calcTotalIncidentalCostSecB() {
+
+	var totalValue = 0;
+	var tabObj = document.getElementById("CGTSecBpaymentsTbl");
+	for (var i = 1, n = tabObj.rows.length; i <n; i++) 
+	{
+		totalValue = tabObj.rows[i].cells[4].innerHTML;
+	}
+
+	document.getElementById('totalOfIncidentalCost').value=totalValue;
+
+	calcNetTransferValueSecB();
+}
+
+
+function calcValueOfConsSecC() {
+
+	var numberOfSecurities = document.getElementById('numberOfSecuritiesSecC').value;
+	var pricePerShare = document.getElementById('pricePerShareSecC').value;
+
+	if((numberOfSecurities!=null && numberOfSecurities!='') && (pricePerShare!=null && pricePerShare!='')) {
+		numberOfSecurities = removeCommaFrmInput(numberOfSecurities);
+		pricePerShare = removeCommaFrmInput(pricePerShare);
+		var valueOfConsiderationPaidOnAcquisition = Math.ceil(numberOfSecurities*pricePerShare);
+		document.getElementById('valueOfConsiderationPaidOnAcquisition').value = convertToKenyanShillingFormatVal(valueOfConsiderationPaidOnAcquisition,true);
+
+		calcNetAdjustedValueSecC();
+	}
+}
+
+function onChangePricePerShareSecC(obj) {
+	obj.value=removeCommaFrmInput(obj.value);
+	if(!onlyNumeric(obj))
+	{
+		alert("Please enter valid Number for Price per Share.");
+		document.getElementById('pricePerShareSecC').value='';
+		return false;
+	}
+
+	var price= obj.value;
+	price = parseFloat(price).toFixed(2);
+	if(price<=0 || price==null)
+	{
+		alert("Please enter valid Number for Price per Share.");
+		obj.value='';
+		document.getElementById('pricePerShareSecC').value='';
+		return false;
+	}
+	document.getElementById('pricePerShareSecC').value = convertToKenyanShillingFormatValWithDecimal(price,true);
+	return true;
+}
+
+function onChangeNumberOfSecuritiesSecC(obj) {
+	obj.value=removeCommaFrmInput(obj.value);
+	if(!onlyNumeric(obj))
+	{
+		alert("Please enter valid Number for Number of Securities.");
+		document.getElementById('numberOfSecuritiesSecC').value='';
+		return false;
+	}
+
+	var value= obj.value;
+	value = parseInt(value,10);
+	if(value<=0 || value==null)
+	{
+		alert("Please enter valid Number for Number of Securities.");
+		obj.value='';
+		document.getElementById('numberOfSecuritiesSecC').value='';
+		return false;
+	}
+	document.getElementById('numberOfSecuritiesSecC').value = convertToKenyanShillingFormatVal(value,true);
+	return true;
+}
+
+function resetSecCIncidentalCostOnAcquisition() {
+	
+	if(clear_table('CGTSecCpaymentsTbl','2')){
+	document.getElementById('in_CGTSecCpaymentsTbl_3').value="";
+	document.getElementById('in_CGTSecCpaymentsTbl_4').value="";
+	}
+
+}
+
+function addSecCIncidentalCostOnAcquisition() {
+
+	var tabObj1 = document.getElementById("CGTSecCpaymentsTbl");
+	//var totalRows = tabObj1.rows.length;
+	var count=0;
+
+	for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+	{ 
+		var modify;
+		modify=trim(tabObj1.rows[i].cells[2].innerText);
+		if((trim(document.getElementById('id_temp_'+'CGTSecCpaymentsTbl'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+			count++;
+		}
+	}
+	if(count==5) {
+		alert("You cannot add more than 5 rows.");
+		return false;
+	}
+	else {
+		var errorString="";
+		var i=1;
+		/*if(document.getElementById('numberOfSecurities').value==""){
+			errorString=errorString+i+") Please enter Number Of Securities \n";
+			i++;
+		}
+		if(document.getElementById('pricePerShare').value==""){
+			errorString=errorString+i+") Please enter Price per Share/Unit \n";
+			i++;
+		}*/
+		if(document.getElementById('in_CGTSecCpaymentsTbl_3').value==""){
+			errorString=errorString+i+") Please enter Description \n";
+			i++;
+		}
+		if(document.getElementById('in_CGTSecCpaymentsTbl_4').value==""){
+			errorString=errorString+i+") Please enter Value \n";
+			i++;
+		}
+		if(errorString!=""){
+			alert(errorString);
+		}
+		else{
+			if(removeCommaFrmInput(document.getElementById('in_CGTSecCpaymentsTbl_4').value)>0  &&  removeCommaFrmInput(document.getElementById('in_CGTSecCpaymentsTbl_4').value)>0 )
+			{
+
+				if(addConfirm('a_CGTSecCpaymentsTbl'))
+				{
+					if(document.getElementById('a_CGTSecCpaymentsTbl').innerHTML!="Modify")
+					{
+						addrow('CGTSecCpaymentsTbl', '2', '2','3','validateDeleteRowIncidentalCostOnAcquisitionTable','validateModifyIncidentalCostOnAcquisitionTable','N','N');
+						//calcTotalIncidentalCostSecC();
+					}
+					else
+					{
+						return true;
+					}
+				}
+				else{
+					isFalse=1;
+				}
+			}
+		}
+		/*if(validateFormFields(CGT2SecCIncidentalCostOnAcquisitionJSON)) {
+			hideTab('TabView',2);
+			resetErrorList();
+			incError=0;
+
+			if(removeCommaFrmInput(document.getElementById('in_CGTSecCpaymentsTbl_4').value)>0  &&  removeCommaFrmInput(document.getElementById('in_CGTSecCpaymentsTbl_4').value)>0 )
+			{
+
+				if(addConfirm('a_CGTSecCpaymentsTbl'))
+				{
+					if(document.getElementById('a_CGTSecCpaymentsTbl').innerHTML!="Modify")
+					{
+						addrow('CGTSecCpaymentsTbl', '2', '2','3','validateDeleteRowIncidentalCostOnAcquisitionTable','validateModifyIncidentalCostOnAcquisitionTable','N','N');
+						//calcTotalIncidentalCostSecC();
+					}
+					else
+					{
+						return true;
+					}
+				}
+				else{
+					isFalse=1;
+				}
+			}
+		}
+		else
+		{
+			getErrTabToggle('TabView','2');	
+			tabview_switch('TabView', '2');
+			hideAndShowTable("errorDiv");
+			document.getElementById('btnTbl').style.display="none";
+		}*/
+		}
+}
+
+function calcTotalIncidentalCostSecC() {
+
+	var totalValue = 0;
+	var tabObj = document.getElementById("CGTSecCpaymentsTbl");
+	for (var i = 1, n = tabObj.rows.length; i <n; i++) 
+	{
+		totalValue = tabObj.rows[i].cells[4].innerHTML;
+	}
+
+	document.getElementById('totalOfIncidentalCostOnAcquisition').value=convertToKenyanShillingFormatVal(totalValue,true);
+
+	calcNetAdjustedValueSecC();
+}
+
+function calcNetAdjustedValueSecC() {
+
+	var totalOfIncidentalCost = document.getElementById('totalOfIncidentalCostOnAcquisition').value;
+	var valueOfConsideration = document.getElementById('valueOfConsiderationPaidOnAcquisition').value;
+	var costOfAquisition = document.getElementById('cgt2CostOnAcquisition').value;
+
+	if((totalOfIncidentalCost!=null && totalOfIncidentalCost!='') && (valueOfConsideration!=null && valueOfConsideration!='') && (costOfAquisition!=null && costOfAquisition!=''))  {
+		totalOfIncidentalCost = removeCommaFrmInput(totalOfIncidentalCost);
+		valueOfConsideration = removeCommaFrmInput(valueOfConsideration);
+		costOfAquisition = removeCommaFrmInput(costOfAquisition);
+		totalOfIncidentalCost = parseInt(totalOfIncidentalCost,10);
+		valueOfConsideration = parseInt(valueOfConsideration,10);
+		costOfAquisition = parseInt(costOfAquisition,10);
+		var netAdjustedCost = totalOfIncidentalCost + valueOfConsideration + costOfAquisition;
+		document.getElementById('netAdjustedCost').value = convertToKenyanShillingFormatVal(netAdjustedCost,true);
+		document.getElementById('netAdjustedCostSummary').value = document.getElementById('netAdjustedCost').value;
+
+		calcDiffBeingCapitalGainOrLoss();
+	}
+}
+
+function calcNetTransferValueSecB() {
+	var totalOfIncidentalCost = document.getElementById('totalOfIncidentalCost').value;
+	var valueOfConsideration = document.getElementById('valueOfConsideration').value;
+	if((totalOfIncidentalCost!=null && totalOfIncidentalCost!='') && (valueOfConsideration!=null && valueOfConsideration!='')) {
+		totalOfIncidentalCost = removeCommaFrmInput(totalOfIncidentalCost);
+		valueOfConsideration = removeCommaFrmInput(valueOfConsideration);
+		totalOfIncidentalCost = parseInt(totalOfIncidentalCost,10);
+		valueOfConsideration = parseInt(valueOfConsideration,10);
+		var netTransValue =  valueOfConsideration - totalOfIncidentalCost;
+		document.getElementById('netTransferValue').value = convertToKenyanShillingFormatVal(netTransValue,true);
+		document.getElementById('netTransferValueSummary').value = document.getElementById('netTransferValue').value;
+		calcDiffBeingCapitalGainOrLoss();
+	}
+}
+function calcDiffBeingCapitalGainOrLoss() {
+
+	var cgtType=document.getElementById('cmbCGTType').value;
+	if (cgtType!='-1' && cgtType=='CGT_1')
+	{
+		var netAdjustedCostSummaryCGT1 = document.getElementById('netAdjustedCostSummaryCGT1').value;
+		var netTransferValueSummaryCGT1 = document.getElementById('netTransferValueSummaryCGT1').value;
+		if((netAdjustedCostSummaryCGT1!=null && netAdjustedCostSummaryCGT1!='') && (netTransferValueSummaryCGT1!=null && netTransferValueSummaryCGT1!='')) {
+			netAdjustedCostSummaryCGT1 = removeCommaFrmInput(netAdjustedCostSummaryCGT1);
+			netTransferValueSummaryCGT1 = removeCommaFrmInput(netTransferValueSummaryCGT1);
+			netAdjustedCostSummaryCGT1 = parseInt(netAdjustedCostSummaryCGT1,10);
+			netTransferValueSummaryCGT1 = parseInt(netTransferValueSummaryCGT1,10);
+			var diffBeingCapitalGainOrLoss = netTransferValueSummaryCGT1 - netAdjustedCostSummaryCGT1;
+			document.getElementById('diffBeingCapitalGainOrLossCGT1').value = convertToKenyanShillingFormatVal(diffBeingCapitalGainOrLoss,true);
+			calcAdjustedCapitalGain();
+			setDataInSummaryAddRowTableForCGT1OnChangeInOtherFields();
+			calculateNetCGTPayable();
+		}
+	}
+	else
+	{
+	var netAdjustedCostSummary = document.getElementById('netAdjustedCostSummary').value;
+	var netTransferValueSummary = document.getElementById('netTransferValueSummary').value;
+
+	if((netAdjustedCostSummary!=null && netAdjustedCostSummary!='') && (netTransferValueSummary!=null && netTransferValueSummary!='')) {
+		netAdjustedCostSummary = removeCommaFrmInput(netAdjustedCostSummary);
+		netTransferValueSummary = removeCommaFrmInput(netTransferValueSummary);
+		netAdjustedCostSummary = parseInt(netAdjustedCostSummary,10);
+		netTransferValueSummary = parseInt(netTransferValueSummary,10);
+		var diffBeingCapitalGainOrLoss = netTransferValueSummary - netAdjustedCostSummary;
+		document.getElementById('diffBeingCapitalGainOrLoss').value = convertToKenyanShillingFormatVal(diffBeingCapitalGainOrLoss,true);
+			diffBeingCapitalGainOrLoss=parseInt(diffBeingCapitalGainOrLoss,10);
+		calcAdjustedCapitalGain();
+		}
+	}
+}
+
+function calcAdjustedCapitalGain() {
+	var cgtType=document.getElementById('cmbCGTType').value;
+	var isAmended=document.getElementById('isAmended').value;
+	if (cgtType!='-1'&& cgtType=='CGT_1')
+	{
+		var diffBeingCapitalGainOrLoss = document.getElementById('diffBeingCapitalGainOrLossCGT1').value;
+	var capitalLossBoughtForward = document.getElementById('capitalLossBoughtForward').value;
+		var capitalLossBroughtForwardAndSetOff=document.getElementById('capitalLossCarryFrwdAndSetoff').value;
+		
+		if(isAmended=='Y'){
+			
+			capitalLossBroughtForwardAndSetOff=removeCommaFrmInput(capitalLossBroughtForwardAndSetOff);
+		}
+		else{
+			capitalLossBroughtForwardAndSetOff=0;
+		}
+		capitalLossBoughtForward=removeCommaFrmInput(capitalLossBoughtForward);
+		diffBeingCapitalGainOrLoss=removeCommaFrmInput(diffBeingCapitalGainOrLoss);
+		
+		
+		capitalLossBroughtForwardAndSetOff=parseInt(capitalLossBroughtForwardAndSetOff,10);
+		capitalLossBoughtForward=parseInt(capitalLossBoughtForward,10);
+		diffBeingCapitalGainOrLoss=parseInt(diffBeingCapitalGainOrLoss,10);
+		
+		if(diffBeingCapitalGainOrLoss!=null && capitalLossBoughtForward!=null ) {
+		diffBeingCapitalGainOrLoss = removeCommaFrmInput(diffBeingCapitalGainOrLoss);
+		capitalLossBoughtForward = removeCommaFrmInput(capitalLossBoughtForward);
+			var adjustedCapitalGainOrLoss = capitalLossBoughtForward-diffBeingCapitalGainOrLoss-capitalLossBroughtForwardAndSetOff ;
+		document.getElementById('adjustedCapitalGainOrLoss').value = convertToKenyanShillingFormatVal(adjustedCapitalGainOrLoss,true);
+
+		//var adjustedCapitalGainOrLoss = document.getElementById('adjustedCapitalGainOrLoss').value;
+		if(adjustedCapitalGainOrLoss>0) {
+				document.getElementById('capitalLossCarriedForward').value = convertToKenyanShillingFormatVal((adjustedCapitalGainOrLoss*-1),true);
+				document.getElementById('capitalGainTax').value='0';
+			}
+			else {
+			calcCapitalGainTax();
+			document.getElementById('capitalLossCarriedForward').value = '0';
+			}
+		}
+	}
+	else{
+		var capitalLossBroughtForwardAndSetOff=document.getElementById('capitalLossCarryFrwdAndSetoff').value;
+		var diffBeingCapitalGainOrLoss = document.getElementById('diffBeingCapitalGainOrLoss').value;
+		var capitalLossBoughtForward = document.getElementById('capitalLossBoughtForward').value;
+		if(isAmended=='Y'){
+			
+			capitalLossBroughtForwardAndSetOff=removeCommaFrmInput(capitalLossBroughtForwardAndSetOff);
+		}
+		else{
+			capitalLossBroughtForwardAndSetOff=0;
+		}
+		capitalLossBoughtForward=removeCommaFrmInput(capitalLossBoughtForward);
+		diffBeingCapitalGainOrLoss=removeCommaFrmInput(diffBeingCapitalGainOrLoss);
+		
+		
+		capitalLossBroughtForwardAndSetOff=parseInt(capitalLossBroughtForwardAndSetOff,10);
+		capitalLossBoughtForward=parseInt(capitalLossBoughtForward,10);
+		diffBeingCapitalGainOrLoss=parseInt(diffBeingCapitalGainOrLoss,10);
+		
+		if(diffBeingCapitalGainOrLoss!=null && capitalLossBoughtForward!=null) {
+
+			var adjustedCapitalGainOrLoss = capitalLossBoughtForward-diffBeingCapitalGainOrLoss -capitalLossBroughtForwardAndSetOff ;
+			document.getElementById('adjustedCapitalGainOrLoss').value = convertToKenyanShillingFormatVal(adjustedCapitalGainOrLoss,true);
+
+			//var adjustedCapitalGainOrLoss = document.getElementById('adjustedCapitalGainOrLoss').value;
+			if(isAmended!='Y'){
+				
+				if(adjustedCapitalGainOrLoss>0) {
+					document.getElementById('capitalLossCarriedForward').value = convertToKenyanShillingFormatVal((adjustedCapitalGainOrLoss),true);
+					document.getElementById('capitalGainTax').value='0';
+					document.getElementById('adjustedCapitalGainOrLoss').value = convertToKenyanShillingFormatVal((adjustedCapitalGainOrLoss*-1),true);
+	
+				}
+				else {
+					calcCapitalGainTax();
+					//document.getElementById('diffBeingCapitalGainOrLoss').value = convertToKenyanShillingFormatVal((diffBeingCapitalGainOrLoss*-1),true);
+					document.getElementById('capitalLossCarriedForward').value='0';
+					document.getElementById('adjustedCapitalGainOrLoss').value = convertToKenyanShillingFormatVal((adjustedCapitalGainOrLoss*-1),true);
+	
+				}
+			}
+			else{
+				
+				if(adjustedCapitalGainOrLoss<0) {
+					document.getElementById('capitalLossCarriedForward').value ='0';
+					calcCapitalGainTax();
+					document.getElementById('adjustedCapitalGainOrLoss').value = convertToKenyanShillingFormatVal((adjustedCapitalGainOrLoss*-1),true);
+	
+				}
+				else {
+					document.getElementById('capitalLossCarriedForward').value = convertToKenyanShillingFormatVal((adjustedCapitalGainOrLoss),true);
+					document.getElementById('capitalGainTax').value='0';
+	
+					document.getElementById('adjustedCapitalGainOrLoss').value = convertToKenyanShillingFormatVal((adjustedCapitalGainOrLoss*-1),true);
+	
+				}
+			}
+		}
+	}
+}
+
+function calcCapitalGainTax() {
+	var isAmended=document.getElementById('isAmended').value;
+	var cgtType=document.getElementById('cmbCGTType').value;
+
+	if (cgtType!='-1'&& cgtType=='CGT_1')
+	{
+		var sumCGTPayable=0.00;
+		var countSummary=document.getElementById("cgt1SummaryAddrowTable").rows.length;
+		if (countSummary>1 && netTransferValueSummaryCGT1>"0")
+		{	
+			var count=1;
+			for (count=1;count<countSummary;count++)
+			{
+				sumCGTPayable+=removeCommaFrmInput(document.getElementById("id_td_cgt1SummaryAddrowTable_"+count+"_8").innerHTML);
+			}
+			document.getElementById('netCGTPayableCGT1Summary').value=convertToKenyanShillingFormatVal(sumCGTPayable,false);
+		
+		}
+	}
+	else
+	{
+		var adjustedCapitalGainOrLoss = parseInt(removeCommaFrmInput(document.getElementById('adjustedCapitalGainOrLoss').value),10);
+		var capitalLossBroughtForwardAndSetOff=parseInt(removeCommaFrmInput(document.getElementById('capitalLossCarryFrwdAndSetoff').value),10);
+		var capitalLossBoughtForward = parseInt(removeCommaFrmInput(document.getElementById('capitalLossBoughtForward').value),10);
+		var diffBeingCapitalGainOrLoss =parseInt(removeCommaFrmInput(document.getElementById('diffBeingCapitalGainOrLoss').value),10);
+		if(adjustedCapitalGainOrLoss!=null) {
+			adjustedCapitalGainOrLoss = removeCommaFrmInput(adjustedCapitalGainOrLoss);
+			if(isAmended!='Y'){
+				if(adjustedCapitalGainOrLoss<0){
+					adjustedCapitalGainOrLoss=adjustedCapitalGainOrLoss*-1;
+				}
+			}
+			else{
+				var diffBeingCapitalGainOrLoss=capitalLossBoughtForward-diffBeingCapitalGainOrLoss;
+				if(diffBeingCapitalGainOrLoss<0){
+					diffBeingCapitalGainOrLoss=diffBeingCapitalGainOrLoss*-1;
+				}
+				adjustedCapitalGainOrLoss=diffBeingCapitalGainOrLoss+capitalLossBroughtForwardAndSetOff;
+			}
+			//ADDED by Mingu for Ticket 64973 :: START
+			var isAllowedSplRate = document.getElementById('isAllowedSplRate').value;
+			var cgtSpecialRate = document.getElementById('cgtSpecialRate').value;
+			var cgtRate = parseInt(cgtSpecialRate)/100;
+			//if(cgtType = 'CGT_2N'){//commented for Ticket 71687
+			if(cgtType == 'CGT_2N'){
+				cgtRate = 0.05;
+			}
+			else{
+				cgtRate = parseInt(cgtSpecialRate)/100;
+			}
+			var capitalGainTax = null;
+			capitalGainTax = Math.ceil(parseInt(adjustedCapitalGainOrLoss,10)*cgtRate);//Changed By Mingu for Finance Act 2022/23 changes to Increase Tax Rate to 15% from 5%
+			document.getElementById('capitalGainTax').value = convertToKenyanShillingFormatVal(capitalGainTax,true);
+		}
+
+	}
+}
+
+function onChangeProfitLossSharingRatio(obj) {
+
+	obj.value=removeCommaFrmInput(obj.value);
+	if(!onlyNumeric(obj))
+	{
+		alert("Please enter valid Profit/Loss ratio.");
+		obj.value='';
+		return false;
+	}
+	var ratio = obj.value;
+	if(ratio<=0 || ratio==null)
+	{
+		alert("Please enter valid Profit/Loss ratio.");
+		obj.value='';
+		return false;
+	}
+	if(ratio>100) {
+		alert('You cannot enter Profit/Loss ratio greater than 100%');
+		obj.value='';
+		return false;
+		//document.getElementById('in_CGT2PSecBpaymentsTbl_5').value='';
+	}
+	document.getElementById('in_CGT2PSecBpaymentsTbl_5').value=convertToKenyanShillingFormatVal(ratio,true);
+	return true;
+}
+
+function resetSecBPartnerTransferDtl() {
+	
+	if(clear_table('CGT2PSecBpaymentsTbl','2')){
+	document.getElementById('in_CGT2PSecBpaymentsTbl_3').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_4').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_5').value="";
+	}
+	
+}
+
+function checkDuplicatePartnerDtl(r,id)
+{
+	rows=r;
+	{
+		var pin=document.getElementById('in_CGT2PSecBpaymentsTbl_3').value;
+		
+		var tabObj1 = document.getElementById(id);
+		
+		
+		if(tabObj1.rows.length==1)
+		{
+		}
+		else
+		{ 	
+			for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+			{ 
+				var modify;
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+				}
+				if(document.getElementById('in_CGT2PSecBpaymentsTbl_3').value!="")
+				{
+					if((trim(document.getElementById('id_temp_'+id+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&  (tabObj1.rows[i].cells[3].innerHTML==pin))
+					{
+						alert(detailsExists);
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+}
+
+function calcTotalProfitLossRatio() {
+	
+	var tabObj1 = document.getElementById('CGT2PSecBpaymentsTbl');
+	var profitLossRatioAdded = parseInt(document.getElementById('in_CGT2PSecBpaymentsTbl_5').value,10);
+	var totalRatio = 0;
+	
+	if(tabObj1.rows.length==1)
+	{
+	}
+	else
+	{ 	
+		for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+		{
+			var modify;
+			if(document.all)
+			{
+				modify=trim(tabObj1.rows[i].cells[2].innerText);
+			}
+			else
+			{
+				modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+			}
+			if((trim(document.getElementById('id_temp_'+'CGT2PSecBpaymentsTbl'+'_'+i+'_1').value))=="Delete" && (modify=="Modify"))
+			{
+				totalRatio += parseInt(tabObj1.rows[i].cells[5].innerHTML,10);
+			}
+		}
+		
+		totalRatio += profitLossRatioAdded;
+		
+		if(totalRatio<=100)
+			return true;
+		else {
+			alert('The total Profit/Loss ration should not be greater than 100%');
+			return false;
+		}
+	}
+}
+
+function addSecBPartnerTransferDtl(row) {
+	var errorString="";
+	var i=1;
+	if(document.getElementById('in_CGT2PSecBpaymentsTbl_3').value==""){
+		errorString=errorString+i+") Please enter PIN of the Partner \n";
+		i++;
+	}
+	if(document.getElementById('in_CGT2PSecBpaymentsTbl_4').value==""){
+		errorString=errorString+i+") Please enter Partner Name \n";
+		i++;
+	}
+	if(document.getElementById('in_CGT2PSecBpaymentsTbl_5').value==""){
+		errorString=errorString+i+") Please enter Profit/Loss Sharing Ratio \n";
+		i++;
+	}
+	if(document.getElementById('in_CGT2PSecBpaymentsTbl_7').value==""){
+		errorString=errorString+i+") Please enter Partner's Address \n";
+		i++;
+	}
+	if(document.getElementById('in_CGT2PSecBpaymentsTbl_6').value==""){
+		errorString=errorString+i+") Please enter Partner Email \n";
+		i++;
+	}
+	if(errorString!=""){
+		alert(errorString);
+	}
+	else{
+		var checkDuplicateFlag = checkDuplicatePartnerDtl(row,'CGT2PSecBpaymentsTbl');
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		
+		var profiLossRationSumFlag = calcTotalProfitLossRatio();
+		if(profiLossRationSumFlag==false)
+		{
+			return false;
+		}
+
+		if(removeCommaFrmInput(document.getElementById('in_CGT2PSecBpaymentsTbl_5').value)>0  &&  removeCommaFrmInput(document.getElementById('in_CGT2PSecBpaymentsTbl_5').value)>0 )
+		{
+
+			if(addConfirm('a_CGT2PSecBpaymentsTbl'))
+			{
+				if(document.getElementById('a_CGT2PSecBpaymentsTbl').innerHTML!="Modify")
+				{
+					addrow('CGT2PSecBpaymentsTbl', '5', '6','4','','','N','N');
+				}
+				else
+				{
+					return true;
+				}
+			}
+			else{
+				isFalse=1;
+			}
+		}
+	}
+	/*if(validateFormFields(CGT2PSecBPartnerTransferDtlsJSON)) {
+		hideTab('TabView',2);
+		resetErrorList();
+		incError=0;
+
+		var checkDuplicateFlag = checkDuplicatePartnerDtl(row,'CGT2PSecBpaymentsTbl');
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		
+		var profiLossRationSumFlag = calcTotalProfitLossRatio();
+		if(profiLossRationSumFlag==false)
+		{
+			return false;
+		}
+
+		if(removeCommaFrmInput(document.getElementById('in_CGT2PSecBpaymentsTbl_5').value)>0  &&  removeCommaFrmInput(document.getElementById('in_CGT2PSecBpaymentsTbl_5').value)>0 )
+		{
+
+			if(addConfirm('a_CGT2PSecBpaymentsTbl'))
+			{
+				if(document.getElementById('a_CGT2PSecBpaymentsTbl').innerHTML!="Modify")
+				{
+					addrow('CGT2PSecBpaymentsTbl', '3', '4','','','','N','N');
+				}
+				else
+				{
+					return true;
+				}
+			}
+			else{
+				isFalse=1;
+			}
+		}
+	}
+	else
+	{
+		getErrTabToggle('TabView','2');	
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+	}*/
+}
+
+function resetPartnerDtls() {
+	//document.getElementById('in_CGT2PSecBpaymentsTbl_3').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_4').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_5').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_6').value="";
+}
+
+function fetchPartnersDtls(obj) {
+	
+	var pin = trim(obj.value);
+	pin=pin.toUpperCase();
+	obj.value=pin;
+	
+	if(pin==document.getElementById('txtPin').value) {
+		alert('The Partner PIN and the Transferor PIN cannot be the same');
+		obj.value='';
+		return false;
+	}
+	if(validPIN(obj)){
+		resetPartnerDtls();
+		FetchTaxPayerNameFromPINCGT.fetchTaxPayerNameFromPINCGT(pin,{async:false,callback: function(data){
+			if(data != NULL &&  data != null){
+				if(data.isDataAvailable == N_FLAG){
+					if(data.isAgent == ERROR ||data.isAgent == NO_CALL_MADE){ // Handled Scenario : 1) if no call made from Controller to impl 2) impl to facade
+						alert(errorFetchingData);
+					}
+					else if(data.isAgent == NO_DETAILS_FOUND){// Handled Scenario : 1) call made to facade with invalid PIN
+						alert(validPin);
+					}
+					else if(data.isAgent == "NO_IPAGE") {
+						alert('The entered Partner PIN is not iPage processed');
+						document.getElementById('in_CGT2PSecBpaymentsTbl_3').value="";
+					}
+					resetPartnerDtls();
+					return false;
+				}
+				if(data.taxPayerFirstName != null || (data.taxPayerId != null && data.taxPayerId != 0)){
+					
+					document.getElementById('in_CGT2PSecBpaymentsTbl_6').value = data.emailId;
+					document.getElementById('in_CGT2PSecBpaymentsTbl_7').value = data.taxPayerFullAddr;
+					document.getElementById('in_CGT2PSecBpaymentsTbl_8').value = data.taxPayerId;
+					
+					if(data.taxPayerFirstName != null && data.taxPayerFirstName!="")
+					{
+						document.getElementById('in_CGT2PSecBpaymentsTbl_4').value=data.taxPayerFirstName;
+					}
+					
+				}
+				else{
+					alert("Entered PIN does not exist.");
+					document.getElementById('in_CGT2PSecBpaymentsTbl_3').value="";
+					resetPartnerDtls();
+					return false;
+			}
+			}
+			else{
+				alert(errorFetchingData);
+				resetPartnerDtls();
+				return false;
+			}
+
+		}});
+		return true;
+	}
+	else{
+		resetPartnerDtls();
+		return false;
+	}
+}
+
+function validateDeleteRowIncidentalCostOnTransferTable(tab_str, rowno, cols) 
+{
+	if(deleteFlagIncidentalCostOnTransfer==1 && modifyFlagIncidentalCostOnTransfer==0) {
+		var table = document.getElementById('CGTSecBpaymentsTbl');  
+		var	totalValue = removeCommaFrmInput(document.getElementById('totalOfIncidentalCost').value);
+		var tempValue = table.rows[rowno].cells[4].innerHTML;
+		totalValue = totalValue - parseInt(removeCommaFrmInput(tempValue),"10");
+		document.getElementById('totalOfIncidentalCost').value =  totalValue;
+		document.getElementById('totalOfIncidentalCost').value = convertToKenyanShillingFormatVal(document.getElementById("totalOfIncidentalCost").value, true);
+
+		selectedFlagIncidentalCostOnTransfer=selectedFlagIncidentalCostOnTransfer-1;
+		if(selectedFlagIncidentalCostOnTransfer==0)
+		{
+			clear_table_data('CGTSecBpaymentsTbl');
+		}
+		deleteFlagIncidentalCostOnTransfer=0;
+		calcNetTransferValueSecB();
+	}
+	else {
+		deleteFlagIncidentalCostOnTransfer=0;
+	}
+}
+
+function validateDeleteRowIncidentalCostOnAcquisitionTable(tab_str, rowno, cols) 
+{
+	if(deleteFlagIncidentalCostOnAcquisition==1 && modifyFlagIncidentalCostOnAcquisition==0) {
+		var table = document.getElementById('CGTSecCpaymentsTbl');  
+		var	totalValue = removeCommaFrmInput(document.getElementById('totalOfIncidentalCostOnAcquisition').value);
+		var tempValue = table.rows[rowno].cells[4].innerHTML;
+		totalValue = totalValue - parseInt(removeCommaFrmInput(tempValue),"10");
+		document.getElementById('totalOfIncidentalCostOnAcquisition').value =  totalValue;
+		document.getElementById('totalOfIncidentalCostOnAcquisition').value = convertToKenyanShillingFormatVal(document.getElementById("totalOfIncidentalCostOnAcquisition").value, true);
+
+		selectedFlagIncidentalCostOnAcquisition=selectedFlagIncidentalCostOnAcquisition-1;
+		if(selectedFlagIncidentalCostOnAcquisition==0)
+		{
+			clear_table_data('CGTSecCpaymentsTbl');
+		}
+		deleteFlagIncidentalCostOnAcquisition=0;
+		calcNetAdjustedValueSecC();
+	}
+	else {
+		deleteFlagIncidentalCostOnAcquisition=0;
+	}
+}
+
+
+function beforeAddIncidentalCostOnTransferFunction(row)
+{
+	valueCGT2SecB=removeCommaFrmInput(document.getElementById('in_CGTSecBpaymentsTbl_4').value);
+	totalIncidentalCostOnTransfer=removeCommaFrmInput(document.getElementById('totalOfIncidentalCost').value);
+
+}
+
+function beforeAddIncidentalCostOnAcquisitionFunction(row)
+{
+	valueCGT2SecC=removeCommaFrmInput(document.getElementById('in_CGTSecCpaymentsTbl_4').value);
+	totalIncidentalCostOnAcquisition=removeCommaFrmInput(document.getElementById('totalOfIncidentalCostOnAcquisition').value);
+
+}
+
+function afterAddIncidentalCostOnTransferFunction(rows)
+{
+	totalIncidentalCostOnTransfer=parseInt(valueCGT2SecB,10)+parseInt(totalIncidentalCostOnTransfer,10);
+	totalIncidentalCostOnTransfer=convertToKenyanShillingFormatVal(parseInt(totalIncidentalCostOnTransfer,10),true);
+	document.getElementById('in_CGTSecBpaymentsTbl_3').value="";
+	document.getElementById('in_CGTSecBpaymentsTbl_4').value="";
+	selectedFlagIncidentalCostOnTransfer=selectedFlagIncidentalCostOnTransfer+1;
+	document.getElementById('totalOfIncidentalCost').value=totalIncidentalCostOnTransfer;
+	calcNetTransferValueSecB();
+}
+
+function afterAddIncidentalCostOnAcquisitionFunction(rows)
+{
+	totalIncidentalCostOnAcquisition=parseInt(valueCGT2SecC)+parseInt(totalIncidentalCostOnAcquisition);
+	totalIncidentalCostOnAcquisition=convertToKenyanShillingFormatVal(parseInt(totalIncidentalCostOnAcquisition,10),true);
+	document.getElementById('in_CGTSecCpaymentsTbl_3').value="";
+	document.getElementById('in_CGTSecCpaymentsTbl_4').value="";
+	selectedFlagIncidentalCostOnAcquisition=selectedFlagIncidentalCostOnAcquisition+1;
+	document.getElementById('totalOfIncidentalCostOnAcquisition').value=totalIncidentalCostOnAcquisition;
+	calcNetAdjustedValueSecC();
+}
+
+function afterDeleteIncidentalCostOnTransferTable()
+{
+	deleteFlagIncidentalCostOnTransfer=1;
+
+}
+
+function afterDeleteIncidentalCostOnAcquisitionTable()
+{
+	deleteFlagIncidentalCostOnAcquisition=1;
+}
+
+function afterModifyIncidentalCostOnTransferTable() 
+{
+	modifyFlagIncidentalCostOnTransfer = 0;
+	var table = document.getElementById('CGTSecBpaymentsTbl');
+	
+	var tmpValue=removeCommaFrmInput(document.getElementById('totalOfIncidentalCost').value);
+	var modifyValue;
+	if(document.all)
+	{
+		modifyValue=table.rows[rowno].cells[4].innerText;
+	}
+	else
+	{
+		modifyValue=table.rows[rowno].cells[4].textContent;
+	}
+	document.getElementById('totalOfIncidentalCost').value=convertToKenyanShillingFormatVal(parseInt(tmpValue,10)+parseInt(removeCommaFrmInput(modifyValue),"10")-parseInt(removeCommaFrmInput(totalIncidentalCostOnTransfer),10),true); 
+	document.getElementById('totalOfIncidentalCost').readOnly=true; 
+	document.getElementById('totalOfIncidentalCost').className='readonlyInput form101_textfcurr_width textonlyRight';
+	
+	document.getElementById('in_CGT2PSecBpaymentsTbl_3').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_4').value="";
+
+	calcNetTransferValueSecB();
+}
+
+function beforeModifyIncidentalCostOnTransferTable(row) 
+{
+	if(addSecBIncidentalCostOnTransfer())
+	{
+		if(isFalse==1){
+			return false;
+		}
+		else
+		{
+			/*var checkDuplicateFlag = checkDuplicateRentIncomeWithholdee(row,'rentIncomeWithTable');
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+			if(isFalse==1){
+				return false;
+			}
+			else
+			{*/
+			var table = document.getElementById('CGTSecBpaymentsTbl');
+			totalIncidentalCostOnTransfer=table.rows[rowno].cells[4].innerHTML;
+
+			/*}*/
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+function afterModifyIncidentalCostOnAcquisitionTable() 
+{
+	modifyFlagIncidentalCostOnAcquisition = 0;
+	var table = document.getElementById('CGTSecCpaymentsTbl');
+	
+	var tmpValue=removeCommaFrmInput(document.getElementById('totalOfIncidentalCostOnAcquisition').value);
+	var modifyValue;
+	if(document.all)
+	{
+		modifyValue=table.rows[rowno].cells[4].innerText;
+	}
+	else
+	{
+		modifyValue=table.rows[rowno].cells[4].textContent;
+	}
+	document.getElementById('totalOfIncidentalCostOnAcquisition').value=convertToKenyanShillingFormatVal(parseInt(tmpValue,10)+parseInt(removeCommaFrmInput(modifyValue),"10")-parseInt(removeCommaFrmInput(totalIncidentalCostOnAcquisition),10),true); 
+	document.getElementById('totalOfIncidentalCostOnAcquisition').readOnly=true; 
+	document.getElementById('totalOfIncidentalCostOnAcquisition').className='readonlyInput form101_textfcurr_width textonlyRight';
+	
+	document.getElementById('in_CGTSecCpaymentsTbl_3').value="";
+	document.getElementById('in_CGTSecCpaymentsTbl_4').value="";
+	
+	calcNetAdjustedValueSecC();
+}
+
+function beforeModifyIncidentalCostOnAcquisitionTable(row) 
+{
+	if(addSecCIncidentalCostOnAcquisition())
+	{
+		if(isFalse==1){
+			return false;
+		}
+		else
+		{
+			/*var checkDuplicateFlag = checkDuplicateRentIncomeWithholdee(row,'rentIncomeWithTable');
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+			if(isFalse==1){
+				return false;
+			}
+			else
+			{*/
+			var table = document.getElementById('CGTSecCpaymentsTbl');
+			totalIncidentalCostOnAcquisition=table.rows[rowno].cells[4].innerHTML;
+
+			/*}*/
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+function beforeDeleteIncidentalCostOnTransfer()
+{
+	if(modifyFlagIncidentalCostOnTransfer ==1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+}
+
+function beforeDeleteIncidentalCostOnAcquisition()
+{
+	if(modifyFlagIncidentalCostOnAcquisition ==1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+}
+
+function validateModifyIncidentalCostOnTransferTable(tab_str, rowno, cols) 
+{
+	modifyFlagIncidentalCostOnTransfer = 1;
+}
+
+function validateModifyIncidentalCostOnAcquisitionTable(tab_str, rowno, cols) 
+{
+	modifyFlagIncidentalCostOnAcquisition = 1;
+}
+
+
+function validateDeleteRowSecBPartnerDtlsTable(tab_str, rowno, cols) 
+{
+	if(deleteFlagCGT2PartnerDtls==1 && modifyFlagCGT2PartnerDtls==0) {
+
+		selectedFlagCGT2PartnerDtls=selectedFlagCGT2PartnerDtls-1;
+		if(selectedFlagCGT2PartnerDtls==0)
+		{
+			clear_table_data('CGT2PSecBpaymentsTbl');
+		}
+		deleteFlagCGT2PartnerDtls=0;
+	}
+	else {
+		deleteFlagCGT2PartnerDtls=0;
+	}
+}
+
+
+function beforeAddCGT2PartnerDtlsFunction(row)
+{
+
+}
+
+function afterAddCGT2PartnerDtlsFunction(rows)
+{
+	document.getElementById('in_CGT2PSecBpaymentsTbl_3').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_4').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_5').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_6').value="";
+	selectedFlagCGT2PartnerDtls=selectedFlagCGT2PartnerDtls+1;
+}
+
+function afterDeleteCGT2PartnerDtlsTable()
+{
+	deleteFlagCGT2PartnerDtls=0;
+}
+
+function afterModifyCGT2PartnerDtlsTable() 
+{
+	modifyFlagCGT2PartnerDtls = 0;
+	
+	document.getElementById('in_CGT2PSecBpaymentsTbl_3').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_4').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_5').value="";
+	document.getElementById('in_CGT2PSecBpaymentsTbl_6').value="";
+}
+
+function beforeModifyCGT2PartnerDtlsTable(row) 
+{
+	if(addSecBPartnerTransferDtl())
+	{
+		if(isFalse==1){
+			return false;
+		}
+		else
+		{
+			/*var checkDuplicateFlag = checkDuplicateRentIncomeWithholdee(row,'rentIncomeWithTable');
+			if(checkDuplicateFlag==false)
+			{
+				return false;
+			}
+			if(isFalse==1){
+				return false;
+			}
+			else
+			{*/
+			
+
+			/*}*/
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+
+function beforeDeleteCGT2PartnerDtls()
+{
+	if(modifyFlagCGT2PartnerDtls == 1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+}
+
+function validateModifyCGT2PartnerDtlsTable(tab_str, rowno, cols) 
+{
+	modifyFlagCGT2PartnerDtls = 1;
+}
+
+function fetchCapitalLossBroughtForward() {
+	
+	var taxPayerIdTransferor = document.getElementById('hidTaxPayerId').value;
+	var cgtType = document.getElementById('cmbCGTType').value;
+	
+	FetchCapitalLossBroughtForwardCGT2.fetchCapitalLossBroughtForwardCGT2(taxPayerIdTransferor,cgtType,{async:false,callback: function(data){
+
+		if(data != 'null' &&  data != null){
+			
+			if(data.isDataAvailable == "Y"){
+				document.getElementById('isFirstCgtPmt').value=0;
+				document.getElementById('capitalLossBoughtForward').value = convertToKenyanShillingFormatVal(data.capitalLossBroughtForward,true);
+				document.getElementById('capitalLossBoughtForward').readOnly=true;
+				document.getElementById('capitalLossBoughtForward').className='readonlyInput form101_textfcurr_width textonlyRight';
+			}
+			else {
+				
+				if(data.firstCgtPmt == true) {
+					document.getElementById('isFirstCgtPmt').value=1;
+				document.getElementById('capitalLossBoughtForward').readOnly=false;
+					document.getElementById('capitalLossBoughtForward').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+			}
+				else {
+					document.getElementById('isFirstCgtPmt').value=0;
+					document.getElementById('capitalLossBoughtForward').value = '0';
+					document.getElementById('capitalLossBoughtForward').readOnly=true;
+					document.getElementById('capitalLossBoughtForward').className='readonlyInput form101_textfcurr_width textonlyRight';
+		}
+			}
+			document.getElementById('capitalLossCarryFrwdAndSetoff').value='0';
+			document.getElementById('netTransferValueSummary').value='0';
+			document.getElementById('netAdjustedCostSummary').value='0';
+			document.getElementById('diffBeingCapitalGainOrLoss').value='0';
+			
+			document.getElementById('capitalLossCarryFrwdAndSetoff').readOnly=true;
+			document.getElementById('capitalLossCarryFrwdAndSetoff').className='readonlyInput form101_textfcurr_width textonlyRight';
+		}
+		else if(data == 'null' || data == null){
+			document.getElementById('capitalLossBoughtForward').readOnly=false;
+			document.getElementById('capitalLossBoughtForward').className='form101_textfcurr form101_textfcurr_width textonlyRight';
+			document.getElementById('capitalLossCarryFrwdAndSetoff').value='0';
+			document.getElementById('capitalLossCarryFrwdAndSetoff').readOnly=true;
+			document.getElementById('capitalLossCarryFrwdAndSetoff').className='readonlyInput form101_textfcurr_width textonlyRight';
+		}
+	}
+	});
+}
+
+function showCgtRelevantSections(cgtType)
+{
+	tabview_initialize('TabView4');
+	if(cgtType=='CGT_1' || cgtType=='CGT_1P')
+	{
+		
+		if(cgtType=='CGT_1')
+		{
+			$("#cgt1SecB").hide();$("#cgt1Page2").hide();
+			$("#cgtSummary").hide();$("#c1ppage5").hide();
+			$("#cgt1SecE").show();$("#cgt1Page5").show();
+			$("#cgtSummaryOwner").show();$("#cgtOwnerSummary").show();
+		}
+		else{
+			$("#cgt1SecB").show();$("#cgt1Page2").show();
+			$("#cgtSummary").show();$("#c1ppage5").show();
+			$("#cgt1SecE").hide();$("#cgt1Page5").hide();
+			$("#cgtSummaryOwner").hide();$("#cgtOwnerSummary").hide();
+		}
+		
+		$("#cgt2Tab1").hide();$("#cgt2Page1").hide();
+		$("#cgt2Tab2").hide();$("#cgt2Page2").hide();
+		$("#cgt2Tab3").hide();$("#cgt2Page3").hide();
+		$("#cgt2Tab4").hide();$("#cgt2Page4").hide();
+		$("#cgt3Tab1").hide();$("#cgt3Page1").hide();
+		$("#cgt3Tab2").hide();$("#cgt3Page2").hide();
+	
+		$("#cgt1SecA").show();$("#cgt1Page1").show();
+		$("#cgt1SecC").show();$("#cgt1Page3").show();
+		$("#cgt1SecD").show();$("#cgt1Page4").show();
+
+		
+		onClickTab(document.getElementById('cgt1SecA'));
+		
+		/*$("#cgtSummary").show();
+		
+		$("#c1ppage5").show();*/
+		
+	}
+	/*else if(cgtType=='CGT_2' || cgtType=='CGT_2P') -- COMENTED BY Mingu for Ticket 64973*/
+	else if(cgtType=='CGT_2' || cgtType=='CGT_2P' || cgtType=='CGT_2N') //Modified by Mingu for Ticket 64973
+	{
+		
+		//if(cgtType=='CGT_2') -- COMENTED BY Mingu for Ticket 64973*/
+		if(cgtType=='CGT_2' || cgtType == 'CGT_2N') //Modified by Mingu for Ticket 64973
+		{
+			$("#cgt2Tab2").hide();$("#cgt2Page2").hide();
+		}
+		else
+		{
+			$("#cgt2Tab2").show();$("#cgt2Page2").show();
+		}
+		
+		$("#cgt1SecA").hide();$("#cgt1Page1").hide();
+		$("#cgt1SecB").hide();$("#cgt1Page2").hide();
+		$("#cgt1SecC").hide();$("#cgt1Page3").hide();
+		$("#cgt1SecD").hide();$("#cgt1Page4").hide();
+		$("#cgt1SecE").hide();$("#cgt1Page5").hide();
+		$("#cgtSummaryOwner").hide();$("#cgtOwnerSummary").hide();
+		$("#cgt3Tab1").hide();$("#cgt3Page1").hide();
+		$("#cgt3Tab2").hide();$("#cgt3Page2").hide();
+		$("#cgtSummaryOwner").hide();$("#cgtOwnerSummary").hide();
+
+		$("#cgt2Tab1").show();$("#cgt2Page1").show();
+		//Added by Mingu for Ticket 64973 :: START
+		if(cgtType == 'CGT_2N'){
+			document.getElementById("CGT2PSecApaymentsTbl1").style.display="none";
+			document.getElementById("addCGT2PSecApaymentsTbl").style.display="none";
+			document.getElementById("CGT2PSecApaymentsTbl").style.display="none";
+			document.getElementById("tablespacerdiv").style.display="none";
+			document.getElementById("CGT2SecANIFCA2").style.display="";
+			document.getElementById("CGT2SecANIFCA1").style.display="";
+			document.getElementById("CGT2SecANIFCA3").style.display="";
+			document.getElementById("CGT2SecANIFCA4").style.display="";
+		}
+		else{
+			document.getElementById("CGT2PSecApaymentsTbl1").style.display="";
+			document.getElementById("addCGT2PSecApaymentsTbl").style.display="";
+			document.getElementById("CGT2PSecApaymentsTbl").style.display="";
+			document.getElementById("tablespacerdiv").style.display="";
+			document.getElementById("CGT2SecANIFCA2").style.display="none";
+			document.getElementById("CGT2SecANIFCA1").style.display="none";
+			document.getElementById("CGT2SecANIFCA3").style.display="none";
+			document.getElementById("CGT2SecANIFCA4").style.display="none";
+		}
+		//Added by Mingu for Ticket 64973 :: END
+		$("#cgt2Tab3").show();$("#cgt2Page3").show();
+		$("#cgt2Tab4").show();$("#cgt2Page4").show();
+		$("#cgt2Page1").parent().show();
+		$("#cgt2Tab1").addClass("Active");
+		
+		
+		onClickTab(document.getElementById('cgt2Tab1'));
+		$("#cgtSummary").show();$("#c1ppage5").show();
+		
+		/*$("#cgtSummary").show();
+		
+		$("#c1ppage5").show();*/
+	}
+	else if (cgtType=='CGT_3'){
+		
+		$("#cgt1SecA").hide();$("#cgt1Page1").hide();
+		$("#cgt1SecB").hide();$("#cgt1Page2").hide();
+		$("#cgt1SecC").hide();$("#cgt1Page3").hide();
+		$("#cgt1SecD").hide();$("#cgt1Page4").hide();
+		$("#cgt1SecE").hide();$("#cgt1Page5").hide();
+		$("#cgtSummaryOwner").hide();$("#cgtOwnerSummary").hide();
+		
+		$("#cgt2Tab1").hide();$("#cgt2Page1").hide();
+		$("#cgt2Tab2").hide();$("#cgt2Page2").hide();
+		$("#cgt2Tab3").hide();$("#cgt2Page3").hide();
+		$("#cgt2Tab4").hide();$("#cgt2Page4").hide();
+		$("#cgtSummary").hide();
+		
+		$("#cgt3Tab1").show();$("#cgt3Page1").show();
+		$("#cgt3Tab2").show();$("#cgt3Page2").show();
+		$("#cgt3Page1").parent().show();
+		$("#cgt3Tab1").addClass("Active");
+		onClickTab(document.getElementById('cgt3Tab1'));
+				
+		
+	}
+}
+
+
+
+function onChangeValueSecB() {
+	var value = document.getElementById('in_CGTSecBpaymentsTbl_4').value;
+	document.getElementById('in_CGTSecBpaymentsTbl_4').value = convertToKenyanShillingFormatVal(value,true);
+}
+
+function onChangeValueSecC() {
+	var value = document.getElementById('in_CGTSecCpaymentsTbl_4').value;
+	document.getElementById('in_CGTSecCpaymentsTbl_4').value = convertToKenyanShillingFormatVal(value,true);
+}
+
+function populateValuesForSummaryTab() {
+	
+	document.getElementById('netAdjustedCostSummary').value = document.getElementById('netAdjustedCostSummaryTemp').value;
+	document.getElementById('netTransferValueSummary').value = document.getElementById('netTransferValueSummaryTemp').value;
+	
+	calcDiffBeingCapitalGainOrLoss();
+}
+function saveCGTPaymentOblig()
+{
+	if (document.getElementById('cmbTaxSubHead').value==CGT && document.getElementById('cmbPaymentType').value!=VTDP){
+		var cgtType= document.getElementById('cmbCGTType').value;
+		if(cgtType==null || cgtType=='' || cgtType=='-1') {
+			alert('Please select a CGT Type');
+			return false;
+		}
+		var errorString="";
+		var a=1;
+		//if(cgtType==cgt_type_2 || cgtType==cgt_type_2P)--commented by Ken and Mingu for Ticket 64973
+		if(cgtType==cgt_type_2 || cgtType==cgt_type_2P || cgtType==cgt_type_2n)//modified by Ken and Mingu for Ticket 64973
+		{
+			if(document.getElementById('dateOfTransfer').value=='' || document.getElementById('dateOfTransfer').value==null) {
+				errorString=errorString+a+") Please enter appropriate Date of Transfer \n";
+				a++;
+				/*alert('Please enter appropriate Date of Transfer');
+				return false;*/
+			}
+			if(document.getElementById('descOfMarketableSecurities').value=='' || document.getElementById('descOfMarketableSecurities').value==null) {
+				errorString=errorString+a+") Please enter Description of Marketable Security \n";
+				a++;
+				/*alert('Please enter Description of Marketable Security');
+				return false;*/
+			}
+			if(document.getElementById('valueOfConsideration').value<0) {
+				errorString=errorString+a+") Please enter appropriate Values of Consideration Details \n";
+				a++;
+				/*alert('Please enter appropriate Transfer Value Details');
+				return false;*/
+			}
+			if(document.getElementById('netTransferValue').value<=0) {
+				errorString=errorString+a+") Please enter appropriate Transfer Value Details \n";
+				a++;
+				/*alert('Please enter appropriate Transfer Value Details');
+				return false;*/
+			}
+			if(document.getElementById('netAdjustedCost').value<0) {
+				errorString=errorString+a+") Please enter appropriate Adjusted Value Details \n";
+				a++;
+				/*alert('Please enter appropriate Adjusted Value Details');
+				return false;*/
+				}
+			if(document.getElementById('valueOfConsiderationPaidOnAcquisition').value<=0) {
+				errorString=errorString+a+") Please enter appropriate Adjusted Value Details \n";
+				a++;
+				/*alert('Please enter appropriate Adjusted Value Details');
+				return false;*/
+			}
+			if(document.getElementById('capitalLossCarriedForward').value<=0 && document.getElementById('capitalGainTax').value<=0) {
+				errorString=errorString+a+") Please enter appropriate Summary Details \n";
+				a++;
+				/*alert('Please enter appropriate Summary Details');
+				return false;*/
+			}
+			//added by saumya for giving alert if no tranferee details added :: start
+			//Added by Mingu and Ken for Ticket 64973 :: START
+			if(cgtType==cgt_type_2n){
+				if(document.getElementById('dateOfAcquisitionNifca').value=='' || document.getElementById('dateOfAcquisitionNifca').value==null) {
+					errorString=errorString+a+") Please enter appropriate Date of Acquisition \n";
+					a++;
+				}
+				if(document.getElementById('totalInitialInvestmentCostNifca').value=='' || document.getElementById('totalInitialInvestmentCostNifca').value==null) {
+					errorString=errorString+a+") Please enter the total Initial Investment Cost \n";
+					a++;
+				}
+				/*if(document.getElementById('fileNifca').value=='' || document.getElementById('fileNifca').value==null) {
+					errorString=errorString+a+") Please Select a file to upload \n";
+					a++;
+				}*/
+			}
+			//Added by Mingu and Ken for Ticket 64973 :: END
+			if(cgtType!=cgt_type_2n){//Added by Mingu and Ken for Ticket 64973 :: START
+				var tabObj2 = document.getElementById("CGT2PSecApaymentsTbl");
+				var count2=0;
+				for (var i = 1, n = tabObj2.rows.length; i <n; i++) 
+				{ 
+					var modify;
+					modify=trim(tabObj2.rows[i].cells[2].innerText);
+					if((trim(document.getElementById('id_temp_'+'CGT2PSecApaymentsTbl'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+						count2++;
+					}
+				}
+				if(count2<=0) {
+					errorString=errorString+a+") Please enter Transferee detail. \n";
+					a++;
+				}
+			}//Added by Mingu and Ken for Ticket 64973 :: END
+			
+			
+			//added by saumya for giving alert if no tranferee details added :: end
+			
+			//added by saumya for giving alert if details added to SecB :: start
+			/*var tabObjSubSectionB = document.getElementById("CGTSecBpaymentsTbl");
+			var count3=0;
+			for (var i = 1, n = tabObjSubSectionB.rows.length; i <n; i++) 
+			{ 
+				var modify;
+				modify=trim(tabObjSubSectionB.rows[i].cells[2].innerText);
+				if((trim(document.getElementById('id_temp_'+'CGTSecBpaymentsTbl'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+					count3++;
+				}
+			}
+			if(count3<=0) {
+				errorString=errorString+a+") Please enter Incidental costs on Transfer. \n";
+				a++;
+				
+			}*/
+			
+			//added by saumya for giving alert if details added to SecB :: end
+			
+			//added by saumya for giving alert if details added to SecC :: start
+			/*var tabObjSubSectionC = document.getElementById("CGTSecCpaymentsTbl");
+			var count4=0;
+			for (var i = 1, n = tabObjSubSectionC.rows.length; i <n; i++) 
+			{ 
+				var modify;
+				modify=trim(tabObjSubSectionC.rows[i].cells[2].innerText);
+				if((trim(document.getElementById('id_temp_'+'CGTSecCpaymentsTbl'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+					count4++;
+				}
+			}
+			if(count4<=0) {
+				errorString=errorString+a+") Please enter Incidental costs on acquisition. \n";
+				a++;
+				
+			}*/
+			
+			//added by saumya for giving alert if details added to SecC :: end
+			
+			if(cgtType==cgt_type_2P) {
+				var tabObj1 = document.getElementById("CGT2PSecBpaymentsTbl");
+				var count=0;
+				var totalPerc = 0;
+				for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+				{ 
+					var modify;
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+					if((trim(document.getElementById('id_temp_'+'CGT2PSecBpaymentsTbl'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+						count++;
+						totalPerc += parseInt(trim(tabObj1.rows[i].cells[5].innerText),10);
+					}
+				}
+				if(count<=0) {
+					errorString=errorString+a+") Please enter atleast 1 partner detail \n";
+					a++;
+					/*alert("Please enter atleast 1 partner detail");
+					return false;*/
+				}
+				if(totalPerc!=100) {
+					errorString=errorString+a+") The total Profit/Loss ratio should be equal to 100 \n";
+					a++;
+					/*alert('The total Profit/Loss ratio should be equal to 100');
+					return false;*/
+				}
+			}
+		}
+		if(cgtType==cgt_type_1 || cgtType==cgt_type_1P)
+		{
+			//checkPinTransfereeAndPartnerNotSame();
+			
+				if(document.getElementById('cgtLrNo').value=='' || document.getElementById('cgtLrNo').value==null) {
+					errorString=errorString+a+") Please enter appropriate LR Number \n";
+					a++;
+					/*alert('Please enter appropriate LR Number');
+					return false;*/
+				}
+				if(document.getElementById('cgtYearOfPurchase').value=='' || document.getElementById('cgtYearOfPurchase').value==null) {
+					errorString=errorString+a+") Please enter Year of purchase. \n";
+					a++;
+					/*alert('Please enter Year of purchase.');
+					return false;*/
+				}
+				if(document.getElementById('cgtNetTransferVal').value<=0) {
+					errorString=errorString+a+") Please enter appropriate Transfer Value Details \n";
+					a++;
+					/*alert('Please enter appropriate Transfer Value Details');
+					return false;*/
+				}
+				if(document.getElementById('cgtNetAdjustedCost').value<0) {
+					errorString=errorString+a+") Please enter appropriate Adjusted Value Details \n";
+					a++;
+					/*alert('Please enter appropriate Adjusted Value Details');
+					return false;*/
+					}
+				var cntr=0;
+				var table =  document.getElementById("cgtTransfereeAddrowTable");
+				for (var i = 1, n = table.rows.length; i <n; i++) 
+				{ 
+					var modify;
+					modify=trim(table.rows[i].cells[2].innerText);
+					if((trim(document.getElementById('id_temp_'+'cgtTransfereeAddrowTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+						cntr++;
+					}
+				}
+				if(cntr<=0)
+				{
+					errorString=errorString+a+") Please enter atleast 1 transferee detail \n";
+					a++;
+					/*alert("Please enter atleast 1 transferee detail");
+					return false;*/
+				}
+				
+				//added by Bhavana for giving alert if no tranferee details added :: start
+				/*var tabCGT1TransferVal = document.getElementById("cgtIncidentalCostOnTransferAddrowTable");
+				var countCGT1TransferVal=0;
+				for (var i = 1, n = tabCGT1TransferVal.rows.length; i <n; i++) 
+				{ 
+					var modify;
+					modify=trim(tabCGT1TransferVal.rows[i].cells[2].innerText);
+					if((trim(document.getElementById('id_temp_'+'cgtIncidentalCostOnTransferAddrowTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+						countCGT1TransferVal++;
+					}
+				}
+				if(countCGT1TransferVal<=0) {
+					errorString=errorString+a+") Please enter Incidental cost on transfer details . \n";
+					a++;
+				}
+				
+				var tabCGT1AdjustedVal = document.getElementById("cgtIncidentalCostOnAcquisitionAddrowTable");
+				var countCGT1AdjustedVal=0;
+				for (var i = 1, n = tabCGT1AdjustedVal.rows.length; i <n; i++) 
+				{ 
+					var modify;
+					modify=trim(tabCGT1AdjustedVal.rows[i].cells[2].innerText);
+					if((trim(document.getElementById('id_temp_'+'cgtIncidentalCostOnAcquisitionAddrowTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+						countCGT1AdjustedVal++;
+					}
+				}
+				if(countCGT1AdjustedVal<=0) {
+					errorString=errorString+a+") Please enter Incidental cost on Aquisition . \n";
+					a++;
+					
+				}*/
+				//added by Bhavana for giving alert if no tranferee details added :: end
+
+			
+				var isAmended=document.getElementById("isAmended").value;
+				if(isAmended!="Y" && isAmended!=null){
+				var proceed= isLrNoValid();
+				if(proceed==false)
+					return false;
+				}
+				if(isAmended=='Y'){
+					if(document.getElementById("cgtAcknowledgementNo").value==null || document.getElementById("cgtAcknowledgementNo").value==''){
+						errorString=errorString+a+") Please enter appropriate 'Acknowledgement Number' \n";
+					}
+				}
+				
+				if(cgtType==cgt_type_1P) {
+					var tabObj1 = document.getElementById("cgt1PPartnershipDtlsAddrowTable");
+					var count=0;
+					var totalPerc = 0;
+					for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+					{ 
+						var modify;
+						modify=trim(tabObj1.rows[i].cells[2].innerText);
+						if((trim(document.getElementById('id_temp_'+'cgt1PPartnershipDtlsAddrowTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+							count++;
+							totalPerc += parseInt(trim(tabObj1.rows[i].cells[7].innerText),10);
+						}
+					}
+					if(count<=0) {
+						errorString=errorString+a+") Please enter atleast 1 partner detail \n";
+						a++;
+						/*alert("Please enter atleast 1 partner detail");
+						return false;*/
+					}
+					if(totalPerc!=100) {
+						errorString=errorString+a+") The total Profit/Loss ratio should be equal to 100 \n";
+						a++;
+						/*alert('The total Profit/Loss ratio should be equal to 100');
+						return false;*/
+					}
+					
+				}
+				if(cgtType==cgt_type_1){
+					var tabObj1 = document.getElementById("cgtOwnerAddrowTable");
+					var ownerPin;
+					var count=0;
+					var transferorPin =document.getElementById("cgtTransferorPin").value;
+					for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+					{ 
+						var modify;
+						modify=trim(tabObj1.rows[i].cells[2].innerText);
+						if((trim(document.getElementById('id_temp_'+'cgtOwnerAddrowTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+							ownerPin = tabObj1.rows[i].cells[3].innerText;
+							if(transferorPin==ownerPin){
+								count+=1;
+			}
+						}
+					}
+					if(count<1){
+						alert("Transferor must be one of the owners.");
+				return false;
+			}
+					var tabObj2 = document.getElementById("cgtOwnerAddrowTable");
+					
+					var totalPerc = 0;
+					for (var i = 1, n = tabObj2.rows.length; i <n; i++) 
+					{ 
+						var modify;
+						modify=trim(tabObj2.rows[i].cells[2].innerText);
+						if((trim(document.getElementById('id_temp_'+'cgtOwnerAddrowTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+							
+							totalPerc += parseInt(trim(tabObj2.rows[i].cells[5].innerText),10);
+						}
+					}
+					
+					if(totalPerc!=100) {
+						errorString=errorString+a+") The total Profit/Loss ratio should be equal to 100 \n";
+						a++;
+						/*alert('The total Profit/Loss ratio should be equal to 100');
+						return false;*/
+					}
+
+				
+				}
+		}
+		if (cgtType==cgt_type_3){
+			if(document.getElementById('cgt3LrNo').value=='' || document.getElementById('cgt3LrNo').value==null) {
+				errorString=errorString+a+") Please enter appropriate 'LR Number' \n";
+				a++;
+				/*alert('Please enter appropriate LR Number');
+				return false;*/
+			}
+			if(document.getElementById('cgt3YearOfPurchase').value=='' || document.getElementById('cgt3YearOfPurchase').value==null) {
+				errorString=errorString+a+") Please enter 'Year of purchase'. \n";
+				a++;
+				/*alert('Please enter Year of purchase.');
+				return false;*/
+			}
+			if(document.getElementById('cgt3ValOfTransfer').value<=0) {
+				errorString=errorString+a+") Please enter appropriate 'Transfer Value' \n";
+				a++;
+				/*alert('Please enter appropriate Transfer Value Details');
+				return false;*/
+			}
+			
+			if(document.getElementById('cgtExemptTransaction').value<=0) {
+				errorString=errorString+a+") Please select appropriate 'List of exempt transactions & others' \n";
+				a++;
+				/*alert('Please enter appropriate Transfer Value Details');
+				return false;*/
+			}
+			if(document.getElementById("isAmended").value!="true"){
+			
+			var proceed= isLr3NoValid();
+			if(proceed==false)
+				return false;
+			}
+			if(document.getElementById("isAmended").value=="true"){
+				if(document.getElementById("cgtAcknowledgementNo").value==null || document.getElementById("cgtAcknowledgementNo").value==''){
+					errorString=errorString+a+") Please enter appropriate 'Acknowledgement Number' \n";
+				}
+			}
+			
+			var cntr=0;
+			var table =  document.getElementById("cgt3TransfereeAddrowTable");
+			for (var i = 1, n = table.rows.length; i <n; i++) 
+			{ 
+				var modify;
+				modify=trim(table.rows[i].cells[2].innerText);
+				if((trim(document.getElementById('id_temp_'+'cgt3TransfereeAddrowTable'+'_'+i+'_1').value))=="Delete" && (modify=="Modify")) {
+					cntr++;
+				}
+			}
+			if(cntr<=0)
+			{
+				errorString=errorString+a+") Please enter atleast 1 transferee detail \n";
+				a++;
+				/*alert("Please enter atleast 1 transferee detail");
+				return false;*/
+			}
+			
+			
+		}
+		if(errorString!=""){
+			alert(errorString);
+		}
+		else{
+		if(saveConfirm())
+		{
+			//for CGT1,1P
+			createSkipFieldForAddRow('cgtTransfereeAddrowTable','paymentRegForm');
+			createSkipFieldForAddRow('cgtIncidentalCostOnTransferAddrowTable','paymentRegForm');
+			createSkipFieldForAddRow('cgtIncidentalCostOnAcquisitionAddrowTable','paymentRegForm');
+			createSkipFieldForAddRow('cgt1PPartnershipDtlsAddrowTable','paymentRegForm');
+				createSkipFieldForAddRow('cgtOwnerAddrowTable','paymentRegForm');
+				createSkipFieldForAddRow('cgt1SummaryAddrowTable','paymentRegForm');
+			//for CGT2,2P
+			createSkipFieldForAddRow('CGT2PSecBpaymentsTbl','paymentRegForm');
+				createSkipFieldForAddRow('CGTSecCpaymentsTbl','paymentRegForm');
+				createSkipFieldForAddRow('CGTSecBpaymentsTbl','paymentRegForm');
+				createSkipFieldForAddRow('CGT2PSecApaymentsTbl','paymentRegForm');
+			// for CGT3
+			createSkipFieldForAddRow('cgt3TransfereeAddrowTable','paymentRegForm');
+					
+			
+			document.getElementById('cmdSaveOblig').disabled=true;
+			document.getElementById('cmdClearOblig').disabled=true;
+			document.getElementById('back').disabled=true;
+			if (cgtType==cgt_type_3){
+				document.getElementById('hidExemptTransaction').value=document.getElementById('cgtExemptTransaction').value;
+			}
+			document.getElementById('hidCgtType').value=document.getElementById('cmbCGTType').value;
+				//document.getElementById('isIntPayReg').value=document.getElementById("specOblCGTPmtTypeRadio2").value;//added By miral for int pay reg 
+			document.paymentRegForm.action="paymentRegistration.htm?actionCode=saveObligationDetail";
+			document.paymentRegForm.submit();
+			}
+		}
+	}
+		
+		/*if(saveConfirm())
+		{
+			//for CGT1,1P
+			createSkipFieldForAddRow('cgtTransfereeAddrowTable','paymentRegForm');
+			createSkipFieldForAddRow('cgtIncidentalCostOnTransferAddrowTable','paymentRegForm');
+			createSkipFieldForAddRow('cgtIncidentalCostOnAcquisitionAddrowTable','paymentRegForm');
+			createSkipFieldForAddRow('cgt1PPartnershipDtlsAddrowTable','paymentRegForm');
+			//for CGT2,2P
+			createSkipFieldForAddRow('CGT2PSecBpaymentsTbl','paymentRegForm');
+			createSkipFieldForAddRow('CGT2SecCpaymentsTbl1','paymentRegForm');
+			createSkipFieldForAddRow('CGT2SecBpaymentsTbl2','paymentRegForm');
+			
+			document.getElementById('cmdSaveOblig').disabled=true;
+			document.getElementById('cmdClearOblig').disabled=true;
+			document.getElementById('back').disabled=true;
+			document.getElementById('hidCgtType').value=document.getElementById('cmbCGTType').value;
+			document.paymentRegForm.action="paymentRegistration.htm?actionCode=saveObligationDetail";
+			document.paymentRegForm.submit();
+		}*/
+	
+}
+
+
+function clearDetailsOfCGT() {
+	
+	//CGT 2 and 2P
+	if(document.getElementById('CGT2SecBpaymentsTbl')!=null)
+		clear_table_data('CGT2SecBpaymentsTbl');
+	if(document.getElementById('CGT2SecCpaymentsTbl')!=null)
+		clear_table_data('CGT2SecCpaymentsTbl');
+	if(document.getElementById('CGT2PSecBpaymentsTbl')!=null)
+		clear_table_data('CGT2PSecBpaymentsTbl');
+	
+	if(document.getElementById("dateOfTransfer")!=null)
+	{
+	document.getElementById('dateOfTransfer').value='';
+	}
+	
+	if(document.getElementById("descOfMarketableSecurities")!=null)
+	document.getElementById('descOfMarketableSecurities').value='';
+	
+	if(document.getElementById("numberOfSecurities")!=null)
+	document.getElementById('numberOfSecurities').value='';
+	if(document.getElementById("pricePerShare")!=null)
+	document.getElementById('pricePerShare').value='';
+	if(document.getElementById("valueOfConsideration")!=null)
+	document.getElementById('valueOfConsideration').value=0;
+	if(document.getElementById("totalOfIncidentalCost")!=null)
+	document.getElementById('totalOfIncidentalCost').value=0;
+	if(document.getElementById("netTransferValue")!=null)
+	document.getElementById('netTransferValue').value=0;
+	
+	if(document.getElementById("numberOfSecuritiesSecC")!=null)
+	document.getElementById('numberOfSecuritiesSecC').value='';
+	if(document.getElementById("pricePerShareSecC")!=null)
+	document.getElementById('pricePerShareSecC').value='';
+	if(document.getElementById("valueOfConsiderationPaidOnAcquisition")!=null)
+	document.getElementById('valueOfConsiderationPaidOnAcquisition').value=0;
+	if(document.getElementById("totalOfIncidentalCostOnAcquisition")!=null)
+	document.getElementById('totalOfIncidentalCostOnAcquisition').value=0;
+	if(document.getElementById("netAdjustedCost")!=null)
+	document.getElementById('netAdjustedCost').value=0;
+	
+	//CGT 1 and 1P
+	
+	if(document.getElementById('cgtTransfereeAddrowTable')!=null)
+		clear_table_data('cgtTransfereeAddrowTable');
+	if(document.getElementById('cgt1PPartnershipDtlsAddrowTable')!=null)
+		clear_table_data('cgt1PPartnershipDtlsAddrowTable');
+	if(document.getElementById('cgtIncidentalCostOnTransferAddrowTable')!=null)
+		clear_table_data('cgtIncidentalCostOnTransferAddrowTable');
+	if(document.getElementById('cgtIncidentalCostOnAcquisitionAddrowTable')!=null)
+		clear_table_data('cgtIncidentalCostOnAcquisitionAddrowTable');
+/*	if(document.getElementById('cgtIncidentalCostOnAquisitionDtls')!=null)
+		clear_table_data('cgtIncidentalCostOnAquisitionDtls');*/
+	if(document.getElementById("cgtLrNo")!=null)
+	document.getElementById('cgtLrNo').value='';
+	if(document.getElementById("cgtYearOfPurchase")!=null)
+	document.getElementById('cgtYearOfPurchase').value='';
+	if(document.getElementById("cgtValueOfConsideration")!=null)
+	document.getElementById('cgtValueOfConsideration').value=0;
+	if(document.getElementById("total_cgtIncidentalCostOnTransferAddrowTable_4")!=null)
+	document.getElementById('total_cgtIncidentalCostOnTransferAddrowTable_4').value=0;
+	if(document.getElementById("cgtNetTransferVal")!=null)
+	document.getElementById('cgtNetTransferVal').value=0;
+	if(document.getElementById("cgtCostOfEnhancement")!=null)
+	document.getElementById('cgtCostOfEnhancement').value=0;
+	if(document.getElementById("cgtCostOnPreservation")!=null)
+	document.getElementById('cgtCostOnPreservation').value=0;
+	if(document.getElementById("total_cgtIncidentalCostOnAcquisitionAddrowTable_4")!=null)
+	document.getElementById('total_cgtIncidentalCostOnAcquisitionAddrowTable_4').value=0;
+	if(document.getElementById("cgtTotal")!=null)
+	document.getElementById('cgtTotal').value=0;
+	if(document.getElementById("cgtAllowances")!=null)
+	document.getElementById('cgtAllowances').value=0;
+	if(document.getElementById("cgtNetAdjustedCost")!=null)
+	document.getElementById('cgtNetAdjustedCost').value=0;
+	if(document.getElementById("cgtCostOnAcquisition")!=null)
+		document.getElementById('cgtCostOnAcquisition').value=0;
+	
+	
+	//CGT Summary
+	
+	if(document.getElementById("netTransferValueSummary")==null)
+	document.getElementById('netTransferValueSummary').value=0;
+	if(document.getElementById("capitalGainTax")==null)
+	document.getElementById('capitalGainTax').value=0;
+	if(document.getElementById("netAdjustedCostSummary")==null)
+	document.getElementById('netAdjustedCostSummary').value=0;
+	if(document.getElementById("diffBeingCapitalGainOrLoss")==null)
+	document.getElementById('diffBeingCapitalGainOrLoss').value=0;
+	if(document.getElementById("capitalLossBoughtForward")!=null)
+	document.getElementById('capitalLossBoughtForward').value=0;
+	if(document.getElementById("adjustedCapitalGainOrLoss")!=null)
+	document.getElementById('adjustedCapitalGainOrLoss').value=0;
+	if(document.getElementById("capitalLossCarriedForward")!=null)
+	document.getElementById('capitalLossCarriedForward').value=0;
+	 // CGT3
+	
+	if(document.getElementById('cgt3TransfereeAddrowTable')!=null)
+		clear_table_data('cgt3TransfereeAddrowTable');
+	if(document.getElementById("dateOfTransfer")!=null)
+	document.getElementById('cgt3LrNo').value='';
+	if(document.getElementById("dateOfTransfer")!=null)
+	document.getElementById('cgt3YearOfPurchase').value='';
+	if(document.getElementById("dateOfTransfer")!=null)
+	document.getElementById('cgt3ValOfTransfer').value=0;
+}
+
+function checkEligibilityForCGTType() {
+	
+	var eligible = false;
+	var isPartnershipObgl = false;
+	var cgtType = document.getElementById('cmbCGTType').value;
+	
+	var selectobject=document.getElementById("cmbTaxSubHead");
+	for (var i=0; i<selectobject.length; i++){
+		if(selectobject.options[i].value == 5) {
+			isPartnershipObgl = true;
+		}
+	}
+	
+	/*if(cgtType == cgt_type_1 || cgtType == cgt_type_2) { -- commented by Mingu for Ticket 64973*/
+	if(cgtType == cgt_type_1 || cgtType == cgt_type_2 || cgtType == cgt_type_2n) {//added by Mingu for Ticket 64973
+		if(!isPartnershipObgl) {
+			eligible = true;
+		}
+	}
+	else if(cgtType == cgt_type_1P || cgtType == cgt_type_2P) {
+		if(isPartnershipObgl) {
+			eligible = true;
+		}
+	}
+	else if (cgtType == cgt_type_3)
+	{
+		if(!isPartnershipObgl) {
+			eligible = true;
+		}
+		//Added By Mingu for Ticket 48106 :: START
+		if(isPartnershipObgl){
+			eligible = true
+		}
+		//Added By Mingu for Ticket 48106 : END
+	}
+	return eligible;
+}
+function allowCurrentAndPastDate(dateObj)
+{
+	if(!checkdate(dateObj))
+	{
+		return false;
+	}
+//	var serverDateArray = serverDate.split("/");
+//	var curdate = new Date(serverDateArray[2],serverDateArray[1]-1,serverDateArray[0]);
+	
+	var curdate = null;
+/*
+ *  var inputDate = dateObj.value;
+	var TransDate = inputDate.split("/",3);
+	var year= TransDate[2];
+	if(yearOfPurchase>year)
+	{
+		alert("The Date Of Transfer Should Not Be Before The Year Of Purchase");
+		dateObj.value = "";
+		return false;
+	}
+	if(year<2015)
+	{
+		alert("Transfer Date Should be on or after 1st January 2015");
+		dateObj.value = "";
+		return false;
+	}
+*/
+	dateOfTransferLbl=document.getElementById('dateOfTransferLbl').value;
+	//currentDate=request.getAttribute("currentDate", date);
+	if(null!=dateOfTransferLbl){
+		var serverDateArray = dateOfTransferLbl.split("/");
+		curdate  = new Date(serverDateArray[2],serverDateArray[1]-1,serverDateArray[0]);
+	}else{
+		curdate = new Date();
+	}
+	var curmonth=parseInt(curdate.getMonth()+1);
+	if (curmonth<10) curmonth= '0'+curmonth;
+	var curyear=parseInt(curdate.getFullYear());
+	var curday=parseInt(curdate.getDate());
+	if (curday<10) curday= '0'+curday;
+	var todayDate = curday+"/"+curmonth+"/"+curyear;
+
+	//if(Date.parse(todayDate) != Date.parse(inputDate)){
+	if(todayDate != inputDate){
+		if(fnCompareDates(todayDate,inputDate))
+		{
+			alert("Date should not be future date");
+			dateObj.value = "";
+			return false;
+		}
+	}
+	return true;
+}
+
+function limitText(limitField, limitCount, limitNum)
+{
+	if (limitField.value.length > limitNum)
+	{
+		limitField.value = limitField.value.substring(0, limitNum);
+	}
+	else
+	{
+		limitCount.value = limitNum - limitField.value.length;
+	}
+}
+
+//kena
+function checkPinTransfereeAndPartnerNotSame(){	
+	pinCheckFlag=true;
+	var count=0;
+	var tabObj1 = document.getElementById('cgtTransfereeAddrowTable');
+	var tabObj2=document.getElementById('cgt1PPartnershipDtlsAddrowTable');
+	if((tabObj1.rows.length > 1) && (tabObj2.rows.length > 1))
+		{
+			for (var i = 1, n = tabObj1.rows.length; i <n; i++) {
+				
+				if(trim(document.getElementById('id_temp_'+'cgtTransfereeAddrowTable'+'_'+i+'_1').value)=="Delete"){
+					
+					for(var j = 1, m = tabObj2.rows.length; j <m; j++){
+						
+						if(trim(document.getElementById('id_temp_'+'cgt1PPartnershipDtlsAddrowTable'+'_'+j+'_1').value)=="Delete"){
+							if((trim(tabObj1.rows[i].cells[3].textContent))!="" && (trim(tabObj2.rows[j].cells[3].textContent))!=""){
+								transfereePin=trim(tabObj1.rows[i].cells[3].textContent,"");
+								partnerPin=trim(tabObj2.rows[j].cells[3].textContent,"");
+								count++;
+								
+								if(transfereePin == partnerPin){
+									alert('PIN of Partner and PIN of transferee cannot be same');
+									pinCheckFlag=false;
+									return false;
+									}
+							}
+							
+							
+						}
+					}
+				}
+			
+			}
+		}
+}
+
+
+function onChangeLossBroughtFrwd(obj) {
+	obj.value=removeCommaFrmInput(obj.value);
+	if(!onlyNumeric(obj))
+	{
+		alert("Please enter valid Capital Loss Brought Forward.");
+		document.getElementById('capitalLossBoughtForward').value='';
+		return false;
+	}
+
+	var price= obj.value;
+	price = parseInt(price,10);
+	if(price<=0 || price==null)
+	{
+		alert("Please enter valid Capital Loss Brought Forward.");
+		obj.value='';
+		document.getElementById('capitalLossBoughtForward').value='';
+		return false;
+	}
+	document.getElementById('capitalLossBoughtForward').value=convertToKenyanShillingFormatVal(price,true);
+	return true;
+}
+
+function isLrNoValid()
+{
+	var proceed = true;
+	//var transferorId = document.getElementById("cgtTransferorTaxPayerId").value;
+	var dateOfTransferVal=document.getElementById("dateOfTransferCGT1").value;
+	var lrNo = document.getElementById("cgtLrNo").value;
+	var dateParts = dateOfTransferVal.split("/");
+	var dateOfTransfer= new Date(dateParts[2], dateParts[1] - 1, dateParts[0]); 
+	ValidateLrNoForCGT.validateLrNoForCGT(dateOfTransfer,lrNo,{async:false,callback: 	
+		function(data){if (data != NULL && data != null) {
+					if (data.errorMsg != null && data.errorMsg != '') {
+						alert(data.errorMsg);
+						proceed= false;
+					}
+				} else {
+					alert(errFetchingData);
+					proceed= false;
+				}
+	}});
+	return proceed;
+}
+
+// Added By Sanidhya for Suggestions
+
+function onChangeCheckValueCGT2(obj){
+	obj.value=removeCommaFrmInput(obj.value);
+	if(!onlyNumeric(obj))
+	{
+		alert("Please enter numeric value for this field.");
+		document.getElementById(obj.id).value=parseInt("0");
+		return false;
+	}
+
+	var value= obj.value;
+	value = parseInt(value,10);
+	if(value<=0 || value==null)
+	{
+		alert("Please enter valid Number for this field.");
+		obj.value='';
+		document.getElementById(obj.id).value=parseInt("0");
+		return false;
+	}
+	document.getElementById(obj.id).value=convertToKenyanShillingFormatVal(value,true);
+	return true;
+}
+
+
+function onSelectionOfRadioForCGT(radioValue)
+{
+	
+	document.getElementById("specOblCGTPmtTypeRadio3").value=null;
+	document.getElementById("specOblCGTPmtTypeRadio4").value=null;
+	document.getElementById("interestPaymentCgt").style.display="none";
+	document.getElementById("penaltyPaymentCgt").style.display="none";
+	document.getElementById("specOblCGTPmtTypeRadio1").value="e";
+	//if(radioValue=='e')
+	//  {
+			showCGTTabs();
+		  document.getElementById('paymentRegAcknowledgmentForm').style.display ='none';
+			document.getElementById("isAmended").value='N';
+			document.getElementById("isIntPayReg").value='N';
+	 // }
+//	else{
+//		document.getElementById("cgtAcknowledgementNo").value="";
+//		document.getElementById("cgtTabViewSet").style.display="none";
+//		document.getElementById('paymentRegAcknowledgmentForm').style.display ='';
+//
+//	}
+	//Added by Mingu for Ticket 64973 :: START
+	var hidTaxPayerId = document.getElementById("hidTaxPayerId").value;
+	FetchTaxpayerDetailWithoutValidationSplObl.checkTaxPayerCGTSpecialRate(hidTaxPayerId,{
+		async:false, callback:function(data){
+				if(data != null){
+					document.getElementById("isAllowedSplRate").value = data;
+				}
+	}});
+	//Added by Mingu for Ticket 64973 :: END
+}
+
+function onSelectionOfRadioForCGTAmend(radioValue){
+	document.getElementById("specOblCGTPmtTypeRadio3").value=null;
+	document.getElementById("specOblCGTPmtTypeRadio4").value=null;
+	document.getElementById("specOblCGTPmtTypeRadio2").value="n";
+
+	document.getElementById("interestPaymentCgt").style.display="none";
+	document.getElementById("penaltyPaymentCgt").style.display="none";
+	document.getElementById("cgtAcknowledgementNo").value="";
+	document.getElementById("cgtTabViewSet").style.display="none";
+	document.getElementById('paymentRegAcknowledgmentForm').style.display ='';
+}
+function checkPrnReconsiled(){
+	var proceed = true;
+
+	var acknowledgementNo=document.getElementById("cgtAcknowledgementNo").value;
+	var transferorId=document.getElementById('hidTaxPayerId').value;
+	var cgtType = document.getElementById('cmbCGTType').value;
+	//check if prn is reconsiled
+	if(cgtType!='CGT_3'){
+	 FetchPrnDtlsFromAckNo.fetchPrnDtlsFromAckNo(acknowledgementNo,transferorId,cgtType,{async:false,callback: function(data){
+		 if (data.prnReconsiledError != 'null' &&  data.prnReconsiledError != null) {
+			 alert(data.prnReconsiledError);
+			 document.getElementById("cgtAcknowledgementNo").value="";
+			 proceed=false;
+		 }
+		
+		 }});
+	}else{
+		proceed=true;
+	}
+	return proceed;
+}
+
+function onChangeAcknowlegementNo(){
+	var acknowledgementNo=document.getElementById("cgtAcknowledgementNo").value;
+	var cgtType = document.getElementById('cmbCGTType').value;
+	if(isValidAckNo('cgtAcknowledgementNo')){
+	
+	if(cgtType=="CGT_3"){
+		if(fetchCGT3TaskStatus()){
+			
+			fetchAmendmentDetailsCGT();
+		}
+	}
+	else if (cgtType=="CGT_1P" || cgtType=="CGT_2P" || cgtType=="CGT_1" || cgtType=="CGT_2"){
+		
+		if(checkPrnReconsiled()){
+			fetchAmendmentDetailsCGT();
+		}
+	}
+	else if (cgtType=="CGT_2"){
+		
+		if(checkPrnReconsiled()){
+			fetchAmendmentDetailsCGT();
+		}
+	}
+	} else {
+		alert("Please enter valid acknowledgement number.");
+		return false;
+	}
+	}
+
+	
+
+function fetchAmendmentDetailsCGT(){
+	
+	var acknowledgementNo=document.getElementById("cgtAcknowledgementNo").value;
+	var cgtType = document.getElementById('cmbCGTType').value;
+	FetchAmendmentDetailsCGT.fetchAmendmentDetailsCGT(acknowledgementNo,cgtType,{async:false,callback: function(data){
+		
+			if (data != 'null' &&  data != null) {
+				document.getElementById("isAmended").value=true;
+				showCGTTabs();
+				
+				document.getElementById('cgtTabViewSet').style.display ='';
+				document.getElementById("previousAckId").value=data.ackId;
+				var capitalLossBroughtForward=parseInt(removeCommaFrmInput(document.getElementById('capitalLossBoughtForward').value));
+				var setOff=parseInt(removeCommaFrmInput(document.getElementById('capitalLossCarryFrwdAndSetoff').value));
+				if(cgtType=="CGT_3"){
+					
+					document.getElementById("cgt3TransferorPin").value=document.getElementById('txtPin').value;
+					document.getElementById("cgt3TransferorName").value=data.cgt3TransferorName;
+					document.getElementById("cgt3TransferorAddr").value=data.cgt3TransferorAddress;
+					document.getElementById("cgt3TransferorEmail").value=data.cgt3TransferorEmail;
+					document.getElementById("cgt3LrNo").value=data.cgt3LrNo;
+					document.getElementById("cgt3YearOfPurchase").value=data.cgt3YearOfPurchase;
+					document.getElementById("cgt3ValOfTransfer").value=convertToKenyanShillingFormatVal(data.transferValue,false);
+					document.getElementById("previousAckNo").value=data.getPreviousCgtAckNo;
+					var transfereeDtls = data.pmtCgtTransfereeDtlsList;
+					createCGT3TransfereeTable(transfereeDtls);
+					setExemptValue(data.exemptTransactions);
+				}
+				else if(cgtType=="CGT_1P"){
+					document.getElementById("cgtTransferorPin").value=document.getElementById('txtPin').value;;
+					document.getElementById("cgtTransferorName").value=data.cgtTransferorName;
+					document.getElementById("cgtTransferorAddr").value=data.cgtTransferorAddress;
+					document.getElementById("cgtTransferorEmail").value=data.cgtTransferorEmail;
+					document.getElementById("cgtLrNo").value=data.cgtLrNo;
+					document.getElementById("cgtYearOfPurchase").value=data.cgtYearOfPurchase;
+					document.getElementById("dateOfTransferCGT1").value = data.dateOfTransfer;
+					document.getElementById("cgtValueOfConsideration").value=convertToKenyanShillingFormatVal(data.cgtValueOfConsideration,false);
+					document.getElementById("cgtNetTransferVal").value=convertToKenyanShillingFormatVal(data.cgtNetTransferVal,false);
+					document.getElementById("total_cgtIncidentalCostOnTransferAddrowTable_4").value=convertToKenyanShillingFormatVal(data.cgtTotalIncidentalCost,false);
+					document.getElementById("cgtCostOfEnhancement").value=convertToKenyanShillingFormatVal(data.cgtCostOfEnhancement,false);
+					document.getElementById("cgtCostOnPreservation").value=convertToKenyanShillingFormatVal(data.cgtCostOnPreservation,false);
+					document.getElementById("cgtCostOnAcquisition").value=convertToKenyanShillingFormatVal(data.cgtCostOfAquisition,false);
+					document.getElementById("total_cgtIncidentalCostOnAcquisitionAddrowTable_4").value=convertToKenyanShillingFormatVal(data.cgtTotalIncidentalCostOfAquisition,false);
+					
+					document.getElementById("cgtNetAdjustedCost").value=convertToKenyanShillingFormatVal(data.cgtNetAdjustedCost,false);
+					document.getElementById("cgtAllowances").value=convertToKenyanShillingFormatVal(data.cgtAllowances,false);
+					document.getElementById("cgtTotal").value=convertToKenyanShillingFormatVal(data.cgtTotal,false);
+					document.getElementById("netTransferValueSummary").value=convertToKenyanShillingFormatVal(data.cgtNetTransferValSummary,false);
+					document.getElementById("netAdjustedCostSummary").value=convertToKenyanShillingFormatVal(data.cgtNetAdjustedCostSummary,false);
+					document.getElementById("diffBeingCapitalGainOrLoss").value=convertToKenyanShillingFormatVal(data.cgtDiffBeingCapitalGainOrLoss,false);
+					document.getElementById("capitalLossBoughtForward").value=convertToKenyanShillingFormatVal(data.cgtCapitalLossBoughtForward,false);
+					//Added by kruti to set the data as per the loss fetch logic
+					var adjustedCost=capitalLossBroughtForward-parseInt(removeCommaFrmInput(document.getElementById("diffBeingCapitalGainOrLoss").value))-setOff;
+					document.getElementById("adjustedCapitalGainOrLoss").value=convertToKenyanShillingFormatVal(adjustedCost*-1,false);
+					document.getElementById("capitalGainTax").value=convertToKenyanShillingFormatVal(data.cgtTax,false);
+					//Commented by kruti to set the data as per the loss fetch logic
+					//document.getElementById("capitalLossCarriedForward").value=data.cgtCapitalLossCarriedForward;
+					//document.getElementById("capitalLossCarryFrwdAndSetoff").value=data.capitalLossCarryForwardedAndSetoff;
+					
+					document.getElementById("isAmended").value="Y";
+					document.getElementById("previousackId").value=data.previousAckId;
+					document.getElementById("previousSummaryId").value=data.previousSummaryId;
+					document.getElementById("previousAckNo").value=data.getPreviousCgtAckNo;
+			
+					
+					populateTransfereeTable(data.pmtCgtTransfereeDtlsList,data.cgtType);
+					populatePartnershipTable(data.pmtCgt1PartnershipList,data.cgtType);
+					populateIncCostOnTransTable(data.pmtCgtIncidentalCostOnTransferList,data.cgtType);
+					populateIncCostOnAquisTable(data.pmt1IncidentalCostOnAcquisitionList,data.cgtType);
+			
+				}
+				else if(cgtType=="CGT_1"){
+					document.getElementById("cgtTransferorPin").value=document.getElementById('txtPin').value;;
+					document.getElementById("cgtTransferorName").value=data.cgtTransferorName;
+					document.getElementById("cgtTransferorAddr").value=data.cgtTransferorAddress;
+					document.getElementById("cgtTransferorEmail").value=data.cgtTransferorEmail;
+					document.getElementById("cgtLrNo").value=data.cgtLrNo;
+					document.getElementById("cgtYearOfPurchase").value=data.cgtYearOfPurchase;
+					document.getElementById("dateOfTransferCGT1").value = data.dateOfTransfer;
+					document.getElementById("cgtValueOfConsideration").value=convertToKenyanShillingFormatVal(data.cgtValueOfConsideration,false);
+					document.getElementById("cgtNetTransferVal").value=convertToKenyanShillingFormatVal(data.cgtNetTransferVal,false);
+					document.getElementById("total_cgtIncidentalCostOnTransferAddrowTable_4").value=convertToKenyanShillingFormatVal(data.cgtTotalIncidentalCost,false);
+					document.getElementById("cgtCostOfEnhancement").value=convertToKenyanShillingFormatVal(data.cgtCostOfEnhancement,false);
+					document.getElementById("cgtCostOnPreservation").value=convertToKenyanShillingFormatVal(data.cgtCostOnPreservation,false);
+					document.getElementById("cgtCostOnAcquisition").value=convertToKenyanShillingFormatVal(data.cgtCostOfAquisition,false);
+					document.getElementById("total_cgtIncidentalCostOnAcquisitionAddrowTable_4").value=convertToKenyanShillingFormatVal(data.cgtTotalIncidentalCostOfAquisition,false);
+					
+					document.getElementById("cgtNetAdjustedCost").value=convertToKenyanShillingFormatVal(data.cgtNetAdjustedCost,false);
+					document.getElementById("cgtAllowances").value=convertToKenyanShillingFormatVal(data.cgtAllowances,false);
+					document.getElementById("cgtTotal").value=convertToKenyanShillingFormatVal(data.cgtTotal,false);
+					document.getElementById("netTransferValueSummaryCGT1").value=convertToKenyanShillingFormatVal(data.cgtNetTransferValSummary,false);
+					document.getElementById("netAdjustedCostSummaryCGT1").value=convertToKenyanShillingFormatVal(data.cgtNetAdjustedCostSummary,false);
+					document.getElementById("diffBeingCapitalGainOrLossCGT1").value=convertToKenyanShillingFormatVal(data.cgtDiffBeingCapitalGainOrLoss,false);
+					document.getElementById("netCGTPayableCGT1Summary").value=convertToKenyanShillingFormatVal(data.cgtTax,false);
+					
+					
+					document.getElementById("isAmended").value="Y";
+					document.getElementById("previousackId").value=data.previousAckId;
+					document.getElementById("previousSummaryId").value=data.previousSummaryId;
+					document.getElementById("previousAckNo").value=data.getPreviousCgtAckNo;
+			
+					
+					populateTransfereeTable(data.pmtCgtTransfereeDtlsList,data.cgtType);
+					populateCGT1OwnerTable(data.pmtCGT1OwnerDtlsList,data.cgtType);
+					//fetchCapitalLossBroughtForwardAndSetOffForCgt1(data.pmtCGT1OwnerDtlsList,data.pmtCGTOwnerWiseSummaryDtlDTOList);
+					//populateCGTOwnerSummaryTable(data.pmtCGTOwnerWiseSummaryDtlDTOList,data.cgtType);
+					//populateCGTHiddenOwnerSummaryTable(data.pmtCGTOwnerWiseSummaryDtlDTOList);
+					populateIncCostOnTransTable(data.pmtCgtIncidentalCostOnTransferList,data.cgtType);
+					populateIncCostOnAquisTable(data.pmt1IncidentalCostOnAcquisitionList,data.cgtType);
+			
+				}
+				
+				else if(cgtType=="CGT_2"){
+					document.getElementById("transferorPIN").value=document.getElementById('txtPin').value;;
+			document.getElementById("transferorName").value=data.cgtTransferorName;
+			document.getElementById("transferorAddress").value=data.cgtTransferorAddress;
+			document.getElementById("transferorEmail").value=data.cgtTransferorEmail;
+			populateCGT2TransfereeTable(data.pmtCgtTransfereeDtlsList,data.cgtType);
+			/*populatePartnershipTable(data.pmtCgt1PartnershipList,data.cgtType);*/
+			populateCGT2IncCostOnTransTable(data.pmtCGT2SecBIncidenatlCostOnTransferDtlsDTO,data.cgtType);
+			populateCGT2IncCostOnAquisTable(data.pmtCGT2SecCIncidenatlCostOnAcquisitionDtlsDTO,data.cgtType);
+			/*document.getElementById("cgtLrNo").value=data.cgtLrNo;*/
+			document.getElementById("dateOfTransfer").value=data.dateOfTransferCGT2;
+			document.getElementById("descOfMarketableSecurities").value=data.descOfMarketableSecurities;
+			document.getElementById("numberOfSecurities").value=convertToKenyanShillingFormatVal(data.numberOfSecurities,false);
+			document.getElementById("pricePerShare").value=convertToKenyanShillingFormatValWithDecimal(data.pricePerShare,true);
+			document.getElementById("valueOfConsideration").value=convertToKenyanShillingFormatVal(data.cgtValueOfConsideration,false);
+			document.getElementById("netTransferValue").value=convertToKenyanShillingFormatVal(data.cgtNetTransferVal,false);
+			document.getElementById("totalOfIncidentalCost").value=convertToKenyanShillingFormatVal(data.cgtTotalIncidentalCost,false);
+			/*document.getElementById("cgtCostOfEnhancement").value=data.cgtCostOfEnhancement;*/
+			/*document.getElementById("cgtCostOnPreservation").value=data.cgtCostOnPreservation;*/
+			document.getElementById("numberOfSecuritiesSecC").value=convertToKenyanShillingFormatVal(data.numberOfSecuritiesSecC,false);
+			document.getElementById("pricePerShareSecC").value=convertToKenyanShillingFormatValWithDecimal(data.pricePerShareSecC,true);
+			document.getElementById("cgt2CostOnAcquisition").value=convertToKenyanShillingFormatVal(data.cgtCostOfAquisition,false);
+			document.getElementById("valueOfConsiderationPaidOnAcquisition").value=convertToKenyanShillingFormatVal(data.valueOfConsiderationPaidOnAcquisition,false);
+			document.getElementById("totalOfIncidentalCostOnAcquisition").value=convertToKenyanShillingFormatVal(data.cgtTotalIncidentalCostOfAquisition,false);
+			document.getElementById("netAdjustedCost").value=convertToKenyanShillingFormatVal(data.cgtNetAdjustedCost,false);
+			
+			/*document.getElementById("cgtAllowances").value=data.cgtAllowances;
+			document.getElementById("cgtTotal").value=data.cgtTotal;*/
+			document.getElementById("netTransferValueSummary").value=convertToKenyanShillingFormatVal(data.cgtNetTransferValSummary,false);
+			document.getElementById("netAdjustedCostSummary").value=convertToKenyanShillingFormatVal(data.cgtNetAdjustedCostSummary,false);
+			document.getElementById("diffBeingCapitalGainOrLoss").value=convertToKenyanShillingFormatVal(data.cgtDiffBeingCapitalGainOrLoss,false);
+			document.getElementById("capitalLossBoughtForward").value=convertToKenyanShillingFormatVal(data.cgtCapitalLossBoughtForward,false);
+			document.getElementById("capitalGainTax").value=convertToKenyanShillingFormatVal(data.cgtTax,false);
+			//Added by kruti to set the data as per the loss fetch logic
+			var adjustedCost=capitalLossBroughtForward-parseInt(removeCommaFrmInput(document.getElementById("diffBeingCapitalGainOrLoss").value))-setOff;
+			adjustedCost=adjustedCost*-1;
+			document.getElementById("adjustedCapitalGainOrLoss").value=convertToKenyanShillingFormatVal(adjustedCost);
+			//Commented by kruti to set the data as per the loss fetch logic
+			document.getElementById("capitalLossCarriedForward").value=convertToKenyanShillingFormatVal(data.cgtCapitalLossCarriedForward);
+			//document.getElementById("capitalLossCarryFrwdAndSetoff").value=data.capitalLossCarryForwardedAndSetoff;
+			document.getElementById("isAmended").value="Y";
+			document.getElementById("previousackId").value=data.previousAckId;
+			document.getElementById("previousSummaryId").value=data.previousSummaryId;
+			
+			
+			
+				}
+				else if(cgtType=="CGT_2P"){
+					
+					//adding data of Sec A
+					document.getElementById("transferorPIN").value = data.transferorPIN;
+					document.getElementById("transferorName").value = data.transferorName;
+					document.getElementById("transferorAddress").value = data.transferorAddress;
+					document.getElementById("transferorEmail").value = data.transferorEmail;
+					
+					//add row data
+					createCGT2PTranfereetable(data.pmtCGT2SecATransfereeDtls);
+					createCGT2Partnerstable(data.pmtCGT2PSecBPartnerTransferorDtls);
+					createCGT2incidentalCostOnTransferDtlstable(data.pmtCGT2SecBIncidenatlCostOnTransferDtlsDTO);
+					createCGT2adjustedCostDtlDtlstable(data.pmtCGT2SecCIncidenatlCostOnAcquisitionDtlsDTO);
+					
+					document.getElementById("dateOfTransfer").value = data.dateOfTransferCGT2;;
+					document.getElementById("descOfMarketableSecurities").value = data.descOfMarketableSecurities;
+					//document.getElementById("cgtTransferorPin").value = data.cgtTransferorTaxPayerId;
+					
+					//adding data of Sec B
+					document.getElementById("numberOfSecurities").value = convertToKenyanShillingFormatVal(data.numberOfSecurities,false);
+					document.getElementById("valueOfConsideration").value = data.valueOfConsideration;
+					document.getElementById("pricePerShare").value = data.pricePerShare;
+					document.getElementById("netTransferValue").value = data.netTransferValue;
+					//document.getElementById("totalOfIncidentalCost").value = data.totalOfIncidentalCost;
+					
+					//adding data of Sec C
+					document.getElementById("valueOfConsiderationPaidOnAcquisition").value = data.valueOfConsiderationPaidOnAcquisition;
+					document.getElementById("numberOfSecuritiesSecC").value = convertToKenyanShillingFormatVal(data.numberOfSecuritiesSecC,false);
+					document.getElementById("pricePerShareSecC").value = data.pricePerShareSecC;
+					//document.getElementById("totalOfIncidentalCostOnAcquisition").value = data.totalOfIncidentalCostOnAcquisition;
+					document.getElementById("netAdjustedCost").value = convertToKenyanShillingFormatVal(data.netAdjustedCost,false);
+					document.getElementById("cgt2CostOnAcquisition").value = convertToKenyanShillingFormatVal(data.cgtCostOfAquisition,false);
+					
+					//adding data of Summary
+					document.getElementById("netTransferValueSummary").value = convertToKenyanShillingFormatVal(data.cgtNetTransferValSummary,false);
+					document.getElementById("netAdjustedCostSummary").value = convertToKenyanShillingFormatVal(data.cgtNetAdjustedCostSummary,false);
+					document.getElementById("diffBeingCapitalGainOrLoss").value =convertToKenyanShillingFormatVal( data.cgtDiffBeingCapitalGainOrLoss,false);
+					document.getElementById("capitalLossBoughtForward").value = convertToKenyanShillingFormatVal(data.capitalLossBroughtForward,false);
+					//Commented by kruti to set the data as per the loss fetch logic
+					//document.getElementById("adjustedCapitalGainOrLoss").value = data.cgtDiffBeingAdjustedCapitalGainOrLoss;
+					document.getElementById("capitalLossCarriedForward").value = convertToKenyanShillingFormatVal(data.cgtCapitalLossCarriedForward,false);
+					document.getElementById("capitalGainTax").value = convertToKenyanShillingFormatVal(data.cgtTax,false);
+					//Added by kruti to set the data as per the loss fetch logic
+					var adjustedCost=capitalLossBroughtForward-parseInt(removeCommaFrmInput(document.getElementById("diffBeingCapitalGainOrLoss").value))-setOff;
+					document.getElementById("adjustedCapitalGainOrLoss").value=adjustedCost*-1;
+					//end
+					document.getElementById("previousAckId").value = data.previousAckId;
+					document.getElementById("previousSummaryId").value = data.previousSummaryId;
+					document.getElementById("isAmended").value="Y";
+					document.getElementById("previousAckNo").value=data.getPreviousCgtAckNo;
+					
+					
+					
+				}
+				
+			}
+			else {
+			alert("Error while fetching data");
+			
+		}
+		}});
+	
+	
+}
+
+function setExemptValue(data){
+	var select=document.getElementById("cgtExemptTransaction");
+ 
+	for (var i = 0; i < select.options.length; i++) {
+    if (select.options[i].text === data) {
+        select.selectedIndex = i;
+        break;
+    }
+}
+}
+
+function createCGT3TransfereeTable(transfereeDtls){
+	
+	
+	for(var j=0;j<transfereeDtls.length;j++){
+			
+		document.getElementById("in_cgt3TransfereeAddrowTable_3").value=transfereeDtls[j].pin;
+		document.getElementById("in_cgt3TransfereeAddrowTable_4").value=transfereeDtls[j].name;
+		document.getElementById("in_cgt3TransfereeAddrowTable_6").value=transfereeDtls[j].emailId;
+		document.getElementById("in_cgt3TransfereeAddrowTable_5").value=transfereeDtls[j].address;
+		document.getElementById("in_cgt3TransfereeAddrowTable_7").value=transfereeDtls[j].taxPayerId;
+		
+		
+		addrow('cgt3TransfereeAddrowTable','4','5','3','','','N','N','','');
+	}
+	
+}
+function populateTransfereeTable(transfereeDtlsList,cgtType)
+{
+	clear_table_data("cgtTransfereeAddrowTable");
+	
+	var tabObj = document.getElementById("cgtTransfereeAddrowTable");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(transfereeDtlsList!=null)
+	{
+		//document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+		for ( var i = 0; i < transfereeDtlsList.length; i++)
+		{
+			document.getElementById("in_cgtTransfereeAddrowTable_3").value = transfereeDtlsList[i].pin;
+			document.getElementById("in_cgtTransfereeAddrowTable_4").value = transfereeDtlsList[i].name;
+			document.getElementById("in_cgtTransfereeAddrowTable_5").value  = transfereeDtlsList[i].addrs;
+			document.getElementById("in_cgtTransfereeAddrowTable_6").value  = transfereeDtlsList[i].email;
+			document.getElementById("in_cgtTransfereeAddrowTable_7").value  = transfereeDtlsList[i].taxPayerId;
+			
+			
+			addrow('cgtTransfereeAddrowTable','4','5','3','','','N','N','','');
+		}
+	} else {
+		alert("No Transferee");
+	}
+	
+}
+
+function populateCGT2TransfereeTable(transfereeDtlsList,cgtType)
+{
+	clear_table_data("CGT2PSecApaymentsTbl");
+	
+	var tabObj = document.getElementById("CGT2PSecApaymentsTbl");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(transfereeDtlsList!=null)
+	{
+		//document.getElementById("transfereeHeaderDeleteStampDuty").style.display="none";
+		for ( var i = 0; i < transfereeDtlsList.length; i++)
+		{
+			document.getElementById("in_CGT2PSecApaymentsTbl_3").value = transfereeDtlsList[i].pin;
+			document.getElementById("in_CGT2PSecApaymentsTbl_4").value = transfereeDtlsList[i].name;
+			document.getElementById("in_CGT2PSecApaymentsTbl_5").value  = transfereeDtlsList[i].addrs;
+			document.getElementById("in_CGT2PSecApaymentsTbl_6").value  = transfereeDtlsList[i].email;
+			document.getElementById("in_CGT2PSecApaymentsTbl_7").value  = transfereeDtlsList[i].taxPayerId;
+			
+			
+			addrow('CGT2PSecApaymentsTbl','4','5','3','','','N','N','','');
+		}
+	} else {
+		alert("No Transferee");
+	}
+	
+}
+
+function populateIncCostOnTransTable(cgt1IncCostOnTransTbl,cgtType){
+clear_table_data("cgtIncidentalCostOnTransferAddrowTable");
+	
+	var tabObj = document.getElementById("cgtIncidentalCostOnTransferAddrowTable");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(cgt1IncCostOnTransTbl!=null)
+	{
+		
+		for ( var i = 0; i < cgt1IncCostOnTransTbl.length; i++)
+		{
+			document.getElementById("in_cgtIncidentalCostOnTransferAddrowTable_3").value = cgt1IncCostOnTransTbl[i].description;
+			document.getElementById("in_cgtIncidentalCostOnTransferAddrowTable_4").value = cgt1IncCostOnTransTbl[i].value;
+			
+			addrow('cgtIncidentalCostOnTransferAddrowTable','2','2','4','','','N','N','');
+		}
+	} else {
+		alert("No Transferee");
+	}
+}
+
+function populateCGT2IncCostOnTransTable(cgt1IncCostOnTransTbl,cgtType){
+clear_table_data("CGTSecBpaymentsTbl");
+	
+	var tabObj = document.getElementById("CGTSecBpaymentsTbl");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(cgt1IncCostOnTransTbl!=null)
+	{
+		
+		for ( var i = 0; i < cgt1IncCostOnTransTbl.length; i++)
+		{
+			document.getElementById("in_CGTSecBpaymentsTbl_3").value = cgt1IncCostOnTransTbl[i].description;
+			document.getElementById("in_CGTSecBpaymentsTbl_4").value = cgt1IncCostOnTransTbl[i].value;
+			
+			addrow('CGTSecBpaymentsTbl', '2', '2','3','validateDeleteRowIncidentalCostOnTransferTable','validateModifyIncidentalCostOnTransferTable','N','N');
+			//addrow('CGTSecBpaymentsTbl','2','2','4','','','N','N','');
+		}
+	} else {
+		alert("No Transferee");
+	}
+}
+
+function populateIncCostOnAquisTable(cgt1IncCostOnAquisTbl,cgtType){
+	clear_table_data("cgtIncidentalCostOnAcquisitionAddrowTable");
+		
+		var tabObj = document.getElementById("cgtIncidentalCostOnAcquisitionAddrowTable");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(cgt1IncCostOnAquisTbl!=null)
+		{
+			
+			for ( var i = 0; i < cgt1IncCostOnAquisTbl.length; i++)
+			{
+				document.getElementById("in_cgtIncidentalCostOnAcquisitionAddrowTable_3").value = cgt1IncCostOnAquisTbl[i].description;
+				document.getElementById("in_cgtIncidentalCostOnAcquisitionAddrowTable_4").value = cgt1IncCostOnAquisTbl[i].value;
+				
+				addrow('cgtIncidentalCostOnAcquisitionAddrowTable', '2', '2','3','validateDeleteRowIncidentalCostOnTransferTable','validateModifyIncidentalCostOnTransferTable','N','N');
+				//addrow('cgtIncidentalCostOnAcquisitionAddrowTable','2','2','4','','','N','N','');
+			}
+		} else {
+			alert("No Transferee");
+		}
+	}
+
+function populateCGT2IncCostOnAquisTable(cgt1IncCostOnAquisTbl,cgtType){
+	clear_table_data("CGTSecCpaymentsTbl");
+		
+		var tabObj = document.getElementById("CGTSecCpaymentsTbl");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(cgt1IncCostOnAquisTbl!=null)
+		{
+			
+			for ( var i = 0; i < cgt1IncCostOnAquisTbl.length; i++)
+			{
+				document.getElementById("in_CGTSecCpaymentsTbl_3").value = cgt1IncCostOnAquisTbl[i].description;
+				document.getElementById("in_CGTSecCpaymentsTbl_4").value = cgt1IncCostOnAquisTbl[i].value;
+				addrow('CGTSecCpaymentsTbl', '2', '2','3','validateDeleteRowIncidentalCostOnAcquisitionTable','validateModifyIncidentalCostOnAcquisitionTable','N','N');
+				//addrow('CGTSecCpaymentsTbl','2','2','4','','','N','N','');
+			}
+		} else {
+			alert("No Transferee");
+		}
+	}
+
+function populatePartnershipTable(cgt1PartnershipTbl,cgtType){
+	clear_table_data("cgt1PPartnershipDtlsAddrowTable");
+		
+		var tabObj = document.getElementById("cgt1PPartnershipDtlsAddrowTable");
+		for ( var l = tabObj.rows.length; l > 1; l--) {
+			tabObj.deleteRow(l - 1);
+		}
+
+		if(cgt1PartnershipTbl!=null)
+		{
+			
+			for ( var i = 0; i < cgt1PartnershipTbl.length; i++)
+			{
+				document.getElementById("in_cgt1PPartnershipDtlsAddrowTable_3").value = cgt1PartnershipTbl[i].pin;
+				document.getElementById("in_cgt1PPartnershipDtlsAddrowTable_4").value = cgt1PartnershipTbl[i].name;	
+				document.getElementById("in_cgt1PPartnershipDtlsAddrowTable_5").value = cgt1PartnershipTbl[i].addrs;
+				document.getElementById("in_cgt1PPartnershipDtlsAddrowTable_6").value = cgt1PartnershipTbl[i].email;
+				document.getElementById("in_cgt1PPartnershipDtlsAddrowTable_7").value = cgt1PartnershipTbl[i].profitLossShare;
+				document.getElementById("in_cgt1PPartnershipDtlsAddrowTable_8").value = cgt1PartnershipTbl[i].taxPayerId;
+				
+				addrow('cgt1PPartnershipDtlsAddrowTable','5','6','5','','','N','N','','');
+			}
+		} else {
+			alert("No Partners");
+		}
+	}
+
+
+//added by saumya ::start
+function onchangeCgt2TransfreePinNumber(obj) {
+	
+	var pin = trim(obj.value);
+	pin=pin.toUpperCase();
+	obj.value=pin;
+	
+	/*if(pin==document.getElementById('txtPin').value) {
+		alert('The Transferee PIN and the Transferor PIN cannot be the same');
+		obj.value='';
+		return false;
+	}*/
+	if(validPIN(obj)){
+		resetTranfereeDtls();
+		FetchTaxPayerNameFromPINCGT.fetchTaxPayerNameFromPINCGT(pin,{async:false,callback: function(data){
+			if(data != NULL &&  data != null){
+				if(data.isDataAvailable == N_FLAG){
+					if(data.isAgent == ERROR ||data.isAgent == NO_CALL_MADE){ // Handled Scenario : 1) if no call made from Controller to impl 2) impl to facade
+						alert(errorFetchingData);
+					}
+					else if(data.isAgent == NO_DETAILS_FOUND){// Handled Scenario : 1) call made to facade with invalid PIN
+						alert(validPin);
+					}
+					else if(data.isAgent == "NO_IPAGE") {
+						alert('The entered Transferee PIN is not iPage processed');
+						document.getElementById('in_CGT2PSecApaymentsTbl_3').value="";
+					}
+					resetTranfereeDtls();
+					return false;
+				}
+				if(data.taxPayerFirstName != null || (data.taxPayerId != null && data.taxPayerId != 0)){
+					
+					document.getElementById('in_CGT2PSecApaymentsTbl_7').value = data.taxPayerId;
+					
+					if(data.taxPayerFirstName != null && data.taxPayerFirstName!="")
+					{
+						document.getElementById('in_CGT2PSecApaymentsTbl_4').value=data.taxPayerFirstName;
+					}
+					
+					if(data.emailId != null && data.emailId!="")
+					{
+						document.getElementById('in_CGT2PSecApaymentsTbl_6').value=data.emailId;
+					}
+					
+					if(data.taxPayerFullAddr != null && data.taxPayerFullAddr!="")
+					{
+						document.getElementById('in_CGT2PSecApaymentsTbl_5').value=data.taxPayerFullAddr;
+					}
+					
+					
+				}
+				else{
+					alert("Entered PIN does not exist.");
+					document.getElementById('in_CGT2PSecApaymentsTbl_3').value="";
+					resetTranfereeDtls();
+					return false;
+			}
+			}
+			else{
+				alert(errorFetchingData);
+				resetTranfereeDtls();
+				return false;
+			}
+
+		}});
+		return true;
+	}
+	else{
+		resetTranfereeDtls();
+		return false;
+	}
+}
+
+function populateCGT1OwnerTable(cgt1OwnerTable ,cgtType) {
+	clear_table_data("cgtOwnerAddrowTable");
+	
+	var tabObj = document.getElementById("cgtOwnerAddrowTable");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(cgt1OwnerTable!=null)
+	{
+		
+		for ( var i = 0; i < cgt1OwnerTable.length; i++)
+		{
+			document.getElementById("in_cgtOwnerAddrowTable_3").value = cgt1OwnerTable[i].ownerPin;
+			document.getElementById("in_cgtOwnerAddrowTable_4").value = cgt1OwnerTable[i].ownerName;	
+			document.getElementById("in_cgtOwnerAddrowTable_5").value = cgt1OwnerTable[i].ratio;
+			document.getElementById("in_cgtOwnerAddrowTable_6").value = cgt1OwnerTable[i].cgtOwnerWiseLossBroughtForward;
+			document.getElementById("in_cgtOwnerAddrowTable_7").value = cgt1OwnerTable[i].taxPayerIdOwner;
+			
+			
+			addrow('cgtOwnerAddrowTable','4','5','3','','','N','N','','');
+		}
+	} else {
+		alert("No Owners");
+	}
+	
+}
+
+
+function populateCGTOwnerSummaryTable(cgtOwnerSummaryTable , cgtType){
+	
+clear_table_data("cgt1SummaryAddrowTable");
+	
+	var tabObj = document.getElementById("cgt1SummaryAddrowTable");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(cgtOwnerSummaryTable!=null)
+	{
+		
+		for ( var i = 0; i < cgtOwnerSummaryTable.length; i++)
+		{
+			document.getElementById("in_cgt1SummaryAddrowTable_3").value = cgtOwnerSummaryTable[i].cgt1TaxPayerNameOwnerSummary;
+			document.getElementById("in_cgt1SummaryAddrowTable_4").value = cgtOwnerSummaryTable[i].diffBeingCapitalGainOrLossOwnerWise;	
+			document.getElementById("in_cgt1SummaryAddrowTable_5").value = cgtOwnerSummaryTable[i].capitalLossBroughtForwardOwnerWise;
+			document.getElementById("in_cgt1SummaryAddrowTable_6").value = cgtOwnerSummaryTable[i].capitalLossCarryForwardAndSetOffOwnerWise;
+			document.getElementById("in_cgt1SummaryAddrowTable_7").value = cgtOwnerSummaryTable[i].diffBeingAdjustedCapitalGainOrLossOwnerWise;
+			document.getElementById("in_cgt1SummaryAddrowTable_8").value = cgtOwnerSummaryTable[i].capitalGainsTaxOwnerWise;
+			document.getElementById("in_cgt1SummaryAddrowTable_9").value = cgtOwnerSummaryTable[i].capitalLossCarriedForwardOwnerWise;
+			document.getElementById("in_cgt1SummaryAddrowTable_10").value =cgtOwnerSummaryTable[i].taxPayerIdOwner;
+			
+			
+			addrow('cgt1SummaryAddrowTable','7','8','3','','','Y','Y','','');
+		}
+	} else {
+		alert("No Owners");
+	}
+	
+}
+
+
+function resetTranfereeDtls() {
+	document.getElementById('in_CGT2PSecBpaymentsTbl_4').value="";
+	document.getElementById('in_CGT2PSecApaymentsTbl_7').value="";
+	document.getElementById('in_CGT2PSecApaymentsTbl_5').value="";
+	document.getElementById('in_CGT2PSecApaymentsTbl_6').value="";
+}
+
+function addSecATransfereeDtl(row){
+
+	var errorString="";
+	var a=1;
+	if(document.getElementById('in_CGT2PSecApaymentsTbl_3').value=='' || document.getElementById('in_CGT2PSecApaymentsTbl_3').value==null) {
+		errorString=errorString+a+") Please enter PIN of Transferee \n";
+		a++;
+	}
+	if(document.getElementById('in_CGT2PSecApaymentsTbl_4').value=='' || document.getElementById('in_CGT2PSecApaymentsTbl_4').value==null) {
+		errorString=errorString+a+") Please enter Transferee Name \n";
+		a++;
+	}
+	if(document.getElementById('in_CGT2PSecApaymentsTbl_5').value=='' || document.getElementById('in_CGT2PSecApaymentsTbl_5').value==null) {
+		errorString=errorString+a+") Please enter Transferee Address \n";
+		a++;
+	}
+	if(document.getElementById('in_CGT2PSecApaymentsTbl_6').value=='' || document.getElementById('in_CGT2PSecApaymentsTbl_6').value==null) {
+		errorString=errorString+a+") Please enter Transferee Email\n";
+		a++;
+	}
+
+	if(errorString!=""){
+		alert(errorString);
+		return false;
+	}
+	else{
+		
+		var checkDuplicateFlag = checkDuplicateTransfreeDtlCGT2P(row,'CGT2PSecApaymentsTbl');
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+
+	/*	if(removeCommaFrmInput(document.getElementById('in_CGT2PSecBpaymentsTbl1_7').value)>0  &&  removeCommaFrmInput(document.getElementById('in_CGT2PSecBpaymentsTbl1_7').value)>0 )
+		{
+*/
+			if(addConfirm('a_CGT2PSecApaymentsTbl'))
+			{
+				if(document.getElementById('a_CGT2PSecApaymentsTbl').innerHTML!="Modify")
+				{
+					addrow('CGT2PSecApaymentsTbl','4','5','4','','','N','N','','');
+				}
+				else
+				{
+					return true;
+				}
+			}
+			else{
+				isFalse=1;
+			}
+		/*}*/
+	
+	}
+
+}
+function checkDuplicateTransfreeDtlCGT2P(r,id)
+{
+	var pinOfTransferor = document.getElementById('transferorPIN').value;
+	var pinOfTransferee = document.getElementById('in_CGT2PSecApaymentsTbl_3').value;
+	/*if(pinOfTransferor==pinOfTransferee){
+		
+		alert("Transferor and Transferee Pin can not be same.");
+		return false;
+	}*/
+	rows=r;
+	{
+		var pin=document.getElementById('in_CGT2PSecApaymentsTbl_3').value;
+		
+		var tabObj1 = document.getElementById(id);
+		
+		
+		if(tabObj1.rows.length==1)
+		{
+			return true;
+		}
+		else
+		{ 	
+			for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+			{ 
+				var modify;
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+				}
+				if(document.getElementById('in_CGT2PSecApaymentsTbl_3').value!="")
+				{
+					if((trim(document.getElementById('id_temp_'+'CGT2PSecApaymentsTbl'+'_'+i+'_1').value))=="Delete" && (modify=="Modify") &&  (tabObj1.rows[i].cells[3].innerHTML==pin))
+					{
+						alert("You have already added this details.");
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+}//added by saumya ::start
+
+//start :: added by saumya for creating tables for amendment
+
+function createCGT2PTranfereetable(tranfereeDtls){
+	
+
+	clear_table_data("CGT2PSecApaymentsTbl");
+	
+	var tabObj = document.getElementById("CGT2PSecApaymentsTbl");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+
+	if(tranfereeDtls!=null &&tranfereeDtls.length>0 )
+	{
+		
+		for ( var i = 0; i < tranfereeDtls.length; i++)
+		{
+				document.getElementById('in_CGT2PSecApaymentsTbl_3').value = tranfereeDtls[i].transfereePIN;
+				document.getElementById("in_CGT2PSecApaymentsTbl_4").value=tranfereeDtls[i].transfereeName;
+				document.getElementById("in_CGT2PSecApaymentsTbl_6").value=tranfereeDtls[i].transfereeEmail;
+				document.getElementById("in_CGT2PSecApaymentsTbl_5").value=tranfereeDtls[i].transfereeAddress;
+				document.getElementById("in_CGT2PSecApaymentsTbl_7").value=tranfereeDtls[i].transfereeIdPartner;
+				
+				addrow('CGT2PSecApaymentsTbl','4','5','4','','','N','N','','');
+			
+		}
+	} else {
+		alert("No Details found for Transferee.");
+	}
+	
+
+	
+	
+	
+	
+	
+}
+
+function createCGT2Partnerstable(partnerDtls){
+	
+	clear_table_data("CGT2PSecBpaymentsTbl");
+	
+	var tabObj = document.getElementById("CGT2PSecBpaymentsTbl");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+	
+	if(partnerDtls!=null && partnerDtls.length>0)
+	{
+		for(var j=0;j<partnerDtls.length;j++ ){
+			
+			document.getElementById('in_CGT2PSecBpaymentsTbl_3').value = partnerDtls[j].partnerPin;
+			document.getElementById("in_CGT2PSecBpaymentsTbl_4").value = partnerDtls[j].partnerName;
+			document.getElementById("in_CGT2PSecBpaymentsTbl_6").value = partnerDtls[j].partnerEmail;
+			document.getElementById("in_CGT2PSecBpaymentsTbl_7").value= partnerDtls[j].partnerAddress;
+			document.getElementById("in_CGT2PSecBpaymentsTbl_5").value= partnerDtls[j].profitLossSharingRatio;
+			document.getElementById("in_CGT2PSecBpaymentsTbl_8").value = partnerDtls[j].taxPayerIdPartner;
+			
+			addrow('CGT2PSecBpaymentsTbl','5','6','4','','','N','N','','');
+			
+			
+		}
+	}
+	else{
+		alert("No Details found for Partners.");
+	}
+	
+}
+
+function createCGT2incidentalCostOnTransferDtlstable(incidentalCostOnTransferDtls){
+	clear_table_data("CGTSecBpaymentsTbl");
+	
+	var tabObj = document.getElementById("CGTSecBpaymentsTbl");
+	//var totalValue = 0;
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+	if(incidentalCostOnTransferDtls!=null && incidentalCostOnTransferDtls.length>0){
+		for(var j=0;j<incidentalCostOnTransferDtls.length;j++){
+			
+			document.getElementById('in_CGTSecBpaymentsTbl_3').value = incidentalCostOnTransferDtls[j].description;
+			document.getElementById("in_CGTSecBpaymentsTbl_4").value = incidentalCostOnTransferDtls[j].value;
+			
+			addrow('CGTSecBpaymentsTbl','2','2','4','','','N','N','');
+			
+		}		
+	}
+	/*for (var i = 1, n = tabObj.rows.length; i <n; i++) 
+	{
+		var value =Integer.parseInt(tabObj.rows[i].cells[4].innerHTML);
+		totalValue = totalValue + value;
+	}
+
+	document.getElementById('totalOfIncidentalCost').value=totalValue;*/
+	
+}
+
+function createCGT2adjustedCostDtlDtlstable(adjustedCostDtlDtls){
+	clear_table_data("CGTSecCpaymentsTbl");
+	
+	//var totalValueSecc = 0;
+	var tabObj = document.getElementById("CGTSecCpaymentsTbl");
+	for ( var l = tabObj.rows.length; l > 1; l--) {
+		tabObj.deleteRow(l - 1);
+	}
+	
+	if(adjustedCostDtlDtls!=null && adjustedCostDtlDtls.length>0){
+		for(var j=0;j<adjustedCostDtlDtls.length;j++){
+					
+					document.getElementById('in_CGTSecCpaymentsTbl_3').value = adjustedCostDtlDtls[j].description;
+					document.getElementById("in_CGTSecCpaymentsTbl_4").value = adjustedCostDtlDtls[j].value;
+					
+					addrow('CGTSecCpaymentsTbl', '2', '2','4','','','N','N','');
+					
+				}	
+	}
+/*	for (var i = 1, n = tabObj.rows.length; i <n; i++) 
+	{
+		totalValueSecc = Integer.parseInt(tabObj.rows[i].cells[4].innerHTML)+totalValueSecc;
+	}
+
+	document.getElementById('totalOfIncidentalCostOnAcquisition').value=totalValueSecc;*/
+}
+
+//Added by kruti to fetch capital loss brought forward and setoff value for amendment:start
+function fetchCapitalLossBroughtForwardAndSetOff(){
+	
+	var taxPayerIdTransferor = document.getElementById('hidTaxPayerId').value;
+	var cgtType = document.getElementById('cmbCGTType').value;
+	var isAmended = document.getElementById("isAmended").value;
+	var ackNo = document.getElementById('cgtAcknowledgementNo').value;
+
+	FetchCapitalLossBroughtForwardAndSetOff.fetchCapitalLossBroughtForwardAndSetOff(taxPayerIdTransferor,cgtType,isAmended,ackNo,{async:false,callback: function(data){
+
+		if(data != 'null' &&  data != null){
+
+				document.getElementById('isFirstCgtPmt').value=0;
+				document.getElementById('capitalLossBoughtForward').value = convertToKenyanShillingFormatVal(data.cgtCapitalLossBoughtForward,false);
+				document.getElementById('capitalLossBoughtForward').readOnly=true;
+				document.getElementById('capitalLossBoughtForward').className='readonlyInput form101_textfcurr_width textonlyRight';
+				
+				if(cgtType!='CGT_1'){
+					document.getElementById('capitalLossCarryFrwdAndSetoff').value = convertToKenyanShillingFormatVal(data.capitalLossCarryForwardedAndSetoff,false);
+					document.getElementById('capitalLossCarryFrwdAndSetoff').readOnly=true;
+					document.getElementById('capitalLossCarryFrwdAndSetoff').className='readonlyInput form101_textfcurr_width textonlyRight';
+					
+				}
+				
+				
+				
+	
+		}else{
+			alert("Error while fetching data");
+		}	
+		
+	}
+	});
+	
+	
+}
+//Added by kruti to fetch capital loss brought forward and setoff value for amendment:end
+
+//Added by kruti to fetch capital loss brought forward and setoff value for amendment of CGT1:start
+function fetchCapitalLossBroughtForwardAndSetOffForCgt1(ownerList,cgtOwnerSummaryTable){
+	if(ownerList!=null && ownerList.length>0){
+		for(var i=0;i<ownerList.length;i++){
+			var taxPayerIdTransferor = ownerList[i].taxPayerIdOwner ;
+			var cgtType = document.getElementById('cmbCGTType').value;
+			var isAmended = "true";
+			var ackNo = document.getElementById('cgtAcknowledgementNo').value;
+
+			FetchCapitalLossBroughtForwardAndSetOff.fetchCapitalLossBroughtForwardAndSetOff(taxPayerIdTransferor,cgtType,isAmended,ackNo,{async:false,callback: function(data){
+
+				if(data != 'null' &&  data != null){
+					if(cgtOwnerSummaryTable!=null)
+					{
+						
+						for ( var j = 0; j < cgtOwnerSummaryTable.length; j++)
+						{
+							if(taxPayerIdTransferor==cgtOwnerSummaryTable[j].taxPayerIdOwner){
+								var diffBeingCapitalGainOrLossOwnerWise= parseInt(cgtOwnerSummaryTable[j].diffBeingCapitalGainOrLossOwnerWise);
+								var setoff=parseInt(data.capitalLossCarryForwardedAndSetoff);
+								var capitalLossBroughtForwardOwnerWise=parseInt(cgtOwnerSummaryTable[j].capitalLossBroughtForwardOwnerWise);
+								
+								var adjustedCost=capitalLossBroughtForwardOwnerWise-diffBeingCapitalGainOrLossOwnerWise-setoff;
+								adjustedCost=adjustedCost*-1;
+								
+								document.getElementById("in_cgt1SummaryAddrowTable_3").value = cgtOwnerSummaryTable[j].cgt1TaxPayerNameOwnerSummary;
+								document.getElementById("in_cgt1SummaryAddrowTable_4").value = cgtOwnerSummaryTable[j].diffBeingCapitalGainOrLossOwnerWise;	
+								document.getElementById("in_cgt1SummaryAddrowTable_5").value = cgtOwnerSummaryTable[j].capitalLossBroughtForwardOwnerWise;
+								document.getElementById("in_cgt1SummaryAddrowTable_6").value = data.capitalLossCarryForwardedAndSetoff;
+								document.getElementById("in_cgt1SummaryAddrowTable_7").value = adjustedCost;
+								document.getElementById("in_cgt1SummaryAddrowTable_8").value = cgtOwnerSummaryTable[j].capitalGainsTaxOwnerWise;
+								document.getElementById("in_cgt1SummaryAddrowTable_9").value = cgtOwnerSummaryTable[j].capitalLossCarriedForwardOwnerWise;
+								document.getElementById("in_cgt1SummaryAddrowTable_10").value =cgtOwnerSummaryTable[j].taxPayerIdOwner;
+								
+								
+								addrow('cgt1SummaryAddrowTable','7','8','3','','','Y','Y','','');
+								
+								document.getElementById("in_cgt1SummaryAddrowHiddenTable_3").value = cgtOwnerSummaryTable[i].taxPayerIdOwner;
+								document.getElementById("in_cgt1SummaryAddrowHiddenTable_4").value = setoff;
+								
+								addrow('cgt1SummaryAddrowHiddenTable','2','2','4','','','N','N','','');
+								
+							}
+							
+						}
+					} else {
+						alert("No Owners");
+					}
+					
+						
+			
+				}else{
+					alert("Error while fetching data");
+				}	
+				
+			}
+			});
+		}
+		
+		
+	}
+	
+	
+	
+	
+}
+//Added by kruti to fetch capital loss brought forward and setoff value for amendment of CGT1:end
+
+//Added by Bhavana
+//function populateCGTHiddenOwnerSummaryTable(cgtOwnerSummaryTable){
+//	var tabObj = document.getElementById("cgt1SummaryAddrowHiddenTable");
+//	for ( var l = tabObj.rows.length; l > 1; l--) {
+//		tabObj.deleteRow(l - 1);
+//	}
+//
+//	if(cgtOwnerSummaryTable!=null)
+//	{
+//		
+//		for ( var i = 0; i < cgtOwnerSummaryTable.length; i++)
+//		{
+//			document.getElementById("in_cgt1SummaryAddrowHiddenTable_3").value = cgtOwnerSummaryTable[i].taxPayerIdOwner;
+//			document.getElementById("in_cgt1SummaryAddrowHiddenTable_4").value =  cgtOwnerSummaryTable[i].capitalLossCarryForwardAndSetOffOwnerWise;	
+//			
+//			addrow('cgt1SummaryAddrowHiddenTable','2','2','4','','','N','N','','');
+//		}
+//	} 
+//	
+//}

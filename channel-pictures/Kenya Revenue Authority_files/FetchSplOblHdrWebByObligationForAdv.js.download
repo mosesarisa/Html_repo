@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchSplOblHdrWebByObligationForAdv'] == 'undefined') this.FetchSplOblHdrWebByObligationForAdv = {};
+
+FetchSplOblHdrWebByObligationForAdv._path = '/KRA-Portal/dwr';
+
+FetchSplOblHdrWebByObligationForAdv.fetchSplOblHdrWebByObligationForAdv = function(p0, p1, p2, p3, p4, p5, callback) {
+  dwr.engine._execute(FetchSplOblHdrWebByObligationForAdv._path, 'FetchSplOblHdrWebByObligationForAdv', 'fetchSplOblHdrWebByObligationForAdv', p0, p1, p2, p3, p4, p5, callback);
+};
+
+

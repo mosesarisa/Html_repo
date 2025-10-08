@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchTotalLiabilityDetailsWeb'] == 'undefined') this.FetchTotalLiabilityDetailsWeb = {};
+
+FetchTotalLiabilityDetailsWeb._path = '/KRA-Portal/dwr';
+
+FetchTotalLiabilityDetailsWeb.fetchTotalLiabilityDetailsWeb = function(p0, p1, p2, p3, p4, callback) {
+  dwr.engine._execute(FetchTotalLiabilityDetailsWeb._path, 'FetchTotalLiabilityDetailsWeb', 'fetchTotalLiabilityDetailsWeb', p0, p1, p2, p3, p4, callback);
+};
+
+

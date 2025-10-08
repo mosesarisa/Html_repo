@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchAgencyNoticePeriodDtlFromDNE'] == 'undefined') this.FetchAgencyNoticePeriodDtlFromDNE = {};
+
+FetchAgencyNoticePeriodDtlFromDNE._path = '/KRA-Portal/dwr';
+
+FetchAgencyNoticePeriodDtlFromDNE.fetchAgencyNoticePeriodDtlFromDNE = function(p0, p1, p2, callback) {
+  dwr.engine._execute(FetchAgencyNoticePeriodDtlFromDNE._path, 'FetchAgencyNoticePeriodDtlFromDNE', 'fetchAgencyNoticePeriodDtlFromDNE', p0, p1, p2, callback);
+};
+
+

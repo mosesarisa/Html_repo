@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['IsSplObligationRegisteredWeb'] == 'undefined') this.IsSplObligationRegisteredWeb = {};
+
+IsSplObligationRegisteredWeb._path = '/KRA-Portal/dwr';
+
+IsSplObligationRegisteredWeb.isSplObligationRegisteredWeb = function(p0, callback) {
+  dwr.engine._execute(IsSplObligationRegisteredWeb._path, 'IsSplObligationRegisteredWeb', 'isSplObligationRegisteredWeb', p0, callback);
+};
+
+

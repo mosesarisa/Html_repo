@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchPaymentStampTranferDtls'] == 'undefined') this.FetchPaymentStampTranferDtls = {};
+
+FetchPaymentStampTranferDtls._path = '/KRA-Portal/dwr';
+
+FetchPaymentStampTranferDtls.fetchPaymentStampTranferDtls = function(p0, p1, p2, callback) {
+  dwr.engine._execute(FetchPaymentStampTranferDtls._path, 'FetchPaymentStampTranferDtls', 'fetchPaymentStampTranferDtls', p0, p1, p2, callback);
+};
+
+

@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchCGT3TaskStatus'] == 'undefined') this.FetchCGT3TaskStatus = {};
+
+FetchCGT3TaskStatus._path = '/KRA-Portal/dwr';
+
+FetchCGT3TaskStatus.fetchCGT3TaskStatus = function(p0, p1, callback) {
+  dwr.engine._execute(FetchCGT3TaskStatus._path, 'FetchCGT3TaskStatus', 'fetchCGT3TaskStatus', p0, p1, callback);
+};
+
+

@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchAmendmentDetailsPresumptiveTax'] == 'undefined') this.FetchAmendmentDetailsPresumptiveTax = {};
+
+FetchAmendmentDetailsPresumptiveTax._path = '/KRA-Portal/dwr';
+
+FetchAmendmentDetailsPresumptiveTax.fetchAmendmentDetailsPresumptiveTax = function(p0, callback) {
+  dwr.engine._execute(FetchAmendmentDetailsPresumptiveTax._path, 'FetchAmendmentDetailsPresumptiveTax', 'fetchAmendmentDetailsPresumptiveTax', p0, callback);
+};
+
+

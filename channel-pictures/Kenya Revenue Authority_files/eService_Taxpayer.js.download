@@ -1,0 +1,742 @@
+	function openECncl(a){document.leftMenu.operation.value=a;document.leftMenu.action="cancellationController.htm?actionCode=loadSelTaxTypePage";document.leftMenu.submit();}
+	function ePaymentView(){document.leftMenu.action="ePayment.htm?actionCode=ePaymentView";document.leftMenu.submit();}
+	function showEReturns(){document.leftMenu.action="eReturns.htm?actionCode=loadPage&amendmentFlag=N";document.leftMenu.submit();}
+	function showExciseRtnSimpServicesHome(){document.leftMenu.action="eReturns.htm?actionCode=loadPageExciseRtnSimpServicesHome";document.leftMenu.submit();}//Added on 21/02/2025 Excise Services only Retun
+	function showVTDPReturns(){document.leftMenu.action="VTDPReturns.htm?actionCode=loadVTDPPage";document.leftMenu.submit();} /*added by kirui mingu and pharis*/
+	function showVTDPCertificate(){document.leftMenu.action="VTDPReturns.htm?actionCode=showVTDPCertificatePage";document.leftMenu.submit();} /*added by kirui mingu and pharis*/
+	function showEReturnsAmendment(){document.leftMenu.action="eReturns.htm?actionCode=loadPage&amendmentFlag=Y";document.leftMenu.submit();}
+	function eSubscription(){document.leftMenu.action="eSubscribe.htm?actionCode=loadPage";document.leftMenu.submit();}
+	function dealerProfile(){document.leftMenu.action="dlrProfile.htm?actionCode=ShowDealerProfileDtls";document.leftMenu.submit();}
+	function loadEAmmend(){document.leftMenu.action="eAmend.htm?actionCode=loadSelectAmmendments";document.leftMenu.submit();}
+	function showPaymentRegForm(){document.leftMenu.action="paymentRegistration.htm?actionCode=beforeLoadPRForm";document.leftMenu.submit();}
+	function showAmendmentForm(){document.leftMenu.action="eTreAmendment.htm?actionCode=loadRegitrationAmndMainPage";document.leftMenu.submit();}
+	function showReprintForm(){document.leftMenu.action="eRegIndi.htm?actionCode=loadReprintMainPage";document.leftMenu.submit();}
+	function showTreAmendmentNonIndiForm(){document.leftMenu.action="eTreAmendment.htm?actionCode=loadAmendmentNonIndi";document.leftMenu.submit();}
+	function showTreAmendmentIndiForm(){document.leftMenu.action="eTreAmendment.htm?actionCode=loadAmendmentIndi";document.leftMenu.submit();}
+	function uploadCForm(){document.leftMenu.action="cFormController.htm?actionCode=loadCFormPage";document.leftMenu.submit();}
+	function generateCForm(){document.leftMenu.action="cstHistController.htm?actionCode=loadApprovedCFormPage";document.leftMenu.submit();}
+	//Added by harshit
+	function loadVATAmd(){document.leftMenu.action="VATwithAgAmd.htm?actionCode=loadVatAmendmentNonIndi";document.leftMenu.submit();}
+	/*function loadVATAmd(){document.leftMenu.action="VATwithAgAmd.htm?actionCode=loadVatAmndMainPage";document.leftMenu.submit();}*/
+	/*function loadVATAmd(){document.leftMenu.action="VATwithAgReg.htm?actionCode=loadVatAmndMainPage";document.leftMenu.submit();}*/
+	function loadVATwithholAgReg(){document.leftMenu.action="VATwithAgReg.htm?actionCode=loadVWTHAgentRegDDEForm";document.leftMenu.submit();}
+	function loadWhtVATCancellation(){document.leftMenu.action="VATwithAgAmd.htm?actionCode=loadVATCancellationForm";document.leftMenu.submit();}
+	//end by harshit
+	function chkPostSubmission(b){
+		var a="<%=chkPostFlag%>";
+		if("true"==a){
+			document.leftMenu.action="checkPostController.htm?actionCode=loadCheckPostSubmission&type="+b;
+			document.leftMenu.submit();}else{alert("This service is only for CST dealer.You can not use this service.");
+			}
+	}
+	function eRequestSubmission(){document.leftMenu.action="checkPostController.htm?actionCode=eFormVat26ARequest";document.leftMenu.submit();}
+	function approvedFormVATXXVIA(){document.leftMenu.action="checkPostController.htm?actionCode=approvedFormVATXXVIA";document.leftMenu.submit();}
+	function vatAmendment(){document.leftMenu.action="amendment.htm?actionCode=loadAmmendmentPage";document.leftMenu.taxType.value="VAT";document.leftMenu.submit();}
+	function loadeRefund(){document.leftMenu.action="eRefund.htm?actionCode=loadERefund";document.leftMenu.submit();}
+	function showImportExport()
+	{
+		document.leftMenu.action="exchangeRate.htm?actionCode=loadImportExport";
+		document.leftMenu.submit();
+	}
+	function showIncomeTax()
+	{
+		document.leftMenu.action="exchangeRate.htm?actionCode=loadIncomeTax";
+		document.leftMenu.submit();
+	}	
+	function showEInvoice()
+	{
+		document.leftMenu.action="eInvoice.htm?actionCode=loadPage";
+		document.leftMenu.submit();
+	}	
+	function showQueries1()
+	{
+		/*document.leftMenu.action="postQuery.htm?actionCode=showPostQuery";
+		document.leftMenu.submit();*/
+		window.open("https://kenya-revenue-authority.custhelp.com/app/ask/session/L3RpbWUvMTY3NjQ1NTY3Ny9nZW4vMTY3NjQ1NTY3Ny9zaWQvZlVpTUZHbHIwbEFTUVNhWU80QzRMek9IRk9ZZyU3RW85eTglN0V0bUdlZTZrQUhwVWhYUjdRdGFsaEdBcHZ4UjJLeGh2aVNvNTNaTzlhJTdFZmJ0aVo0JTdFa2xvUlo0bmI3eUdzVUdualJqMUJybnA2bTBZVnhGOHd2VXBwcWclMjElMjE=","_blank");
+	}
+	function viewEReturns()
+	{
+		document.leftMenu.action="eReturns.htm";
+		document.leftMenu.actionCode.value="viewEReturns";
+		document.leftMenu.submit();
+	}
+	function loadIntrMdryAgentHomePage()
+	{
+		document.leftMenu.action="eRegIndi.htm?actionCode=loadIntrMdryAgentHomePage";
+		document.leftMenu.submit();
+	}
+	function showCreatePaymentPlanForm(){
+		document.leftMenu.action ="paymentPlanProsess.htm?actionCode=prePaymentPlanForm";
+		document.leftMenu.submit();
+	}
+	function showTaxpayerProfile()
+	{
+		document.leftMenu.action="eRegIndi.htm?actionCode=loadReprintMainPage&operation=viewProfile";
+		document.leftMenu.submit();
+	}
+	function showGenerateWthCertificate()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showGenerateWithholdingCertificate";
+		document.leftMenu.submit();
+	}
+	function showGeneralLedgerForm(){
+		document.leftMenu.action ="account.htm?actionCode=showGeneralLedgerForm";
+		document.leftMenu.submit();
+	}
+	
+	function showGeneralLedgerFormTR(){
+		document.leftMenu.action ="account.htm?actionCode=showGeneralLedgerFormTR";
+		document.leftMenu.submit();
+	}
+	function showGenerateTCC()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showGenerateTCC";
+		document.leftMenu.submit();
+	}
+	function showGetLedgerByMailForm(){
+		document.leftMenu.action ="account.htm?actionCode=showGetLedgerByMailForm";
+		document.leftMenu.submit();
+	}
+	function showReprintCertificate(){
+		document.leftMenu.action ="eRegIndi.htm?actionCode=loadReprintMainPage";
+		document.leftMenu.submit();
+	}
+	function showNilReturn(){document.leftMenu.action="eReturns.htm?actionCode=loadPage&nilReturnFlag=Y&amendmentFlag=N";document.leftMenu.submit();}
+	
+	function showStampDutyApprovalForm(){
+		document.leftMenu.action ="paymentRegistration.htm?actionCode=loadStampDutyApprovalForm";
+		document.leftMenu.submit();
+	}
+	
+	function viewTaxtypeAssign()
+	{
+		document.leftMenu.action="login.htm?actionCode=loadTaxTypePassword";
+		document.leftMenu.submit();
+	}
+	function viewWHtCertiCnclForm()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showCancOfWHTCerti";
+		document.leftMenu.submit();
+	}
+	function viewVATWHtCertiCnclForm()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showCancOfVATWHTCerti";
+		document.leftMenu.submit();
+	}
+	function reprintWHTCerti()
+	{                                                                                                                                                              
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showReprintWhtCerti";
+		document.leftMenu.submit();
+	}
+	
+	function showTCCHome()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showTccHome";
+		document.leftMenu.submit();
+	}
+	
+	function showReprintTCC()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showReprintTcc";
+		document.leftMenu.submit();
+	}
+	
+	function showExciseOperationLicenseHome()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showAppForExciseLicenseHome";
+		document.leftMenu.submit();
+	}
+	function showCamExciseAirtimeRegDtls()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showCamExciseAirtimeRegDtls";
+		document.leftMenu.submit();
+	}
+	
+	function showCamExciseDenaturedSpiritRegDtls()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showCamExciseDenatureSpiritRegDtls";
+		document.leftMenu.submit();
+	}
+	
+	function showCamExciseImportCertiRegDtls()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showAppForImportCerti";
+		document.leftMenu.submit();
+	}
+	
+	function consultPayments()
+	{
+		document.leftMenu.action="trackYrStatusController.htm?actionCode=loadPage&caseType=PAY";
+		document.leftMenu.submit();
+	}
+	
+	function showGeneralLedgerFormWithPara()
+	{
+		document.leftMenu.action ="account.htm?actionCode=showGeneralLedgerFormWithPara&isNewLedger=N";
+		document.leftMenu.submit();
+	}
+	
+	function showGeneralLedgerFormWithParaNew()
+	{
+		document.leftMenu.action ="account.htm?actionCode=showGeneralLedgerFormWithPara&isNewLedger=Y";
+		document.leftMenu.submit();
+	}
+	
+	function showCancelExciseLicense()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showCancelExciseLicense";
+		document.leftMenu.submit();
+	}
+	
+	function showCamExciseAirtimeCnclDtls()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showCamExciseAirtimeCnclDtls";
+		document.leftMenu.submit();
+	}
+	// ================ TCR START =============== 
+	function showVATRefund(){
+		document.leftMenu.action ="eVATRefund.htm?actionCode=showVATRefund";
+		document.leftMenu.submit();
+	}
+	//Added by Mingu for Refund Tax Paid In Error Finance Act Changes :: START
+	function showRefundsTaxPaidInError(){
+		document.leftMenu.action ="eRefundCSV.htm?actionCode=showRefundOfTaxPaidInError";
+		document.leftMenu.submit();
+	}
+	//Added by Mingu for Refund Tax Paid In Error Finance Act Changes :: END
+	function showITRefund(){
+		document.leftMenu.action ="eITRefund.htm?actionCode=showITRefund";
+		document.leftMenu.submit();
+	}
+	function showExciseRefund(){
+		document.leftMenu.action ="eExciseRefund.htm?actionCode=showExciseRefund";
+		document.leftMenu.submit();
+	}
+	function showFACreditRefund(){
+		document.leftMenu.action ="eFACreditRefund.htm?actionCode=showFACreditRefund";
+		document.leftMenu.submit();
+	}
+	function showInventoryRefund(){
+		document.leftMenu.action ="eInventoryRefund.htm?actionCode=showInventoryRefund";
+		document.leftMenu.submit();
+	}
+	function showStampDutyRefund(){
+		document.leftMenu.action ="eStampDutyRefund.htm?actionCode=showStampDutyAcknRefund";
+		document.leftMenu.submit();
+	}
+	function showLandRentRefund(){
+		document.leftMenu.action ="eLandRentRefund.htm?actionCode=showLandRentAcknRefund";
+		document.leftMenu.submit();
+	}
+	function showLRM(){
+		document.leftMenu.action ="eLandRentMinistry.htm?actionCode=showLandRentMinistry&obligId=21";
+		document.leftMenu.submit();
+	}
+	function showSDCase(){
+		document.leftMenu.action ="eLandRentMinistry.htm?actionCode=showLandRentMinistry&obligId=24";
+		document.leftMenu.submit();
+	}
+	function showTOTRefund(){
+		document.leftMenu.action ="eTOTRefund.htm?actionCode=showTOTRefund";
+		document.leftMenu.submit();
+	}
+	
+	//Added by Vincent on 24/09/2022: for RefundsOrOffset overpaid:
+	function showRefundsOrOffsetOverpaidTax(){
+		document.leftMenu.action ="eRefundOffset.htm?actionCode=showRefundOffsetInitPage";
+		document.leftMenu.submit();
+	}
+	//End
+	
+	//----------TCR Functions ends here---------------------------
+
+	function showETRSupplierRegHome()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showETRSupplierRegHome";
+		document.leftMenu.submit();
+	}
+	function showTrnsfrExcLic()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showTrnsfrExcLic";
+		document.leftMenu.submit();
+	}
+	//----------TSS START---------------------------
+	function loadITExemptReg(){
+		document.leftMenu.action ="tss.htm?actionCode=loadITExemptReg";
+		document.leftMenu.submit();
+	}
+	
+	//added by Kirui and Buluma
+	function loadVatWhtExemptReg(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVatWhtExemptReg";
+		document.leftMenu.submit();
+	}
+	
+	function loadReqObjApp(){
+		document.leftMenu.action ="tss.htm?actionCode=loadReqObjApp";
+		document.leftMenu.submit();
+	}	
+	
+	//Added by Atul for WHT VAT
+	function loadReqObjAppWhtVat(){
+		document.leftMenu.action ="tss.htm?actionCode=loadReqObjAppWhtVat";
+		document.leftMenu.submit();
+	}	
+	
+	function loadAppealAppLC(){
+		document.leftMenu.action ="tss.htm?actionCode=loadAppealApp&appealType=LC";
+		document.leftMenu.submit();
+	}
+	function loadAppealAppHC(){
+		document.leftMenu.action ="tss.htm?actionCode=loadAppealApp&appealType=HC";
+		document.leftMenu.submit();
+	}
+	function loadAppealAppAC(){
+		document.leftMenu.action ="tss.htm?actionCode=loadAppealApp&appealType=AC";
+		document.leftMenu.submit();
+	}
+	
+	//Added by Atul for WHT VAT
+	function loadAppealAppWhtVatLC(){
+		document.leftMenu.action ="tss.htm?actionCode=loadAppealAppWhtVat&appealType=LC";
+		document.leftMenu.submit();
+	}
+	function loadAppealAppWhtVatHC(){
+		document.leftMenu.action ="tss.htm?actionCode=loadAppealAppWhtVat&appealType=HC";
+		document.leftMenu.submit();
+	}
+	function loadAppealAppWhtVatAC(){
+		document.leftMenu.action ="tss.htm?actionCode=loadAppealAppWhtVat&appealType=AC";
+		document.leftMenu.submit();
+	}
+	//Added by Atul ends
+	
+	function loadVATPurchLetBlnkExpReg(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVATPurchLetBlnkExpReg";
+		document.leftMenu.submit();
+	}
+	function loadVATPurchLetSpecExpRegPS(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVATPurchLetSpecExpReg&remType=PS";
+		document.leftMenu.submit();
+	}
+	function loadVATPurchLetSpecExpRegFS(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVATPurchLetSpecExpReg&remType=FS";
+		document.leftMenu.submit();
+	}
+	function loadVATPurchLetterReg(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVATPurchLetterReg";
+		document.leftMenu.submit();
+	}
+	function loadTaxReliefReg(){
+		document.leftMenu.action ="tss.htm?actionCode=loadTaxReliefReg";
+		document.leftMenu.submit();
+	}
+	//----------TSS END---------------------------
+	function showDeclarationOfEtr(){
+		
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showDeclarationOfEtr";
+		document.leftMenu.submit();
+	}
+	
+	function showETRSuppSalesDecHome(){
+		
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showDeclarationOfEtr";
+		document.leftMenu.submit();
+	}
+	
+	function loadVATPurchLetterRegDAFP(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVATPurchLetterReg&remType=DAFP";
+		document.leftMenu.submit();
+	}
+	function loadVATPurchLetterRegIVM(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVATPurchLetterReg&remType=IVM";
+		document.leftMenu.submit();
+	}
+	function loadVATPurchLetterRegLIHP(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVATPurchLetterReg&remType=LIHP";
+		document.leftMenu.submit();
+	}
+	function loadVATPurchLetterRegOAFP(){
+		document.leftMenu.action ="tss.htm?actionCode=loadVATPurchLetterReg&remType=OAFP";
+		document.leftMenu.submit();
+	}
+	function pinchecker(){
+		document.leftMenu.action ="pinChecker.htm?actionCode=loadPage";
+		document.leftMenu.submit();
+	}
+	function showNSSFReturn()
+	{
+		document.leftMenu.action="eReturns.htm?actionCode=nssfPage&amendmentFlag=N";
+		document.leftMenu.submit();
+	}
+	
+	function CertiDetails()
+	{
+		
+		document.leftMenu.action="pki.htm?actionCode=certiDetails";
+		document.leftMenu.submit();
+	}
+	
+	function loginDetails()
+	{
+	
+		document.leftMenu.action="pki.htm?actionCode=loadLoginPage";
+		document.leftMenu.submit();
+	}
+	
+	
+	function InitiateWaivers()
+	{
+	
+		document.leftMenu.action="dne.htm?actionCode=loadWaiversInitiationPage";
+		document.leftMenu.submit();
+	}
+	function InitiateWriteOff()
+	{
+	
+		document.leftMenu.action="dne.htm?actionCode=loadWriteOffInitiationPage";
+		document.leftMenu.submit();
+	}
+	function loadExcGoodsDestroyRegHome()
+	{
+	
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=loadExcGoodsDestroyRegHome";
+		document.leftMenu.submit();
+	}
+	function openFAQ()
+	{
+
+		document.forms[0].action="main.htm?actionCode=showFAQ&operation=viewCategory&viewType=static";
+		document.forms[0].submit();
+	}
+	function showTCCChecker()
+	{
+
+		document.forms[0].action="complianceMonitoring.htm?actionCode=validateTCC";  
+		document.forms[0].submit();
+	}
+	function whtChecker()
+	{
+		  document.forms[0].action="complianceMonitoring.htm?actionCode=showVerifyWithholdingCertificate";		
+		  document.forms[0].submit();
+	}
+	//added for VAT witholding --Niladri
+	function showVATWitholdingPaymentRegForm()
+	{
+		  document.leftMenu.action="paymentRegistration.htm?actionCode=showVATWitholdingPrePaymentRegForm";		
+		  document.leftMenu.submit();
+	}
+	function consultAndReprintVATWHTCerti()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showReprintVATWhtCerti";
+		document.leftMenu.submit();
+	}
+	
+	function consultAndReprintMRIWHTCerti()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showReprintRentIncomeWhtCerti";
+		document.leftMenu.submit();
+	}
+	
+	
+	
+	function loadTaxAgentReg(){document.leftMenu.action="TaxAgentReg.htm?actionCode=loadTaxAgentRegistrationForm";document.leftMenu.submit();}
+	function loadTaxAgentCncl(){document.leftMenu.action="TaxAgentCncl.htm?actionCode=loadTaxAgentCancellationForm";document.leftMenu.submit();}
+	function loadTaxRepresentReg(){document.leftMenu.action="TaxRepresentReg.htm?actionCode=loadTaxRepresentRegForm";document.leftMenu.submit();}
+	//Added by Mingu for Tax Representative Cancellation :: START
+	function showTaxRepCancellation(){
+		document.leftMenu.action ="TaxRepresentReg.htm?actionCode=showTaxRepCancellation";
+		document.leftMenu.submit();
+	}
+	//Added by Mingu for Tax Representative Cancellation :: END
+	function loadITREmpIncomeOnly()
+	{
+	document.leftMenu.action="eReturns.htm?actionCode=loadPageITR";
+	document.leftMenu.submit();
+	}
+	
+	
+	function viewEReturnsAmnesty()
+	{
+		document.leftMenu.action="eReturns.htm?actionCode=loadPageConsultAmnestyRtn";
+		document.leftMenu.submit();
+	}
+		
+		
+	//Tenant-Withholdingv Agent Registration:Start
+	function loadTenantWithAgReg()
+	{
+		document.leftMenu.action="TenantWthAgentReg.htm?actionCode=loadTenantWithAgentRegistrationMainForm";
+		document.leftMenu.submit();
+	}
+	//Tenant-Withholdingv Agent Registration:End
+	
+	
+    // Added by Nidhi for Opted Out Landlord Registration
+	
+	function loadOptedOutLandlordRegForm()
+	{
+		document.leftMenu.action="TenantWthAgentReg.htm?actionCode=loadOptedOutLandLordRegForm";
+		document.leftMenu.submit();
+	}
+
+//Added by Sanidhya for county payment
+	function showCountyPaymentRegForm(county)
+	{
+		document.leftMenu.action="paymentRegistration.htm?actionCode=beforeCountyLoadPRForm&countyName="+county;
+		document.leftMenu.submit();
+		}
+	
+	function consultCountyPayments()
+	{
+		document.leftMenu.action="trackYrStatusController.htm?actionCode=loadPage&caseType=PAY&tpCountyPaymentConsult=Yes";
+		document.leftMenu.submit();
+	}
+	
+	function declareForeignAmnesty()
+	{
+		document.leftMenu.action="eReturns.htm?actionCode=beforeForeignAmnestyLoad";
+		document.leftMenu.submit();
+	}
+	
+	function loadDeclareForeignAmnestyMain()
+	{
+		document.leftMenu.action="eReturns.htm?actionCode=loadPageFA";
+		document.leftMenu.submit();
+	}
+	
+	// added by Gaurav for Management of sub Agent
+	function ManagementOfSubAgent()
+	{
+		document.leftMenu.action="TenantWthAgentReg.htm?actionCode=loadManagementOfSubAgent";
+		document.leftMenu.submit();
+	}
+	
+	/* Added by 1114328 for SUC : ITNR Employment Income Only:Starts */
+	function loadITNREmpIncomeOnly()
+	{
+		document.leftMenu.action="eReturns.htm?actionCode=loadPageITNR";
+		document.leftMenu.submit();
+	}
+	/* Added by 1114328 for SUC : ITNR Employment Income Only:Ends */
+	
+	// added by gaurav
+	function tenantWithholdingAgentAmnd()
+	{
+		/*commented for RI paypoint Enhancement*/
+		//document.leftMenu.action="TenantWthAgentReg.htm?actionCode=loadTenantAmdForm";
+		/*commented for RI paypoint Enhancement*/
+		document.leftMenu.action="TenantWthAgentReg.htm?actionCode=RIpaypointsAmendment";
+		document.leftMenu.submit();
+	}
+	
+	
+	//Tenant-Withholding Agent Cancellation:Start
+	function loadTenantWithAgCanc()
+	{
+	/*document.leftMenu.action="TenantWthAgentReg.htm?actionCode=loadTenantWithAgentCancellationMainForm";*/
+	document.leftMenu.action="TenantWthAgentReg.htm?actionCode=loadRICancellationForm";
+	document.leftMenu.submit();
+	}
+	//Tenant-Withholding Agent Cancellation:End
+	
+	
+	function viewMRIWHtCertiCnclForm()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showCancOfMRIWHTCerti";
+		document.leftMenu.submit();
+	}
+	
+	//Added by Bhavna(970781) for download of TFS installer
+	function viewDownloadTFSInstaller(){
+		document.leftMenu.action="contentManagement.htm?actionCode=viewDownloadsTFS";
+		document.leftMenu.submit();
+	}
+	function consultCGTReturn()
+	{
+		document.leftMenu.action="paymentRegistration.htm?actionCode=consultCGTReturn";			  
+		document.leftMenu.submit();
+	}
+	
+	function getPayeCSV()
+	{
+		document.leftMenu.action="eReturns.htm?actionCode=getPayeCSV";			  
+		document.leftMenu.submit();
+	}
+	
+	//Property Registration By Margi:Start
+	function loadPropertyReg()
+	{
+	document.leftMenu.action="ePropertyReg.htm?actionCode=loadPropertyRegistrationMainForm";
+	document.leftMenu.submit();
+	}
+	//Property Registration By Margi:End
+	
+	//Property Registration By Priya:Start
+	function viewMakePaymentForm()
+	{
+	document.leftMenu.action="paymentRegistration.htm?actionCode=loadMakePaymentForm";
+	document.leftMenu.submit();
+	}
+	//Property Registration By Priya:End
+	
+	//Setoff Advance Payment  By Jaimin:Start
+	function loadSetoffAdvancePaymentForm()
+	{
+	document.leftMenu.action="paymentRegistration.htm?actionCode=loadSetoffAdvancePaymentForm";
+	document.leftMenu.submit();
+	}
+	//Setoff Advance Payment By Jaimin:End
+	
+	//Setoff Legacy Credit Voucher By Mingu:Start
+	function loadSetOffLegacyVoucher()
+	{
+	document.leftMenu.action="paymentRegistration.htm?actionCode=loadSetOffLegacyVoucher";
+	document.leftMenu.submit();
+	}
+	function loadLegacyBalanceReport()
+	{
+	document.leftMenu.action="paymentRegistration.htm?actionCode=loadLegacyBalanceReport";
+	document.leftMenu.submit();
+	}
+	//Setoff Legacy Credit Voucher By Mingu:End
+
+	
+	 function viewDueDateExtForm()
+	 	{
+	 	document.leftMenu.action="complianceMonitoring.htm?actionCode=viewDueDateExtForm";
+	 	document.leftMenu.submit();
+	 	}
+	//E-Registration for Preferential Corporate Tax Rates   By Jaimin:Start
+	/*function showRegPreferentialTaxRatePage()
+	{
+	document.leftMenu.action="eRegTaxRates.htm?actionCode=showRegPreferentialTaxRatePage";
+	document.leftMenu.submit();
+	}*/
+	function agentDetailsPage(){
+		document.leftMenu.action="eRegTaxRates.htm?actionCode=agentDetailsPage";
+		document.leftMenu.submit();	
+	}
+	function agentDetailsPageCnclPreferentialTax()
+	{
+	document.leftMenu.action="eCnclTaxRates.htm?actionCode=agentDetailsPageCnclPreferentialTax";
+	document.leftMenu.submit();
+	}
+	//E-Registration for Preferential Corporate Tax Rates  By Jaimin:End
+
+	//added by abhishek
+	
+ function loadOptedOutTotRegDtls()
+	{
+	
+		document.leftMenu.action="TenantWthAgentReg.htm?actionCode=loadOptedOutTotRegDtls";
+		document.leftMenu.submit();
+	}
+    // added by Abhishek
+ 
+ function showReactivationForm()
+ 
+ {
+	 document.leftMenu.action="reactivation.htm?actionCode=loadReactivationForm";
+     document.leftMenu.submit();
+  }
+	
+ function showDormaceForm()
+ 
+ {
+	 document.leftMenu.action="dormance.htm?actionCode=loadDormanceForm";
+     document.leftMenu.submit();
+  }
+ function showCancellationForm()
+ 
+ {
+	 document.leftMenu.action="cancellation.htm?actionCode=loadCancellationForm";
+     document.leftMenu.submit();
+  }
+ function showVtdpMainPage(){
+	 document.eVTDPDeclaration.action="VTDPReturns.htm?actionCode=vtdpPage"; 
+	 document.eVTDPDeclaration.submit();
+ }
+/* start added for enhancement 59974*/
+ 
+ function showAppUsersofSpiritsIk()
+	{
+		document.leftMenu.action="complianceMonitoring.htm?actionCode=showAppUsersofSpiritsIk";
+		document.leftMenu.submit();
+	}
+ 
+ function showCancSuspUsersofSpiritsIk()
+ {
+	 document.leftMenu.action="complianceMonitoring.htm?actionCode=showCancSuspUsersofSpiritsIk";
+	 document.leftMenu.submit();
+ }
+ /* end  added for enhancement 59974*/
+ 
+	function initiateAmnestyApplication()
+	{
+	
+		document.leftMenu.action="dne.htm?actionCode=loadAmnestyInitiationPage";
+		document.leftMenu.submit();
+	}
+    /**For legacy amnesty application :: 25/01/2024**/
+	function initiateLegacyAmnestyApplication()
+	{
+	
+		document.leftMenu.action="dne.htm?actionCode=loadLegacyAmnestyInitiationForm";
+		document.leftMenu.submit();
+	}
+	//END
+	//Added by Sam and Buluma for IT WHT Paypoint :: START
+	function showITWitholdingPaymentRegForm()
+	{
+		  document.leftMenu.action="paymentRegistration.htm?actionCode=showITWitholdingPrePaymentRegForm";		
+		  document.leftMenu.submit();
+	}
+	function loadItWhtPaypointAmend()
+	{
+		  document.leftMenu.action="eTreAmendment.htm?actionCode=loadItWhtPptAmendmentNonIndi";		
+		  document.leftMenu.submit();
+	}
+	//Added by Sam and Buluma for IT WHT Paypoint :: END
+	
+	//Added by  Ben and Philemon for RIWHT Paypoints :: START
+	function showRIWitholdingPaymentRegForm()
+	{
+		  document.leftMenu.action="paymentRegistration.htm?actionCode=showRIWitholdingPrePaymentRegForm";		
+		  document.leftMenu.submit();
+	}
+	//Added by Sam and Buluma for IT WHT Paypoint :: END
+	//Added by Mingu for Pin With No Obligation :: START
+	function amendContactDetails(){
+		document.leftMenu.action ="eTreAmendment.htm?actionCode=amendContactDetails";
+		document.leftMenu.submit();
+	}
+	function loadItWhtPaypointCancel()
+	{
+		  document.leftMenu.action="eTreAmendment.htm?actionCode=loadITCancellationForm";		
+		  document.leftMenu.submit();
+	}
+	//Added by Mingu for Pin With No Obligation :: end
+	
+	
+	//Added for TOT - Simplification 02 - 03 /2025
+	function showTOTRtnSimplifiedHome()
+	{
+		document.leftMenu.action="eReturns.htm?actionCode=loadTOTSimpilifiedPage";
+		document.leftMenu.submit();
+	}	
+
+	//Added FOR Legacy Workflow :: START
+	function showLegacyDebtAdjustmentForm()
+	{
+	
+		document.leftMenu.action="dne.htm?actionCode=showLegacyDebtAdjustmentForm";
+		document.leftMenu.submit();
+	}
+	function showLegacyCreditAdjustmentForm()
+	{
+	
+		document.leftMenu.action="dne.htm?actionCode=showLegacyCreditAdjustmentForm";
+		document.leftMenu.submit();
+	}
+	//Added FOR Legacy Workflow :: end

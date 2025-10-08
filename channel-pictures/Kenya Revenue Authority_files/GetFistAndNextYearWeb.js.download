@@ -1,0 +1,14 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['GetFistAndNextYearWeb'] == 'undefined') this.GetFistAndNextYearWeb = {};
+
+GetFistAndNextYearWeb._path = '/KRA-Portal/dwr';
+
+GetFistAndNextYearWeb.getFistAndNextYearWeb = function(p0, p1, p2, callback) {
+  dwr.engine._execute(GetFistAndNextYearWeb._path, 'GetFistAndNextYearWeb', 'getFistAndNextYearWeb', p0, p1, p2, callback);
+};
+
+

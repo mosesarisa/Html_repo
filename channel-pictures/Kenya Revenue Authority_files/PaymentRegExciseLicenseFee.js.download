@@ -1,0 +1,567 @@
+
+function onChangeTypeOfRegistration(obj,lable){
+	if(obj.value == "-1"){
+		alert(selectLbl+lable);
+		document.getElementById('tdExciseLicenseNo1').style.display='none';
+		document.getElementById('tdExciseLicenseNo2').style.display='none';
+		return false;
+	}
+	else if(obj.value == "RENEW"){
+		document.getElementById('tdExciseLicenseNo1').style.display='';
+		document.getElementById('tdExciseLicenseNo2').style.display='';
+		document.getElementById('lblExciseLicenseNo').innerHTML = exciseLicenseNo ;
+		document.getElementById("txtTotalAmountPaidExciseBond").value=0;
+		document.getElementById("in_NTRExciseDetailAddRowTable_7").value=0;
+		document.getElementById("in_NTRExciseDetailAddRowTable_6").value='';
+		document.getElementById("in_NTRExciseDetailAddRowTable_9").value='';
+		document.getElementById("in_NTRExciseDetailAddRowTable_5").value='';
+		document.getElementById("in_NTRExciseDetailAddRowTable_5").maxLength=20;
+	}
+	else if(obj.value == "NEW"){
+		document.getElementById('tdExciseLicenseNo1').style.display='';
+		document.getElementById('tdExciseLicenseNo2').style.display='';
+		document.getElementById('lblExciseLicenseNo').innerHTML = exciseAckNo  ;
+		document.getElementById("txtTotalAmountPaidExciseBond").value=0;
+		document.getElementById("in_NTRExciseDetailAddRowTable_7").value=0;
+		document.getElementById("in_NTRExciseDetailAddRowTable_6").value='';
+		document.getElementById("in_NTRExciseDetailAddRowTable_9").value='';
+		document.getElementById("in_NTRExciseDetailAddRowTable_5").value='';
+		document.getElementById("in_NTRExciseDetailAddRowTable_5").maxLength=15;
+	}
+
+}
+function onChangeExciseLicenseNo(obj,lable){
+	if(obj.value.length <10){
+		alert(enterLbl+lable);
+		obj.value = "";
+		return false;
+	}
+}
+function fetchExciseTaxDetail(hdrId,obligationId){
+	FetchSpecialObligationDtlWeb.fetchSpecialObligationDtlWeb(hdrId,obligationId,function(data){
+		document.getElementById("hidgsonStrForPmtDetailDTO").value = data.gsonStrForPmtDetailDTO;
+		var ExciseDetailList = data.pmtSplExciseList;
+		if(ExciseDetailList.length>=1){
+			var cntr = 0;
+			var tabObj = document.getElementById("exciseLicenseFeeDetailTable");
+			for(var l = tabObj.rows.length; l >1 ;l--){
+				tabObj.deleteRow(l -1);
+			}	
+			for(var i=0;i<ExciseDetailList.length;i++){
+				cntr = parseInt(cntr);
+				var tabRow = tabObj.insertRow(tabObj.rows.length);
+				tabRow.id="exciseLicenseFeeDetailTable"+cntr;
+				var tabCell = new Array();
+				for (var j=0;j<9;j++){
+					tabCell[j] = tabRow.insertCell(j);
+				}
+				var PmtDetailDTO = ExciseDetailList[i];
+
+				tabCell[0].innerHTML = cntr+1;
+				tabCell[0].style.textAlign="center";
+				tabCell[0].style.fontSize="11";
+
+				tabCell[1].innerHTML = PmtDetailDTO.goodsClass;
+				tabCell[1].style.textAlign="center";
+				tabCell[1].style.fontSize="11";
+
+				var element = document.createElement('input');
+				element.type = 'hidden';
+				element.value =  PmtDetailDTO.hdrId; //dtl id 
+				element.width = "0%";
+				tabCell[7].appendChild(element);
+				tabCell[7].style.display = "none";
+
+				var element = document.createElement('input');
+				element.type = 'hidden';
+				element.value = hdrId; 
+				element.width = "0%";
+				tabCell[8].appendChild(element);
+				tabCell[8].style.display = "none";
+				cntr = cntr+1;
+			}
+			document.getElementById("exciseLicenseFeeDetailTable").style.display = "";
+		}
+
+	});
+}
+
+function fetchClassOfGoodsValue(obj,row)
+{
+	/*var checkDuplicateFlag = checkDuplicateForExcise(row);
+	if(checkDuplicateFlag==false)
+	{
+		document.getElementById('in_NTRExciseDetailAddRowTable_4').selectedIndex=0;
+		return false;
+	}
+	if(document.getElementById('in_NTRExciseDetailAddRowTable_4').selectedIndex==0)
+	{
+		document.getElementById('in_NTRExciseDetailAddRowTable_5').value="0";
+	}
+	else
+	{
+		var category = obj.value;
+		var obligationId = exciseObligationId;
+		fetchTaxRateValueFromCategoryWeb(obligationId,category);
+	}*/
+}
+
+function beforeAddNTRExciseDetailAddRowTable(row)
+{
+	var checkDuplicateFlag = checkDuplicateForExcise(row);
+	if(checkDuplicateFlag){
+		checkDuplicateFlag = isExciseLicnseFeeDtlRegistered();
+	}
+	if(checkDuplicateFlag==false)
+	{
+		return false;
+	}
+	else
+	{
+		/*var taxPeriod=document.getElementById('cmbTaxPeriod').selectedIndex;
+		var taxPeriodValue= document.getElementById('cmbTaxPeriod')[taxPeriod].text;
+		document.getElementById('in_NTRExciseDetailAddRowTable_3').value = taxPeriodValue;
+		document.getElementById('in_NTRExciseDetailAddRowTable_8').value = document.getElementById('cmbTaxPeriod').value;*/
+		tempAmtTobePaidExciseLnceFee = document.getElementById('in_NTRExciseDetailAddRowTable_7').value;
+	}
+}
+function afterAddNTRExciseDetailAddRowTable()
+{
+
+//	document.getElementById('cmbTaxPeriod').selectedIndex = 0;
+	document.getElementById('in_NTRExciseDetailAddRowTable_4').selectedIndex = 0;
+	document.getElementById('in_NTRExciseDetailAddRowTable_7').value=0;
+	document.getElementById('in_NTRExciseDetailAddRowTable_5').value='';
+	if(document.getElementById('txtTotalAmountPaidNTR').value=="")
+	{
+		document.getElementById('txtTotalAmountPaidNTR').value = 0;
+	}
+	var totalAmtPaidNtr=Math.ceil(removeCommaFrmInput(document.getElementById('txtTotalAmountPaidNTR').value)); 
+	var AmtPaidNtr=Math.ceil(removeCommaFrmInput(tempAmtTobePaidExciseLnceFee)); 
+	document.getElementById('txtTotalAmountPaidNTR').value = convertToKenyanShillingFormatVal((parseInt(totalAmtPaidNtr,10)+parseInt(AmtPaidNtr,10)),true);
+	selectedExciseFlag=selectedExciseFlag+1;
+}
+function addExcise(row)
+{
+	resetErrorList();
+	{
+		resetErrorList();
+		if(document.getElementById('in_NTRExciseDetailAddRowTable_4').value==renew)
+		{
+			if(validateFormFields(exciseLicenseNoJson))
+			{
+				if(validateFormFields(paymentRegExciseDetailsJson1))
+				{
+					if(removeCommaFrmInput(document.getElementById('in_NTRExciseDetailAddRowTable_7').value)<=0)
+					{
+						alert(paidAmtGreaterThanZero);
+						return false;
+					}
+					else
+					{
+						var checkDuplicateFlag = checkDuplicateForExcise(row);
+						if(checkDuplicateFlag==false)
+						{
+							return false;
+						}
+						else
+						{
+							if(selectedExciseFlag>=1 && modifyFlagExciseLicenseFee != 1)
+							{
+								alert(cntAddMoreDetails);
+								return false;
+							}
+							else
+							{
+								if(addConfirm('a_NTRExciseDetailAddRowTable'))
+								{
+									if(document.getElementById('a_NTRExciseDetailAddRowTable').innerHTML!="Modify")
+									{
+										addrow('NTRExciseDetailAddRowTable', '5', '7','4','validateDeleteExciseLicenseFee','validateModifyExciseLicenseFee','N','N');
+									}
+									else
+									{
+										return true;
+									}	
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					getErrTabToggle('TabView','2');	
+					tabview_switch('TabView', '2');
+					hideAndShowTable("errorDiv");
+					document.getElementById('btnTbl').style.display="none";
+					//return false;
+				}
+			}
+			else
+			{
+				getErrTabToggle('TabView','2');	
+				tabview_switch('TabView', '2');
+				hideAndShowTable("errorDiv");
+				document.getElementById('btnTbl').style.display="none";
+				//return false;
+			}
+		}
+		else if(document.getElementById('in_NTRExciseDetailAddRowTable_4').value=="NEW")
+		{
+			if(validateFormFields(ackLicenseNoJson))
+			{
+				if(validateFormFields(paymentRegExciseDetailsJson1))
+				{
+					if(removeCommaFrmInput(document.getElementById('in_NTRExciseDetailAddRowTable_7').value)<=0)
+					{
+						alert(paidAmtGreaterThanZero);
+						return false;
+					}
+					else
+					{
+						var checkDuplicateFlag = checkDuplicateForExcise(row);
+						if(checkDuplicateFlag==false)
+						{
+							return false;
+						}
+						else
+						{
+							if(selectedExciseFlag>=1 && modifyFlagExciseLicenseFee != 1)
+							{
+								alert(cntAddMoreDetails);
+								return false;
+							}
+							else
+							{
+								if(addConfirm('a_NTRExciseDetailAddRowTable'))
+								{
+									if(document.getElementById('a_NTRExciseDetailAddRowTable').innerHTML!="Modify")
+									{
+										addrow('NTRExciseDetailAddRowTable', '5', '7','4','validateDeleteExciseLicenseFee','validateModifyExciseLicenseFee','N','N');
+									}
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					getErrTabToggle('TabView','2');	
+					tabview_switch('TabView', '2');
+					hideAndShowTable("errorDiv");
+					document.getElementById('btnTbl').style.display="none";
+					//	return false;
+				}
+			}
+			else
+			{
+				getErrTabToggle('TabView','2');	
+				tabview_switch('TabView', '2');
+				hideAndShowTable("errorDiv");
+				document.getElementById('btnTbl').style.display="none";
+				//	return false;
+			}
+		}
+
+	}
+	/*else
+	{
+		getErrTabToggle('TabView','2');	
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+		return false;
+	}*/
+
+}
+
+function beforeModifyNTRExciseDetailAddRowTable(row)
+{
+	if(addExcise())
+	{	
+		var checkDuplicateFlag = addExcise(row);
+		if(checkDuplicateFlag==false)
+		{
+			return false;
+		}
+		else
+		{
+			var taxPeriod=document.getElementById('cmbTaxPeriod').selectedIndex;
+			var taxPeriodValue= document.getElementById('cmbTaxPeriod')[taxPeriod].text;
+			document.getElementById('in_NTRExciseDetailAddRowTable_8').value = document.getElementById('cmbTaxPeriod').value;
+			document.getElementById('in_NTRExciseDetailAddRowTable_3').value = taxPeriodValue;
+			tempTotalAmtNTRExcise = Math.ceil(removeCommaFrmInput(document.getElementById('txtTotalAmountPaidNTR').value));
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+function afterModifyNTRExciseDetailAddRowTable()
+{
+	var table = document.getElementById('NTRExciseDetailAddRowTable');
+	var modifyAmt;
+	if(document.all)
+	{
+		modifyAmt=(table.rows[rowno].cells[7].innerText);
+	}
+	else
+	{
+		modifyAmt=table.rows[rowno].cells[7].textContent;
+	}
+	document.getElementById('txtTotalAmountPaidNTR').value = parseInt(tempTotalAmtNTRExcise,10) + parseInt(Math.ceil(removeCommaFrmInput(modifyAmt)),10) - parseInt(tempAmtNTRExcise,10);
+	document.getElementById('txtTotalAmountPaidNTR').value = convertToKenyanShillingFormatVal(Math.ceil(document.getElementById('txtTotalAmountPaidNTR').value),true);
+	modifyFlagExciseLicenseFee = 0;
+	commonModifyFlag=0;
+	document.getElementById('in_NTRExciseDetailAddRowTable_7').value=0;
+	document.getElementById('cmbTaxPeriod').selectedIndex = 0;
+	document.getElementById('in_NTRExciseDetailAddRowTable_4').selectedIndex = 0;
+	document.getElementById('in_NTRExciseDetailAddRowTable_6').value="";
+	document.getElementById('in_NTRExciseDetailAddRowTable_5').value="";
+
+}
+function beforeDeleteNTRExciseDetailAddRowTable()
+{
+	if(modifyFlagExciseLicenseFee==1)
+	{
+		return false;
+	}
+}
+function afterDeleteNTRExciseDetailAddRowTable()
+{
+	deleteFlagExciseLicenseFee = 1;
+	selectedExciseFlag=selectedExciseFlag-1;
+	if(selectedExciseFlag==0)
+	{
+		document.getElementById('in_NTRExciseDetailAddRowTable_7').disabled=false;
+		if(registationType==renew)
+		{
+			document.getElementById('in_NTRExciseDetailAddRowTable_8').readOnly=false;
+			document.getElementById('in_NTRExciseDetailAddRowTable_8').className='form101_textfcurr form101_textfcurr_width';
+		}
+	}
+}
+function validateModifyExciseLicenseFee(tab_str, cols_1, rowno, cols_2)
+{
+	modifyFlagExciseLicenseFee = 1;
+	commonModifyFlag=1;
+	document.getElementById('cmbTaxPeriod').value = document.getElementById('in_NTRExciseDetailAddRowTable_8').value;
+	tempAmtNTRExcise = Math.ceil(removeCommaFrmInput(document.getElementById('in_NTRExciseDetailAddRowTable_7').value));
+}
+function validateDeleteExciseLicenseFee(tab_str, rowno, cols)
+{
+	if(deleteFlagExciseLicenseFee==1 && modifyFlagExciseLicenseFee==0)
+	{
+		var table = document.getElementById('NTRExciseDetailAddRowTable');
+		totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidNTR').value);
+		var tempAmt = table.rows[rowno].cells[7].innerHTML;
+		totalAmt =  parseInt(totalAmt,10) - parseInt(removeCommaFrmInput(tempAmt),10);
+		document.getElementById('txtTotalAmountPaidNTR').value = convertToKenyanShillingFormatVal(totalAmt, true);
+		deleteFlagExciseLicenseFee = 0;
+	}
+	else
+	{
+		deleteFlagExciseLicenseFee = 0;
+	}
+}
+
+function clearExcise()
+{
+	if(clear_table('NTRExciseDetailAddRowTable', '4'))
+	{
+		document.getElementById('cmbTaxPeriod').selectedIndex=0;
+		document.getElementById('in_NTRExciseDetailAddRowTable_4').selectedIndex=0;
+		document.getElementById('in_NTRExciseDetailAddRowTable_7').value=0;
+		document.getElementById('in_NTRExciseDetailAddRowTable_6').value="";
+		document.getElementById('in_NTRExciseDetailAddRowTable_5').value="";
+		modifyFlagExciseLicenseFee=0;
+		commonModifyFlag=0;
+	}
+}
+
+function clearDetailsOfExcise()
+{ 
+	var taxObligationValue= document.getElementById('cmbTaxSubHead')[NTRTaxObligation].value;
+	if(taxObligationValue ==exciseObligationId && selectedExciseFlag>0)
+	{
+		if(confirm ("This action will clear your entered data.\nDo you really want to proceed?"))
+		{
+			clear_table_data('NTRExciseDetailAddRowTable');
+			clear_Page_data('NTRExciseDetailAddRowTable', '4');
+			document.getElementById('cmbTaxPeriod').selectedIndex=0;
+			document.getElementById('in_NTRExciseDetailAddRowTable_5').value=0;
+			document.getElementById('in_NTRExciseDetailAddRowTable_4').selectedIndex=0;
+			modifyFlagExciseLicenseFee=0;
+			commonModifyFlag=0;
+			selectedExciseFlag=0;
+			flagPassFromIf="y";
+			return false;
+		}
+		else
+		{
+			document.getElementById('cmbTaxSubHead').selectedIndex=NTRTaxObligation;
+			return true;
+		}
+	}
+	clear_Page_data('NTRExciseDetailAddRowTable', '4');
+	document.getElementById('cmbTaxPeriod').selectedIndex=0;
+	document.getElementById('in_NTRExciseDetailAddRowTable_4').selectedIndex=0;
+	document.getElementById('in_NTRExciseDetailAddRowTable_5').value=0;
+	modifyFlagExciseLicenseFee=0;
+	selectedExciseFlag=0;
+}
+
+function checkDuplicateForExcise(r)
+{
+	rows=r;
+	tabObj1 = document.getElementById('NTRExciseDetailAddRowTable');
+	/*var taxPeriod = document.getElementById('cmbTaxPeriod').selectedIndex;
+	var taxPeriodValue =document.getElementById('cmbTaxPeriod')[taxPeriod].text.split('-');
+	taxPeriodValue=trim(taxPeriodValue[0])+'-'+trim(taxPeriodValue[1])+'-'+trim(taxPeriodValue[2])+'-'+trim(taxPeriodValue[3]);*/
+	var ackNo=trim(document.getElementById('in_NTRExciseDetailAddRowTable_5').value);
+	if(tabObj1.rows.length==1)
+	{
+	}
+	else
+	{ 
+		for (var i = 1, n = tabObj1.rows.length; i <n; i++) 
+		{ 
+			if(modifyFlagExciseLicenseFee==1)
+			{
+				var modify;
+				var ackNoTable;
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+					ackNoTable=trim(tabObj1.rows[i].cells[5].innerText);
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+					ackNoTable=trim(tabObj1.rows[i].cells[5].textContent,"");
+				}
+
+				if((trim(document.getElementById('id_temp_NTRExciseDetailAddRowTable_'+i+'_1').value))=="Delete"  && (ackNoTable==ackNo) && (trim(modify)==trim("Modify")))
+				{
+					alert(licenseNoExists);
+					return false;
+				}
+			}
+			else
+			{
+				var modify;
+				var ackNoTable
+				if(document.all)
+				{
+					modify=trim(tabObj1.rows[i].cells[2].innerText);
+					ackNoTable=trim(tabObj1.rows[i].cells[5].innerText);
+				}
+				else
+				{
+					modify=trim(tabObj1.rows[i].cells[2].textContent,"");
+					ackNoTable=trim(tabObj1.rows[i].cells[5].textContent,"");
+				}
+				if((trim(document.getElementById('id_temp_NTRExciseDetailAddRowTable_'+i+'_1').value))=="Delete" && (ackNoTable==ackNo))
+				{
+					alert(licenseNoExists);
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+
+}
+
+function getGoodsCodeAndFeeForExciseLicense(obj)
+{
+	var ackNo=trimStr(obj.value);
+	var taxPayerId=document.getElementById('hidTaxPayerId').value;
+	var status=document.getElementById('in_NTRExciseDetailAddRowTable_4').value;
+	value =document.getElementById("cmbTaxSubHead").value;
+	document.getElementById('hidObligationId').value=value;
+	GetGoodsCodeAndFeeForExciseLicense.getGoodsCodeAndFeeForExciseLicense(ackNo,taxPayerId,status,{async:false,callback:function(data)
+		{
+
+		if(data != null)
+		{
+			if(data[0].isDataAvailable==Y_FLAG)
+			{
+				for(var i=0;i<data.length;i++)
+				{
+					document.getElementById("in_NTRExciseDetailAddRowTable_7").value=convertToKenyanShillingFormatVal(Math.ceil(removeCommaFrmInput(data[i].amountPayableEscise)), true);
+					document.getElementById("in_NTRExciseDetailAddRowTable_6").value=data[i].classOfGoodsExcise;
+					document.getElementById("in_NTRExciseDetailAddRowTable_9").value=data[i].classOfGoodsCodeExcise;
+					document.getElementById('in_NTRExciseDetailAddRowTable_8').value=data[i].taxPeriodExicse;
+					document.getElementById('in_NTRExciseDetailAddRowTable_3').value=data[i].taxPeriodExicseShow;
+					addrow('NTRExciseDetailAddRowTable', '5', '7','4','','','Y','Y');
+				}
+
+			}
+			if(data[0].isDataAvailable==N_FLAG && data[0].isAgent==ERROR)
+			{
+				alert(validLicenseNo);
+				document.getElementById("in_NTRExciseDetailAddRowTable_7").value=0;
+				document.getElementById("in_NTRExciseDetailAddRowTable_6").value='';
+				document.getElementById("in_NTRExciseDetailAddRowTable_5").value='';
+				document.getElementById("in_NTRExciseDetailAddRowTable_9").value='';
+				clear_table_data('NTRExciseDetailAddRowTable');
+				selectedExciseFlag=0;
+				document.getElementById("txtTotalAmountPaidNTR").value=0;
+			}
+			if(data[0].isDataAvailable==N_FLAG && data[0].isAgent==NO_CALL_MADE)
+			{
+				alert(errToFetchLicenseFee);
+				document.getElementById("txtTotalAmountPaidExciseBond").value=0;
+				document.getElementById("in_NTRExciseDetailAddRowTable_7").value=0;
+				document.getElementById("in_NTRExciseDetailAddRowTable_6").value='';
+				document.getElementById("in_NTRExciseDetailAddRowTable_9").value='';
+				document.getElementById("in_NTRExciseDetailAddRowTable_5").value='';
+				clear_table_data('NTRExciseDetailAddRowTable');
+				selectedExciseFlag=0;
+				document.getElementById("txtTotalAmountPaidNTR").value=0;
+			}
+		}
+		else
+		{
+			alert(errToFetchLicenseFee);
+			document.getElementById("txtTotalAmountPaidExciseBond").value=0;
+			document.getElementById("in_NTRExciseDetailAddRowTable_7").value=0;
+			document.getElementById("in_NTRExciseDetailAddRowTable_6").value='';
+			document.getElementById("in_NTRExciseDetailAddRowTable_9").value='';
+			document.getElementById("in_NTRExciseDetailAddRowTable_5").value='';
+			clear_table_data('NTRExciseDetailAddRowTable');
+			selectedExciseFlag=0;
+			document.getElementById("txtTotalAmountPaidNTR").value=0;
+		}
+		}});
+}
+
+
+
+
+function isExciseLicnseFeeDtlRegistered(){
+	/*var taxpayerId 				= document.getElementById('hidTaxPayerId').value;
+	var obligationId 			= ExciseLicenseFeeDtl;
+
+	var taxPeriodExicse 		= document.getElementById('cmbTaxPeriod').value;
+	var classOfGoodsCodeExcise 	= document.getElementById('in_NTRExciseDetailAddRowTable_9').value;
+	var licenseNoExcise 		= document.getElementById('in_NTRExciseDetailAddRowTable_5').value;
+	var regTypeExcise 			= document.getElementById('in_NTRExciseDetailAddRowTable_4').value;
+
+	var PmtSplDetailVO = {
+			taxpayerId  : taxpayerId,
+			obligationId : obligationId,
+
+			taxPeriodExicse : taxPeriodExicse,
+			classOfGoodsCodeExcise  : classOfGoodsCodeExcise,
+			licenseNoExcise : licenseNoExcise,
+			regTypeExcise : regTypeExcise
+	};
+
+	if(isSplObligationRegisteredWeb(PmtSplDetailVO,N_FLAG))
+		return true;
+	else
+		return false;*/
+}

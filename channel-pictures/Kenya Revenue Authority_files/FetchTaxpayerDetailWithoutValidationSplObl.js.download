@@ -1,0 +1,26 @@
+
+// Provide a default path to dwr.engine
+if (typeof this['dwr'] == 'undefined') this.dwr = {};
+if (typeof dwr['engine'] == 'undefined') dwr.engine = {};
+
+if (typeof this['FetchTaxpayerDetailWithoutValidationSplObl'] == 'undefined') this.FetchTaxpayerDetailWithoutValidationSplObl = {};
+
+FetchTaxpayerDetailWithoutValidationSplObl._path = '/KRA-Portal/dwr';
+
+FetchTaxpayerDetailWithoutValidationSplObl.fetchTaxpayerDetailWithoutValidationSplObl = function(p0, callback) {
+  dwr.engine._execute(FetchTaxpayerDetailWithoutValidationSplObl._path, 'FetchTaxpayerDetailWithoutValidationSplObl', 'fetchTaxpayerDetailWithoutValidationSplObl', p0, callback);
+};
+
+FetchTaxpayerDetailWithoutValidationSplObl.fetchKebsPenaltyDetails = function(p0, p1, p2, callback) {
+  dwr.engine._execute(FetchTaxpayerDetailWithoutValidationSplObl._path, 'FetchTaxpayerDetailWithoutValidationSplObl', 'fetchKebsPenaltyDetails', p0, p1, p2, callback);
+};
+
+FetchTaxpayerDetailWithoutValidationSplObl.checkTaxPayerCGTSpecialRate = function(p0, callback) {
+  dwr.engine._execute(FetchTaxpayerDetailWithoutValidationSplObl._path, 'FetchTaxpayerDetailWithoutValidationSplObl', 'checkTaxPayerCGTSpecialRate', p0, callback);
+};
+
+FetchTaxpayerDetailWithoutValidationSplObl.cancelWhtVatPayment = function(p0, p1, p2, callback) {
+  dwr.engine._execute(FetchTaxpayerDetailWithoutValidationSplObl._path, 'FetchTaxpayerDetailWithoutValidationSplObl', 'cancelWhtVatPayment', p0, p1, p2, callback);
+};
+
+

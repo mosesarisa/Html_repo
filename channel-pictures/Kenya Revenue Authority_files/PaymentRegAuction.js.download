@@ -1,0 +1,645 @@
+var auctionJson={"field":[{"name":"txtAuctionNo","rule":[{"required":"y","dispName":"Auction No  ","type":"onlyalphanumeric"}]},
+                         {"name":"txtTaxPayerPinAuction","rule":[{"required":"y","dispName":"Taxpayer PIN ","type":"onlyalphanumeric","maxLength":"11"}]} , 
+                         {"name":"cmbTaxTypeAuction","rule":[{"required":"y","dispName":"Obligation Type"}]}
+]};
+
+function clearPreviousDtls()
+{
+	var tableData = document.getElementById('agencyFormDetailsTable');
+	var rowCount = tableData.rows.length;
+	
+	for (var x=rowCount-1; x>0; x--) {
+		tableData.deleteRow(x);
+	
+	} 			
+	document.getElementById('txtTaxPayerFirstNameAuction').value="";		
+	document.getElementById('txtTaxPayerFullAddrAuction').value="";
+	document.getElementById('txtTaxPayerPinAuction').value="";
+	var list1 = document.getElementById('cmbTaxTypeAuction');
+
+	var j;
+    for(j=list1.options.length-1;j>=1;j--)
+    {
+    	list1.remove(j);
+    }
+	
+	var list = document.getElementById("cmbTaxPeriodAuction");
+
+	var i;
+    for(i=list.options.length-1;i>=1;i--)
+    {
+    	list.remove(i);
+    }
+
+}
+function onchangeTxtAuctionNo(obj){
+	
+	if(modifyFlagAUCTION==1)
+	{
+		alert(confirmModifyingOperation);
+		return false;
+	}
+	clearPreviousDtls();
+	var auctionNoticeNo = obj.value;
+	if(auctionNoticeNo == null || auctionNoticeNo==""){
+		alert(validAuctionNo);
+		return false;
+	}
+	var taxpayerId = 0; 
+	var agentId = 0;
+	FetchAgencyNoticeDtlFromDNE.fetchAgencyNoticeDtlFromDNE(auctionNoticeNo,taxpayerId,agentId,DNE_NOTICE_TYPE_AUCTION, {async:false,callback:function(data){
+		
+		if(data != NULL &&  data != null){
+			
+			if(data.isDataAvailable == N_FLAG){
+				
+				if(data.isAgent == ERROR ||data.isAgent == NO_CALL_MADE){ // Handled Scenario : 1) if no call made from Controller to impl 2) impl to facade
+					alert(errFetchingData);
+				}
+				else if(data.isAgent == NO_DETAILS_FOUND){// Handled Scenario : 1) call made to facade with invalid PIN
+					alert(validAuctionNo);
+				}
+				else if(data.isAgent == "NOLIABILITY"){// Handled Scenario : 1) call made to facade with invalid PIN
+					alert(noOutstandingLiability);
+				}
+				document.getElementById('txtAuctionNo').value="";
+				document.getElementById('txtTaxPayerPinAuction').value = "";
+				document.getElementById('hidTaxPayerIdAuction').value = "";
+				document.getElementById('txtTaxPayerFirstNameAuction').value="";
+				document.getElementById('hidTaxPayerTelNoAuction').value="";
+				document.getElementById('txtTaxPayerFullAddrAuction').value="";
+				document.getElementById('cmbTaxTypeAuction').length=1;
+				document.getElementById('cmbTaxTypeAuction').selectedIndex=0;
+				document.getElementById('cmbTaxTypeAuction').disabled=true;
+				document.getElementById('txtTotalAmountPaidOblig').value = 0;
+				document.getElementById('hidAmtForAgencyAndAuction').value = 0;
+				document.getElementById('txtAgencyNo').focus();
+				return false;
+				
+			} else {
+				document.getElementById('txtTaxPayerPinAuction').value = data.taxPayerPinAgency;
+				document.getElementById('hidTaxPayerIdAuction').value = data.taxPayerId;
+				document.getElementById('txtTaxPayerFirstNameAuction').value=data.taxPayerFirstName;
+				document.getElementById('hidTaxPayerTelNoAuction').value=data.mobileNumber;
+				dwr.util.setValue('txtTaxPayerFullAddrAuction',data.taxPayerFullAddr);
+				document.getElementById('cmbTaxTypeAuction').length=1;
+				document.getElementById('cmbTaxTypeAuction').disabled=false;
+				
+				
+				for(var i=0;i<data.allObligationsMapList.length;i++){
+					var oOption=document.createElement("option");
+					oOption.text=data.allObligationsMapList[i].value;
+					oOption.value=data.allObligationsMapList[i].key;									
+					document.getElementById("cmbTaxTypeAuction").add(oOption);
+				}
+				document.getElementById('cmbTaxSubHead').value = document.getElementById("cmbTaxTypeAuction").value;
+				document.getElementById('cmbTaxSubHead').text = document.getElementById("cmbTaxTypeAuction").text;
+				
+//				document.getElementById('cmbTaxTypeAgency').selectedIndex=1;
+//				document.getElementById('cmbTaxTypeAgency').disabled=true;
+				document.getElementById('txtTotalAmountPaidOblig').value =Math.ceil(data.amountPayable);
+				document.getElementById('hidAmtForAgencyAndAuction').value =Math.ceil(data.amountPayable);
+				document.getElementById('periodListJSON').value =data.periodListJSON;
+				totalAmountPaid('txtTotalAmountPaidOblig'); 
+				
+			} 
+		}
+		else{
+			alert(errFetchingData);
+			
+			document.getElementById('txtAgencyNo').value="";
+			document.getElementById('txtTaxPayerPinAuction').value = "";
+			document.getElementById('hidTaxPayerIdAuction').value = "";
+			document.getElementById('txtTaxPayerFirstNameAuction').value="";
+			document.getElementById('hidTaxPayerTelNoAuction').value="";
+			document.getElementById('txtTaxPayerFullAddrAuction').value="";
+			document.getElementById('cmbTaxTypeAuction').length=1;
+			document.getElementById('cmbTaxTypeAuction').selectedIndex=0;
+			document.getElementById('cmbTaxTypeAuction').disabled=true;
+			document.getElementById('txtTotalAmountPaidOblig').value = 0;
+			document.getElementById('hidAmtForAgencyAndAuction').value = "";
+			document.getElementById('txtAuctionNo').focus();
+			return false;
+		}
+
+	}});
+	return true;
+}
+
+function onchangeTaxPayerPinAuction(obj){
+	var pin = trim(obj.value);
+	if(validPIN(obj)){
+		FetchTaxpayerDetailWithoutValidation.fetchTaxpayerDetailWithoutValidation(pin, {async:false,callback:function(data){
+			if(data != NULL &&  data != null){ 
+				if(data.isDataAvailable == N_FLAG){
+					if(data.isAgent == ERROR ||data.isAgent == NO_CALL_MADE){ // Handled Scenario : 1) if no call made from Controller to impl 2) impl to facade
+						alert(errFetchingData);
+					}
+					else if(data.isAgent == NO_DETAILS_FOUND){// Handled Scenario : 1) call made to facade with invalid PIN
+						alert(validTpPIN);
+					}
+					document.getElementById('txtTaxPayerPinAuction').value="";
+					document.getElementById('txtTaxPayerFirstNameAuction').value="";
+					document.getElementById('txtTaxPayerFullAddrAuction').value="";
+					return false;
+				}
+				if(data.taxPayerFirstName != null || data.taxPayerId != null){
+					document.getElementById('hidTaxPayerIdAgncy').value = data.taxPayerId;
+					document.getElementById('txtTaxPayerFirstNameAuction').value=data.taxPayerFirstName;
+					document.getElementById('hidTaxPayerTelNoAuction').value=data.mobileNumber;
+					dwr.util.setValue('txtTaxPayerFullAddrAuction',data.taxPayerFullAddr);
+					document.getElementById('cmbTaxTypeAuction').length=1;
+					document.getElementById('cmbTaxTypeAuction').disabled=false;
+					for (var i=0; i < data.allObligationsMapList.length; i++) 
+					{
+						var oOption=document.createElement("option");
+						optionId=data.allObligationsMapList[i].key;
+						optionValue=data.allObligationsMapList[i].value;
+
+						if(optionId!="IT" && optionId!="VAT" && optionId!="EXCISE")
+						{
+							
+						}
+						else
+						{
+							oOption.disabled=true;
+							oOption.style.textAlign="center";
+						}
+						
+						oOption.text=optionValue;
+						oOption.value=optionId;
+						oOption.title=optionValue;
+
+						document.getElementById("cmbTaxTypeAuction").add(oOption);
+					}
+				}
+				if(data.taxPayerFirstName == NULL || data.taxPayerFirstName == null){
+					alert(validTpPIN);
+					document.getElementById('txtTaxPayerPinAuction').value="";
+					document.getElementById('txtTaxPayerFirstNameAuction').value="";
+					document.getElementById('txtTaxPayerFullAddrAuction').value="";
+					return false;
+				}
+			}
+			else{
+				alert(errFetchingData);
+				document.getElementById('txtTaxPayerPinAuction').value="";
+				document.getElementById('txtTaxPayerFirstNameAuction').value="";
+				document.getElementById('txtTaxPayerFullAddrAuction').value="";
+				return false;
+			}
+
+		}});
+		return true;
+	}
+	else{//if PIN format is not valid
+		document.getElementById('txtTaxPayerPinAuction').value="";
+		document.getElementById('txtTaxPayerFirstNameAuction').value="";
+		document.getElementById('txtTaxPayerFullAddrAuction').value="";
+		return false;
+	}
+}
+
+function validateAuctionDtls(id)
+{
+	//resetErrorList();
+	if(document.getElementById('txtTaxPayerPinAuction').value=='' || document.getElementById('txtTaxPayerPinAuction').value==null)
+	{
+		document.getElementById('txtTaxPayerFirstNameAuction').value='';
+		document.getElementById('txtTaxPayerFullAddrAuction').value='';
+	}
+	var rtnFlag = validateFormFieldOnEvent(id,auctionJson);
+	getErrTabToggle('TabView','2');
+	if(!rtnFlag)
+	{
+		document.getElementById('txtAuctionNo').value="";
+		document.getElementById('txtTaxPayerPinAuction').value = "";
+		document.getElementById('hidTaxPayerIdAgncy').value = "";
+		document.getElementById('txtTaxPayerFirstNameAuction').value="";
+		document.getElementById('hidTaxPayerTelNoAuction').value="";
+		document.getElementById('txtTaxPayerFullAddrAuction').value="";
+		document.getElementById('cmbTaxTypeAuction').length=1;
+		document.getElementById('cmbTaxTypeAuction').selectedIndex=0;
+		document.getElementById('cmbTaxTypeAuction').disabled=true;
+		document.getElementById('txtTotalAmountPaidOblig').value = 0;
+		document.getElementById('txtAuctionNo').focus();
+		tabview_switch('TabView', '2');
+		hideAndShowTable("errorDiv");
+		document.getElementById('btnTbl').style.display="none";
+	}
+	return rtnFlag;
+	
+	
+}
+
+function resetTaxPeriodComboAuction(){
+	var list = document.getElementById("cmbTaxPeriodAuction");
+
+	var i;
+    for(i=list.options.length-1;i>=1;i--)
+    {
+    	list.remove(i);
+    }
+}
+
+function clearObligationDtlTbl(){
+	document.getElementById('agencyFormDetailsTable').style.display='none';
+	document.getElementById('showAgencyFormTable').style.display='none';
+	
+	document.getElementById('taxObligationTable').style.display='none';
+	document.getElementById('showTaxObligationTable').style.display='none';
+	document.getElementById('AgencyObligationDetailFieldSet').style.display='none';
+	document.getElementById('txtTotalAmountPaidOblig').value == 0;
+	document.getElementById('txtTotalAmountPaidOblig').readonly=false;
+}
+
+function onchangecmbTaxTypeAuction(obj)
+{
+	if(modifyFlagAGENCY==0){
+		resetTaxPeriodComboAuction();
+		
+		}
+		clearObligationDtlTbl();
+		setOtrParamForCSV();
+		document.getElementById('hidObligationId').value=obj;
+		var obligationId=obj;
+		var noticeType=DNE_NOTICE_TYPE_AUCTION;
+		var noticeNo=document.getElementById('txtAuctionNo').value;
+		var agencyMapKey;
+		var agencyMapValue;
+		FetchAgencyNoticePeriodDtlFromDNE.fetchAgencyNoticePeriodDtlFromDNE(noticeNo,obligationId,noticeType, {async:false,callback:function(data){
+	if(data != NULL &&  data != null){
+				
+				if(data.isDataAvailable == N_FLAG){
+					
+					if(data.isAgent == ERROR ||data.isAgent == NO_CALL_MADE){ // Handled Scenario : 1) if no call made from Controller to impl 2) impl to facade
+						alert(errFetchingData);
+					}
+					else if(data.isAgent == NO_DETAILS_FOUND){// Handled Scenario : 1) call made to facade with invalid PIN
+						alert(validAgencyNoticeNo);
+					}
+					else if(data.isAgent == "NOLIABILITY"){// Handled Scenario : 1) call made to facade with invalid PIN
+						alert(noOutstandingLiability);
+					}
+					document.getElementById('txtAuctionNo').value="";
+					document.getElementById('txtTaxPayerPinAuction').value = "";
+					document.getElementById('hidTaxPayerIdAuction').value = "";
+					document.getElementById('txtTaxPayerFirstNameAuction').value="";
+					document.getElementById('hidTaxPayerTelNoAuction').value="";
+					document.getElementById('txtTaxPayerFullAddrAuction').value="";
+					document.getElementById('cmbTaxTypeAuction').length=1;
+					document.getElementById('cmbTaxTypeAuction').selectedIndex=0;
+					document.getElementById('cmbTaxTypeAuction').disabled=true;
+					document.getElementById('txtTotalAmountPaidOblig').value = 0;
+					document.getElementById('hidAmtForAgencyAndAuction').value = 0;
+					document.getElementById('txtAuctionNo').focus();
+					return false;
+					
+				} else {
+					
+				if (data != null && data != '') {
+					//dwr.util.removeAllOptions('mfgPin');
+					for(var j=0;j<data.length;j++)
+						{
+						var oOption=document.createElement("option");
+						oOption.value=data[j].toDate;
+						oOption.text=data[j].fromDate;					
+						document.getElementById('cmbTaxPeriodAuction').add(oOption);
+						//document.getElementById('hidcnfirmedDt').value = data[j].periodListJSON;
+						
+						
+					for (var i=0; i < data.length; i++){
+						agencyMapKey=oOption.value;
+						agencyMapValue= data[j].periodListJSON;
+						AllObligationsMap[agencyMapKey] = agencyMapValue;
+					}
+				}	
+				} else {
+					alert("Tax Period is  not Avialable.");
+					
+				}
+					
+					totalAmountPaid('txtTotalAmountPaidOblig'); 
+					
+				} 
+			}
+			else{
+				alert(errFetchingData);
+				
+				document.getElementById('txtAuctionNo').value="";
+				document.getElementById('txtTaxPayerPinAuction').value = "";
+				document.getElementById('hidTaxPayerIdAuction').value = "";
+				document.getElementById('txtTaxPayerFirstNameAuction').value="";
+				document.getElementById('hidTaxPayerTelNoAuction').value="";
+				document.getElementById('txtTaxPayerFullAddrAuction').value="";
+				document.getElementById('cmbTaxTypeAuction').length=1;
+				document.getElementById('cmbTaxTypeAuction').selectedIndex=0;
+				document.getElementById('cmbTaxTypeAuction').disabled=true;
+				document.getElementById('txtTotalAmountPaidOblig').value = 0;
+				document.getElementById('hidAmtForAgencyAndAuction').value = 0;
+				document.getElementById('txtAuctionNo').focus();
+				return false;
+			}
+		}
+		});	
+
+}
+
+
+
+
+function onSelectliabilityRadioAuction(obj)
+{
+	//exciseAmtValidation(obj.value);
+	document.getElementById('agencyFormDetailsTable').style.display = '';
+	document.getElementById('AgencyObligationDetailFieldSet').style.display = ''; 
+	document.getElementById('showAgencyFormTable').style.display = '';
+	document.getElementById('showTaxObligationTable').style.display = 'none';
+	var rowNum = obj.value;
+	objValue=obj.value;
+	cntrForHide=objValue;
+	var i;
+	if (obj.value != document.getElementById('hidRadioValue').value && document.getElementById('hidRadioValue').value != '')
+	{
+		document.getElementById('actualLiabilityAmount_'+document.getElementById('hidRadioValue').value).value = document.getElementById('hidActualLiabilityAmount').value;
+		document.getElementById('actualLiabilityAmount_'+document.getElementById('hidRadioValue').value).readOnly = true;
+		document.getElementById('actualLiabilityAmount_'+document.getElementById('hidRadioValue').value).className='readonlyInput form101_textfcurr_width textonlyRight';
+		document.getElementById('imgShowIntrest_'+document.getElementById('hidRadioValue').value).src = "${pageContext.request.contextPath}/themes/images/plus-sign.jpg";
+		document.getElementById('imgShowIntrest_'+document.getElementById('hidRadioValue').value).style.visibility = 'hidden';
+		document.getElementById('imgShowPenalty_'+document.getElementById('hidRadioValue').value).src = "${pageContext.request.contextPath}/themes/images/plus-sign.jpg";
+		document.getElementById('imgShowPenalty_'+document.getElementById('hidRadioValue').value).style.visibility = 'hidden';
+		document.getElementById('imgShowFine_'+document.getElementById('hidRadioValue').value).src = "${pageContext.request.contextPath}/themes/images/plus-sign.jpg";
+		document.getElementById('imgShowFine_'+document.getElementById('hidRadioValue').value).style.visibility = 'hidden';
+		document.getElementById('imgShowPayment_'+document.getElementById('hidRadioValue').value).src = "${pageContext.request.contextPath}/themes/images/plus-sign.jpg";
+		document.getElementById('imgShowPayment_'+document.getElementById('hidRadioValue').value).style.visibility = 'hidden';
+		document.getElementById('hidRadioValue').value = objValue;
+		document.getElementById('hidActualLiabilityAmount').value = document.getElementById('actualLiabilityAmount_' + objValue).value;
+		document.getElementById('actualLiabilityAmount_'+objValue).readOnly = false;
+		document.getElementById('actualLiabilityAmount_'+objValue).className='form101_textfcurr form101_textfcurr_width textonlyRight';
+		document.getElementById('imgShowIntrest_'+objValue).style.visibility = 'visible';
+		document.getElementById('imgShowPenalty_'+objValue).style.visibility = 'visible';
+		document.getElementById('imgShowFine_'+objValue).style.visibility = 'visible';
+		document.getElementById('imgShowPayment_'+objValue).style.visibility = 'visible';
+
+	} 
+	else{
+		document.getElementById('actualLiabilityAmount_'+objValue).readOnly = false;
+		document.getElementById('actualLiabilityAmount_'+objValue).className='form101_textfcurr form101_textfcurr_width textonlyRight';
+		document.getElementById('hidRadioValue').value = objValue;
+		document.getElementById('hidActualLiabilityAmount').value =  document.getElementById('actualLiabilityAmount_'+objValue).value;
+		document.getElementById('imgShowIntrest_'+objValue).style.visibility = 'visible';
+		document.getElementById('imgShowPenalty_'+objValue).style.visibility = 'visible';
+		document.getElementById('imgShowFine_'+objValue).style.visibility = 'visible';
+		document.getElementById('imgShowPayment_'+objValue).style.visibility = 'visible';
+	}
+
+	var rowRef = document.getElementById("LiabilityRow_" + rowNum);
+
+	{
+		var obligationId = (rowRef.getElementsByTagName("INPUT")[2].value);
+		document.getElementById("in_agencyFormDetailsTable_7").value=obligationId;
+
+		var fromDate = (rowRef.getElementsByTagName("INPUT")[3].value);
+		document.getElementById("in_agencyFormDetailsTable_9").value=fromDate;
+
+		var toDate = (rowRef.getElementsByTagName("INPUT")[4].value);
+		document.getElementById("in_agencyFormDetailsTable_10").value=toDate;
+
+		var hdrId = (rowRef.getElementsByTagName("INPUT")[5].value);
+		document.getElementById("in_agencyFormDetailsTable_8").value=hdrId;
+
+		var obligationType = (rowRef.getElementsByTagName("INPUT")[6].value);
+		document.getElementById("in_agencyFormDetailsTable_11").value=obligationType;
+
+		var confirmedDate=document.getElementById("confirmedDebtDate").value;
+		document.getElementById("in_agencyFormDetailsTable_12").value=confirmedDate;
+		
+		var taxPeriodDisp = rowRef.getElementsByTagName("TD")[1].textContent;
+		document.getElementById("hidTaxPeriod").value=taxPeriodDisp;
+		document.getElementById("in_agencyFormDetailsTable_4").value=taxPeriodDisp;
+
+		var obligationId=document.getElementById('cmbTaxSubHead').value;
+				
+			document.getElementById("CmbTaxPeriodLabelTd").style.display="none";
+			document.getElementById("CmbTaxPeriodTd").style.display="none";
+			document.getElementById("tdCmbTaxPeriodYear").style.display="none";
+			document.getElementById("noTaxPeriodTd").style.display="none";
+			document.getElementById("noTaxPeriodTd1").style.display="none";
+			document.getElementById('cmbTaxPeriod').value=document.getElementById('in_agencyFormDetailsTable_9').value+"-"+document.getElementById('in_agencyFormDetailsTable_10').value;
+			document.getElementById('cmbTaxPeriod').value = document.getElementById('cmbTaxPeriodAuction').value ;
+			document.getElementById('cmbTaxPeriod').text = document.getElementById('cmbTaxPeriodAuction').text ;
+			
+		var taxPayable = rowRef.getElementsByTagName("INPUT")[1].value;
+		
+		taxPayable=	convertToKenyanShillingFormatValWithDecimal(parseInt(removeCommaFrmInput(taxPayable),10).toFixed(2),true);				
+		document.getElementById("in_agencyFormDetailsTable_5").value=taxPayable;
+
+		var amountPaid = (rowRef.getElementsByTagName("INPUT")[1].value);
+		document.getElementById("hid_agencyFormDetailsTable_6").value=amountPaid;
+		document.getElementById("in_agencyFormDetailsTable_6").value=document.getElementById("hid_agencyFormDetailsTable_6").value;
+	}
+
+	if(paymentDetailDTOArr[rowNum].paymentFineDtlDTOList!= null){
+		var cntr = 0;
+		var tabObj= document.getElementById("tblFineList");
+		for(i = tabObj.rows.length; i >1 ;i--){
+			tabObj.deleteRow(i -1);
+		}
+		
+		for(i=0;i<paymentDetailDTOArr[rowNum].paymentFineDtlDTOList.length;i++){
+			cntr = parseInt(cntr) + 1;
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			var tabCell = new Array();
+			for (var j=0;j<4;j++){
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			tabCell[0].innerHTML = cntr;
+			tabCell[0].style.textAlign="center";
+			tabCell[0].style.fontSize="11";
+
+			tabCell[1].innerHTML = paymentDetailDTOArr[rowNum].paymentFineDtlDTOList[i].jvId;
+			tabCell[1].style.textAlign="center";
+			tabCell[1].style.fontSize="11";
+
+			tabCell[2].innerHTML = paymentDetailDTOArr[rowNum].paymentFineDtlDTOList[i].imposeDt;
+			tabCell[2].style.textAlign="center";
+			tabCell[2].style.fontSize="11";
+
+			tabCell[3].innerHTML = convertToKenyanShillingFormatValWithDecimal((paymentDetailDTOArr[rowNum].paymentFineDtlDTOList[i].amount).toFixed(2),true);
+			tabCell[3].style.textAlign="right";
+			tabCell[3].style.fontSize="11";
+			
+		}
+
+	}
+
+	if(paymentDetailDTOArr[rowNum].paymentInterestDtlDTOList!= null){
+		var cntr = 0;
+		var tabObj= document.getElementById("tblIntrestList");
+		for(i = tabObj.rows.length; i >1 ;i--){
+			tabObj.deleteRow(i -1);
+		}
+		for(i=0;i<paymentDetailDTOArr[rowNum].paymentInterestDtlDTOList.length;i++){
+			cntr = parseInt(cntr) + 1;
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			var tabCell = new Array();
+			for (var j=0;j<4;j++){
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			tabCell[0].innerHTML = cntr;
+			tabCell[0].style.textAlign="center";
+			tabCell[0].style.fontSize="11";
+
+			tabCell[1].innerHTML = convertToKenyanShillingFormatValWithDecimal((paymentDetailDTOArr[rowNum].paymentInterestDtlDTOList[i].liabilityAmount).toFixed(2),true);
+			tabCell[1].style.textAlign="right";
+			tabCell[1].style.fontSize="11";
+
+			tabCell[2].innerHTML = paymentDetailDTOArr[rowNum].paymentInterestDtlDTOList[i].interestImposedDate;
+			tabCell[2].style.textAlign="center";
+			tabCell[2].style.fontSize="11";
+
+			tabCell[3].innerHTML = convertToKenyanShillingFormatValWithDecimal((paymentDetailDTOArr[rowNum].paymentInterestDtlDTOList[i].interestAmount).toFixed(2),true);
+			tabCell[3].style.textAlign="right";
+			tabCell[3].style.fontSize="11";
+		}
+	}
+
+	if(paymentDetailDTOArr[rowNum].paymentPenaltyDtlDTOList!= null){
+		var cntr = 0;
+		var tabObj= document.getElementById("tblPenaltyList");
+		for(i = tabObj.rows.length; i >1 ;i--){
+			tabObj.deleteRow(i -1);
+		}
+
+		for(i=0;i<paymentDetailDTOArr[rowNum].paymentPenaltyDtlDTOList.length;i++){
+			cntr = parseInt(cntr) + 1;
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			var tabCell = new Array();
+			for (var j=0;j<4;j++){
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			tabCell[0].innerHTML = cntr;
+			tabCell[0].style.textAlign="center";
+			tabCell[0].style.fontSize="11";
+
+			tabCell[1].innerHTML = paymentDetailDTOArr[rowNum].paymentPenaltyDtlDTOList[i].penaltySection;
+			tabCell[1].style.textAlign="center";
+			tabCell[1].style.fontSize="11";
+
+			tabCell[2].innerHTML = paymentDetailDTOArr[rowNum].paymentPenaltyDtlDTOList[i].imposeDtStr;
+			tabCell[2].style.textAlign="center";
+			tabCell[2].style.fontSize="11";
+
+			tabCell[3].innerHTML = convertToKenyanShillingFormatValWithDecimal((paymentDetailDTOArr[rowNum].paymentPenaltyDtlDTOList[i].amount).toFixed(2),true);
+			tabCell[3].style.textAlign="right";
+			tabCell[3].style.fontSize="11";
+		}
+
+	}
+
+	if(paymentDetailDTOArr[rowNum].paymentTaxDtlDTOList!= null){
+		var cntr = 0;
+		var tabObj= document.getElementById("tblPaymentList");
+		for(i = tabObj.rows.length; i >1 ;i--){
+			tabObj.deleteRow(i -1);
+		}
+
+		for(i=0;i<paymentDetailDTOArr[rowNum].paymentTaxDtlDTOList.length;i++){
+			cntr = parseInt(cntr) + 1;
+			var tabRow = tabObj.insertRow(tabObj.rows.length);
+			var tabCell = new Array();
+			for (var j=0;j<3;j++){
+				tabCell[j] = tabRow.insertCell(j);
+			}
+			tabCell[0].innerHTML = cntr;
+			tabCell[0].style.textAlign="center";
+			tabCell[0].style.fontSize="11";
+
+			tabCell[1].innerHTML = paymentDetailDTOArr[rowNum].paymentTaxDtlDTOList[i].paymentDateStr;
+			tabCell[1].style.textAlign="center";
+			tabCell[1].style.fontSize="11";
+
+			tabCell[2].innerHTML = convertToKenyanShillingFormatValWithDecimal((paymentDetailDTOArr[rowNum].paymentTaxDtlDTOList[i].amount).toFixed(2),true);
+			tabCell[2].style.textAlign="right";
+			tabCell[2].style.fontSize="11";
+		}
+
+	}
+			document.getElementById("tblPenaltyList").style.display="none";	  
+ 			document.getElementById("tblIntrestList").style.display="none";	
+ 		 	document.getElementById('tblFineList').style.display="none";	
+				document.getElementById("tblPaymentList").style.display="none";			 
+}
+
+
+
+function validateDeleteRowIntoauctionFormDetailsTable(tab_str, rowno, cols) 
+{
+	if(deleteFlagAUCTION==1 && modifyFlagAUCTION==0)
+	{
+		var table = document.getElementById('agencyFormDetailsTable');  
+		var	totalAmt = removeCommaFrmInput(document.getElementById('txtTotalAmountPaidOblig').value);
+		var tempAmt = table.rows[rowno].cells[6].innerHTML;
+		totalAmt = totalAmt - parseInt(removeCommaFrmInput(tempAmt),"10");
+		document.getElementById('txtTotalAmountPaidOblig').value =  totalAmt;
+		document.getElementById('txtTotalAmountPaidOblig').value = convertToKenyanShillingFormatVal(document.getElementById("txtTotalAmountPaidOblig").value, true);
+
+		if(document.getElementById('cmbTaxSubHead').value==NSSF){
+			selectedFlagNSSF=selectedFlagNSSF-1;
+		}else{
+			selectedFlagAUCTION=selectedFlagAUCTION-1;
+		}
+		deleteFlagAUCTION = 0;
+	}
+	else
+	{
+		deleteFlagAUCTION = 0;
+	}
+}
+function validateModifyRowIntoauctionFormDetailsTable(tab_str, rowno, cols) 
+{
+	modifyFlagAUCTION = 1;
+	commonModifyFlag=1;
+	var obligationId;
+	if(document.getElementById('cmbTaxSubHead').value!=NSSF){
+		document.getElementById('cmbTaxHead').value=document.getElementById('in_agencyFormDetailsTable_11').value;
+		commonModifyFlag=0;
+		onChangeCmbTaxHead(document.getElementById('cmbTaxHead'));
+		commonModifyFlag=1;
+		
+	}
+	obligationId=document.getElementById('in_agencyFormDetailsTable_7').value;
+	var list1 = document.getElementById("cmbTaxTypeAuction");
+
+	var j;
+    for(j=list1.options.length-1;j>=1;j--)
+    {
+    	list1.remove(j);
+    }
+    var oOption = document.createElement("option");
+    oOption.text = document.getElementById('in_agencyFormDetailsTable_3').value;
+    oOption.value = obligationId;
+    oOption.selected="selected";
+    document.getElementById("cmbTaxTypeAuction").add(oOption);
+	
+	var list = document.getElementById("cmbTaxPeriodAuction");
+
+	var i;
+    for(i=list.options.length-1;i>=1;i--)
+    {
+    	list.remove(i);
+    }
+    var option = document.createElement("option");
+    option.text = document.getElementById('in_agencyFormDetailsTable_4').value;
+    option.value = document.getElementById('in_agencyFormDetailsTable_9').value+"-"+document.getElementById('in_agencyFormDetailsTable_10').value;
+    option.selected="selected";
+    document.getElementById("cmbTaxPeriodAuction").add(option);
+	//document.getElementById('cmbTaxPeriodAuction').value=document.getElementById('in_agencyFormDetailsTable_9').value+"-"+document.getElementById('in_agencyFormDetailsTable_10').value;
+	var taxPeriod=document.getElementById('cmbTaxPeriodAuction').value;
+	onChangeOfTaxPeriodAuction(taxPeriod);
+
+	
+}
+
+
+
