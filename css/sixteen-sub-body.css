@@ -1,0 +1,148 @@
+
+.cover-pic{
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    margin-top: 5px;
+}
+
+.profile-section{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px 20px 10px 0px;
+
+}
+.profile-pic{
+    height: 150px;
+    width: 150px;
+    border-radius: 75px;
+    border: 4px solid white;
+    margin-top: -75px;
+    margin-left: 20px;
+    cursor: pointer;
+}
+.follow-button{
+    background-color: rgb(228, 228, 228);
+    color: black;
+    font-weight: bold;
+    font-size: 15px;
+    height: 40px;
+    width: 80px;
+    border-radius:20px;
+    cursor: pointer;
+     transition: opacity 0.15s;
+}
+ .follow-button:hover{
+            opacity: 0.8;
+        }
+  .follow-button:active{
+            opacity: 0.;
+        }
+.profile-name{
+    font-family: Roboto , Arial;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0px;
+    padding-top: 10px;
+}
+.profile-username{
+    font-family: Roboto , Arial;
+    font-size: 400;
+    color: gray;
+    margin: 0px;
+}
+.profile-bio{
+    font-family: Roboto , Arial;
+    width: 325px;
+    font-size: 400;
+    margin: 0px;
+    padding-top: 10px;
+
+}
+.profile-bios{
+    font-family: Roboto , Arial;
+    font-size: 400;
+    margin: 0px;
+}
+.youtube-link,
+.profile-link{
+    font-family: Roboto , Arial;
+    font-size: 400;
+    margin: 0px;
+    padding-top: 10px;
+    color: blue;  
+    cursor: pointer;
+}
+    .youtube-link:hover,
+    .profile-link:hover {
+        text-decoration: underline;
+}
+.others{
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+    .link-icon ,
+     .calendar-icon {
+        height: 15px;
+        padding-right: 5px;
+    
+}
+.link-icon {
+  padding-top: 10px; 
+  cursor: pointer; 
+}
+.profile-links{
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    padding-top: 10px;
+    
+}
+.calendar-icon {
+    padding-top: 5px; 
+    margin-left: 20px;  
+}
+.join-date{
+    font-family: Roboto , Arial;
+    font-size: 400;
+    color: rgb(112, 112, 112);
+  margin-top: 22px;
+}
+.following-followers{
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+
+
+}
+.following ,.followers{
+    font-family: Roboto , Arial;
+    color: rgb(117, 115, 115);
+    margin-right: 20px;
+    margin-top: 0px;
+    cursor: pointer;
+}
+.follow{
+    font-family: Roboto , Arial;
+    font-weight: bold;
+    color: black;
+    margin-top: 0px;
+    cursor: pointer;
+}
+.follow:hover, 
+.followers:hover,
+.following:hover {
+    text-decoration: underline;
+}
+
+
+    
+
+
+
+
+
+
+

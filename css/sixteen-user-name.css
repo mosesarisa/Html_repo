@@ -1,0 +1,79 @@
+        
+       .middle-side{
+           border: 1px solid lightgray;
+           margin-bottom: 100px;
+       }
+       .container{
+       background-color: rgb(255, 255, 255);       
+       height: 55px;
+       display: flex;
+       flex-direction: row;
+       cursor: pointer;
+       position: fixed;
+       top:2;
+       left: 416px;
+       right: 479px;
+       z-index: 1040;           
+            
+}
+.icons{
+    height: 15px;
+}
+    .left-section{ 
+       display: flex;
+       align-items: center; 
+       width: 50px;
+       margin-left: 10px;  
+       
+}
+    .back-arrow{
+            height: 40px;
+            width: 40px;
+            border-radius: 20px;
+            border: none;
+            background-color: rgb(240, 240, 240);
+            cursor: pointer;
+        }
+   .middle-section{
+      flex: 1;
+      
+}
+        .user-name{
+        font-family: Roboto , Arial;
+        margin: 0px;
+        font-size: 25px;
+        font-weight:bold;
+        margin-bottom: 5px;
+
+        }
+        .no-post{
+            font-family: Roboto Arial;
+            font-size: 15px;
+            margin-top: 0px;
+            color: black;
+            padding-bottom: 10px; ;
+           
+        }
+        .right-section{
+            
+            display: flex;
+            align-items: center;
+           width: 115px;   
+}
+        .profile-summery{
+            height: 40px;
+            width: 40px;  
+            border-radius: 20px; 
+            border: none;
+            margin-right: 10px;
+            margin-left: 10px;
+            cursor: pointer;        
+        }
+        .search-icon{
+            height: 40px;
+            width: 40px;   
+            border-radius: 20px;   
+            border: none;
+            background-color: rgb(240, 240, 240); 
+            cursor: pointer;     
+        }

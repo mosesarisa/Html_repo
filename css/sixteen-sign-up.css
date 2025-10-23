@@ -1,0 +1,106 @@
+.right-side{
+     background-color: rgb(255, 255, 255);
+      position: fixed;
+    top: 10px;
+    left: 1042px;
+    right: 0px;
+   
+}
+.log-in{
+    border: 1px solid lightgray;
+    margin-left: 50px;
+    margin-right: 90px;
+    margin-top: 10px;
+    border-radius: 20px;
+}
+.new-to-x{
+    font-family: Roboto, Arial;
+    font-weight: bold;
+    font-size: 20px;
+    margin-left: 10px;
+
+}
+.info-x{
+    font-family: Roboto, Arial;
+    font-size: 12px;
+    color: rgb(72, 71, 71);
+    margin-left: 10px;
+    margin-top: -15px;
+
+}
+.create-account{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color:white;
+    border: 1px solid lightgray;
+    border-radius: 20px;
+    color: rgb(73, 73, 73);
+    height: 35px;
+    width: 280px;
+    font-family: Roboto, Arial;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-left: 18px;
+}
+.create-account:hover{
+    background-color: rgb(235, 235, 235);
+}
+.google-icon,.apple-icon{
+    height: 20px;
+    width: 20px;
+    margin-right: 10px;
+}
+.sign{
+    font-size: 14px;
+}
+.create{
+    font-weight: bold;
+    font-size: 14px;
+    color: black;
+}
+.sign-up{
+  font-family: Roboto, Arial;
+  font-size: 12px;
+  color: rgb(90, 90, 90);
+  width: 320px;
+  margin-left: 10px;
+
+}
+.terms{
+    color: blue;
+    cursor: pointer;
+}
+.terms:hover{
+    text-decoration: underline;
+
+}
+.head-of-policy,.head-policy{
+    display: flex;
+    flex-direction: row;
+    align-items: center;  
+    font-family: Roboto, Arial;
+    font-size: 12px;
+    margin-left: 65px;
+    color: rgb(84, 84, 84);
+    
+}
+.head-policy{
+ margin-top: -15px;  
+}
+.policy {
+    margin-left: 10px;
+    padding-right: 10px;
+    border-right: 2px solid rgb(154, 154, 154);
+    cursor: pointer;
+}
+.more-policy{
+    cursor: pointer;
+}
+.more-policy,.etc-policy{
+    margin-left: 10px;
+}
+.policy:hover,.more-policy:hover{
+    text-decoration: underline;
+}
